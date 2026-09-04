@@ -193,24 +193,84 @@ writes code: it shows the shadow, it does not fix it.
 
 ## The final review
 
-The last step of the build was a semantic-diff review of the whole thing:
+The last step of the build was a semantic-diff review of the whole thing,
+comparing the first commit against the last:
 
 ```
-entire graph diff --base <first commit> --head HEAD --repo .
+entire graph diff --base 6e0dff8e92417fc25e28f07c4950753bd1701966 --head HEAD --repo .
 ```
 
-It found something a green test run could not. The graph reported **no symbols
-at all** for `umbra/cmd`, and the cause was a `.gitignore` pattern of my own
-making: an unanchored `entire-umbra`, written to ignore the built binary, also
-matches the source directory `cmd/entire-umbra/`. Every file in the command
-package was untracked. Tests passed locally the whole time, because the files
-were on disk; a fresh clone of this repository would not have built. The
-patterns are anchored now, the package is committed, and a clone is checked to
-build and test green.
+The diff itself is unremarkable: 1014 added entities, no signature changes, and
+no function without an incoming edge, which is what a build that only ever added
+code should look like. The interesting part was what the diff did not contain.
 
-Beyond that the diff is 1014 added entities, no signature changes, and no
-function without an incoming edge, which is what a build that only ever added
-code should look like.
+### The .gitignore that hid the command package
+
+Reading the diff, `umbra/cmd` was missing. Not thin, not partial: the graph had
+no symbols for it at all, while it had 1014 for everything else. A directory of
+Go files that the build had been compiling and testing for nine phases was, as
+far as Graph could see, not there.
+
+Graph builds its snapshot from the repository, and it honours `.gitignore`. So
+the question was not what Graph had failed to parse. It was what git had been
+told to ignore. The answer was the second line of a `.gitignore` I wrote myself
+in the first commit, under a heading that says exactly what I meant it to do:
+
+```
+# Go build output
+entire-umbra
+```
+
+I meant that to ignore the compiled binary, which is written as `entire-umbra`.
+A gitignore pattern with no slash in it is not anchored to the repository root
+and does not distinguish a file from a directory: it matches any path component
+with that name, at any depth. The binary is called `entire-umbra`. So is the
+directory the binary's source lives in. The pattern matched
+`umbra/cmd/entire-umbra/` and everything under it.
+
+`git ls-files umbra/cmd/` returned nothing. `main.go`, `analyze.go`,
+`execute.go`, `options.go`, `output.go`, `record.go` and `options_test.go` had
+never been committed. The command package went in during phase 2 and was
+untracked through phase 10, nine phases in which every commit message reported
+a rising test count that included tests in a file the repository did not have.
+
+Nothing caught it, and nothing was going to. `go build ./...` and
+`go test ./...` read the working tree, and the files were on disk, so they were
+green throughout and told me nothing. `git status` says nothing about a path it
+has been told to ignore. `git commit -a` does not add an ignored file. The only
+symptom available to me was one I never looked at: a clone.
+
+The fix was to anchor the patterns to the paths the binaries are actually
+written to, so a directory name can never collide with them again:
+
+```
+/entire-umbra
+/umbra/entire-umbra
+/umbra-out/
+```
+
+The seven files were then committed, and the thing that should have been done
+long before was done at last:
+
+```
+git clone . /tmp/clone && cd /tmp/clone/umbra
+go build ./...   # OK
+go test ./...    # every package ok
+```
+
+That clone is the verification. Before the fix it would have failed to build,
+because `package main` did not exist in the repository. After it, it builds and
+every test passes, which is the only evidence that means anything here.
+
+This is the clearest case in the build of Graph driving a decision rather than
+confirming one. Nothing else in the toolchain was looking at the repository.
+The compiler, the test runner and my own reading were all looking at the
+working tree, where the code was present and correct. Graph was looking at what
+had actually been committed, and the gap between those two things was an entire
+package. A green test run is not the same as a correct repository, and it takes
+a tool that reads the repository to tell you which one you have.
+
+### The self report
 
 Then Umbra was run on the session that built it. On the commit where it changed
 its own `shadow.Build`, all twelve dependents came back umbra, including every
