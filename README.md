@@ -194,7 +194,22 @@ skips it and the header says the selection is unaudited.
 - The examined set is built from the session's tool activity. An agent that
   reads and edits through shell commands rather than through file tools leaves
   no read or edit event, so its work looks unexamined. Umbra found this in its
-  own build; the report is in `umbra/site/self/`.
+  own build; the report is in `umbra/site/self/`. Every report now carries a
+  coverage line saying how many of the session's events were file reads and how
+  many were shell commands, so a thin report can be told from a real finding.
+- **The report's script is about 1215 lines against a design target of 700,**
+  and its stylesheet about 480 against 400. Three things account for almost all
+  of the excess and none of them were foreseen when the target was set: the
+  attention replay carries a second implementation of the classifier, because
+  the map has to be reconstructed at any point in the session and that means
+  the state rules exist in Go and again in the browser; the day scheme and the
+  print block are a second and third set of rules for the light field, since
+  removing a glow on a light ground reads as more light rather than less; and
+  the node shapes are drawn per state and per penumbra tier so the four states
+  survive greyscale. The duplication of the classifier is the part worth
+  regretting, and it is guarded rather than trusted: a test feeds eight
+  recorded scenarios through both implementations at three playhead positions
+  each and compares every state, tier and announcement.
 
 ## Not built, and why
 
@@ -301,6 +316,44 @@ Running the report on itself also found two bugs in the scrubber, both fixed:
 paths from outside the repository were reaching the timeline through search
 output, and the base64 heuristic was redacting git object ids and worktree
 paths, which is exactly the text a reader needs in order to check a line.
+
+## Development record
+
+Umbra was built in a standalone repository, `u7k4rs6/Umbra`, rather than inside
+a fork of `entireio/entire-graph`. The `umbra/` layout from ARCHITECTURE.md was
+preserved exactly so the module can be grafted into a fork without moving a
+file, and `scripts/graft.sh` does that graft. The build's own checkpoint trail
+lives in this repository, under `refs/entire/checkpoints/`, and the phase by
+phase record is the table at the top of [umbra/NOTES.md](umbra/NOTES.md), which
+also carries what each phase found and where the design documents turned out to
+be wrong.
+
+**Which maps are which.** The landing page shows two, and they are not the same
+kind of thing.
+
+- The first is a **real session on a seeded fixture**. The session, its tool
+  activity and the test results are real: checkpoint `b20f84567474` against
+  commit `0063443`, where an agent changed a signature and five probes cracked.
+  What is arranged is the fixture underneath it, `umbra/fixtures/app`, which was
+  written to have callers a session would plausibly miss. The sentence above the
+  map is the agent's own, taken from the stored transcript.
+- The second is **not seeded at all**: a real session from another project of
+  the builder's, imported with `entire import` and analysed unchanged. Every one
+  of the four symbols that depend on what it changed came back umbra. Nothing
+  about it was arranged, including the result.
+
+**Nothing on the page is scripted.** There is no map drawn from an invented
+report. Until phase 14 there was one: the sample was assembled by the site
+generator, with a checkpoint id of `sample000class`, a commit of all zeros and a
+session sentence written by hand, under a caption calling it a real report. It
+was replaced by a real run, and the generator now refuses a report carrying
+those markers so the caption cannot drift away from the file again.
+
+The eight scenarios under `umbra/fixtures/recorded/` are **authored
+transcripts**, written to exercise one classifier rule each. They drive tests
+and are never rendered as a map on the page. `umbra/fixtures/recorded/minimal/`
+is different: a full recording of a real short session, hand reviewed before it
+was committed.
 
 ## Prior work and AI disclosure
 
