@@ -14,6 +14,9 @@
   --fail: #C8553D;
   --pass: #8FBF9F;
   --focus: #9CC4FF;
+  /* On the night scheme a pool is simply the absence of glow, so nothing is
+     painted over it. */
+  --pool-ink: transparent;
 
   --ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -34,10 +37,16 @@
     --fail: #B3452F;
     --pass: #3E8A5C;
     --focus: #1A4F9C;
+    /* On a light ground, removing the warm glow makes a pool brighter than
+       its surroundings, which reads as more light rather than less. The pools
+       are painted instead, so shadow means the same thing in both schemes. */
+    --pool-ink: rgba(28, 31, 38, 0.17);
   }
 }
 
 * { box-sizing: border-box; }
+
+html, body { max-width: 100%; overflow-x: hidden; }
 
 body {
   margin: 0;
@@ -133,7 +142,13 @@ footer {
   font-size: 13px;
 }
 footer p { margin: 8px 0; }
-footer code, footer pre { font-family: var(--mono); font-size: 12px; }
+footer code, footer pre {
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+footer code { display: inline-block; max-width: 100%; }
 footer pre { white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
 
 /* Docket */
@@ -340,3 +355,105 @@ details pre {
 .seg-faultline { background: var(--fail); }
 .seg-scar      { background: var(--unknown); }
 .seg-test      { background: var(--pass); }
+
+/* Attention replay */
+
+.replay {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.replay-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.replay-label { font-weight: 600; margin-right: 6px; }
+.replay button {
+  font: 400 12px var(--ui);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 8px 12px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.counter { color: var(--ink-2); font-size: 12px; margin-left: auto; }
+
+.track {
+  position: relative;
+  height: 40px;
+  margin: 10px 8px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+.tick {
+  position: absolute;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  padding: 0;
+  border: 1px solid var(--ink-2);
+  background: var(--ink-2);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tick-grep, .tick-glob { background: transparent; }
+.tick-mention { background: transparent; border-style: dotted; }
+.tick-quoted { background: linear-gradient(to right, var(--ink-2) 50%, transparent 50%); }
+.tick-edit { border-radius: 0; transform: rotate(45deg); background: var(--lit-glow); border-color: var(--lit-glow); }
+.tick-command { border-radius: 0; width: 3px; margin-left: -1.5px; height: 13px; }
+.tick.cut {
+  width: 13px; height: 13px; margin-left: -6.5px; top: 10px;
+  background: var(--lit); border-color: var(--lit);
+}
+.playhead {
+  position: absolute;
+  top: 4px;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--focus);
+  pointer-events: none;
+}
+.now { color: var(--ink-2); font-size: 12px; font-family: var(--mono); margin: 4px 0 0; min-height: 1.4em; }
+
+.torch { pointer-events: none; mix-blend-mode: screen; }
+
+/* Motion happens only in response to an action, and never on load. */
+.node circle, .node path, .node polyline { transition: fill 240ms ease-out, opacity 240ms ease-out, r 240ms ease-out; }
+.pools circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .node circle, .node path, .node polyline, .pools circle { transition: none; }
+  .torch { display: none; }
+}
+
+/* Print: day scheme, static map with every label, docket expanded, no replay. */
+@media print {
+  :root {
+    --night: #FFFFFF;
+    --ink: #1C1F26;
+    --ink-2: #5E6470;
+    --rule: #DAD9D4;
+    --lit: #FFFFFF;
+    --lit-glow: #E8B85A;
+    --penumbra: #B9AE93;
+    --umbra: #1C1F26;
+    --umbra-edge: #6B7080;
+    --unknown: #9AA0AC;
+    --fail: #B3452F;
+    --pass: #3E8A5C;
+    --focus: #1A4F9C;
+    --pool-ink: rgba(28, 31, 38, 0.17);
+  }
+  .replay, .filters, .detail, .torch { display: none !important; }
+  .label[hidden] { display: block !important; }
+  table.docket tr[hidden] { display: table-row !important; }
+  details { display: block; }
+  details > summary { display: none; }
+  table.docket tr, .chip { break-inside: avoid; page-break-inside: avoid; }
+  .wrap { display: block; }
+}

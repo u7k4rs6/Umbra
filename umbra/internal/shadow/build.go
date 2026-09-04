@@ -3,6 +3,7 @@ package shadow
 import (
 	"context"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/u7k4rs6/Umbra/umbra/internal/graph"
@@ -56,7 +57,7 @@ func Build(in BuildInput) []*Node {
 		}
 
 		n.State, n.Tier = Classify(in.Examined, sym.File, sym.Name, sym.Span)
-		n.Exposures = in.Examined.ByFile[sym.File]
+		n.Exposures = exposuresFor(in.Examined, sym.File, sym.Name)
 
 		if n.Tier != TierNone {
 			addModifier(n, string(n.Tier))
@@ -129,7 +130,7 @@ func AddCoChange(nodes []*Node, in BuildInput) []*Node {
 					Dependents: len(in.Field.In[id]),
 				}
 				n.State, n.Tier = Classify(in.Examined, sym.File, sym.Name, sym.Span)
-				n.Exposures = in.Examined.ByFile[sym.File]
+				n.Exposures = exposuresFor(in.Examined, sym.File, sym.Name)
 				if n.Tier != TierNone {
 					addModifier(n, string(n.Tier))
 				}
@@ -173,4 +174,23 @@ func LoadScars(ctx context.Context, run runner.Runner, root string, files []stri
 		out[file] = n
 	}
 	return out, nil
+}
+
+// exposuresFor is every piece of evidence about a node, in sequence order: the
+// events on its file, and the mentions of its own name.
+//
+// Both are needed on the node itself because the report's JavaScript replays
+// the state at each step from this list alone, and a node whose only evidence
+// is a mention of its name would otherwise look untouched.
+func exposuresFor(e *Examined, file, name string) []Exposure {
+	if e == nil {
+		return nil
+	}
+	out := append([]Exposure(nil), e.ByFile[file]...)
+	out = append(out, e.BySymbol[name]...)
+	if len(out) == 0 {
+		return nil
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Seq < out[j].Seq })
+	return out
 }
