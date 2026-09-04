@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1Q4FS6WPPJY7J2F15KJM4ZB",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/docs/ARCHITECTURE.md",
+    "umbra/fixtures/recorded/README.md",
+    "umbra/fixtures/recorded/everything-lit/notes.txt",
+    "umbra/fixtures/recorded/everything-lit/transcript.jsonl",
+    "umbra/fixtures/recorded/leak/notes.txt",
+    "umbra/internal/graph/graph_test.go",
+    "umbra/internal/graph/testdata/snapshot.ndjson",
+    "umbra/internal/report/html.go",
+    "umbra/internal/report/model.go",
+    "umbra/internal/report/table.go",
+    "umbra/internal/report/table_test.go",
+    "umbra/internal/shadow/scenarios_test.go",
+    "umbra/site/index.html",
+    "umbra/site/sample/umbra.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 13239,
+    "cache_read_tokens": 6929321,
+    "output_tokens": 10282,
+    "api_call_count": 9
+  }
+}
