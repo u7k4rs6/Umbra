@@ -1,0 +1,10 @@
+# Go build output
+entire-umbra
+*.test
+*.out
+
+# Python fixture venv
+umbra/fixtures/app/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
