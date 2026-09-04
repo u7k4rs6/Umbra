@@ -1,5 +1,10 @@
-# Go build output
-entire-umbra
+# Built binaries. These patterns are anchored, because an unanchored
+# "entire-umbra" also matches the source directory cmd/entire-umbra/ and
+# silently keeps the whole command package out of the repository.
+/entire-umbra
+/umbra/entire-umbra
+/umbra-out/
+
 *.test
 *.out
 
@@ -8,3 +13,6 @@ umbra/fixtures/app/.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Playwright MCP scratch output
+.playwright-mcp/
