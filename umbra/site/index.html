@@ -132,7 +132,9 @@ open ./umbra-out/umbra.html</pre>
 <pre class="block">git clone https://github.com/u7k4rs6/Umbra
 cd Umbra/umbra/fixtures/app && ./setup.sh
 cd ../../..
-entire umbra 0063443 --test "umbra/fixtures/app/.venv/bin/python -m pytest -v"</pre>
+. umbra/fixtures/app/.venv/bin/activate
+entire umbra 0063443 --test "pytest -v"</pre>
+<p class="caption">The venv is activated because the runner has to be on <code>PATH</code>. Umbra runs the tests in a detached worktree of the commit, so a runner given as a path relative to the repository root will not resolve there, and a runner that cannot start leaves the verifier nothing to parse.</p>
 <p>The fixture is seeded: it is built to produce lit, penumbra and umbra nodes, and a signature change that breaks tests in two files the session never opened. The report says so, and so does this page.</p>
 
 <h2>Limitations</h2>

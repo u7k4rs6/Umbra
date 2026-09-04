@@ -183,3 +183,25 @@ func TestCoverageAppearsInTheHTML(t *testing.T) {
 		t.Fatal("the report page must carry the note")
 	}
 }
+
+// The demo path must not ship a runner that degrades. Both known causes look
+// identical in the output, so the report has to say what to do about it.
+func TestDegradedVerdictTellsTheReaderWhatToDo(t *testing.T) {
+	a := mkAnalysis()
+	a.Run = "shadow"
+	a.Execution.Selected = []string{"tests/test_service.py::test_rounding"}
+	a.Execution.Degraded = true
+
+	out := render(t, a, TableOptions{UTF8: true})
+	if !strings.Contains(out, "no per-test ids") {
+		t.Fatalf("the table must say the verdict is suite level:\n%s", out)
+	}
+	if !strings.Contains(out, "add -v") {
+		t.Fatalf("the table must say what to do about it:\n%s", out)
+	}
+
+	packet := packetOf(t, a)
+	if !strings.Contains(packet, "Add `-v`") {
+		t.Fatalf("the packet must carry the same guidance:\n%s", packet)
+	}
+}

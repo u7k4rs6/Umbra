@@ -96,8 +96,23 @@ Exit codes: 0 completed, 2 the `--fail-on` condition was met, 1 runtime error.
 ```
 git clone https://github.com/u7k4rs6/Umbra && cd Umbra
 cd umbra/fixtures/app && ./setup.sh && cd ../../..
-entire umbra 0063443 --test "umbra/fixtures/app/.venv/bin/python -m pytest -v"
+. umbra/fixtures/app/.venv/bin/activate
+entire umbra 0063443 --test "pytest -v"
 ```
+
+That reports 8 probes selected and 5 cracked, naming `test_empty_is_zero`,
+`test_negative` and `test_rounding` in `tests/test_service.py` and both refund
+tests in `tests/test_refunds.py`, with a full sweep and 0 leaks.
+
+**The runner has to be on `PATH`, which is why the venv is activated.** Umbra
+runs the tests in a detached worktree of the commit, not in your working tree,
+so a runner given as a path relative to the repository root does not resolve
+from there, and the virtualenv is not in the worktree at all because it is not
+committed. A runner that cannot start produces no output, and `verify` then has
+nothing to parse: the verdict degrades to a suite-level pass or fail and no
+test is named. That looks exactly like the `pytest -q` failure and has a
+different cause. Activating the venv, or giving an absolute path to the
+interpreter, avoids both.
 
 The fixture is seeded. It is built to produce lit, penumbra and umbra nodes and
 a signature change that breaks tests in two files the session never opened. The
