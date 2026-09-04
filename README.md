@@ -176,6 +176,10 @@ skips it and the header says the selection is unaudited.
   tool records gets the unknown state.
 - A destructive `--test` runner does what it says. The echo before execution is
   the only guard.
+- The examined set is built from the session's tool activity. An agent that
+  reads and edits through shell commands rather than through file tools leaves
+  no read or edit event, so its work looks unexamined. Umbra found this in its
+  own build; the report is in `umbra/site/self/`.
 
 ## Not built, and why
 
@@ -186,6 +190,42 @@ output). Mutability analysis of callees (nothing in the documented surface
 provides it). Coverage deltas (needs coverage tooling in the target
 repository). Trend dashboards. Cross-repository dependents. And Umbra never
 writes code: it shows the shadow, it does not fix it.
+
+## The final review
+
+The last step of the build was a semantic-diff review of the whole thing:
+
+```
+entire graph diff --base <first commit> --head HEAD --repo .
+```
+
+It found something a green test run could not. The graph reported **no symbols
+at all** for `umbra/cmd`, and the cause was a `.gitignore` pattern of my own
+making: an unanchored `entire-umbra`, written to ignore the built binary, also
+matches the source directory `cmd/entire-umbra/`. Every file in the command
+package was untracked. Tests passed locally the whole time, because the files
+were on disk; a fresh clone of this repository would not have built. The
+patterns are anchored now, the package is committed, and a clone is checked to
+build and test green.
+
+Beyond that the diff is 1014 added entities, no signature changes, and no
+function without an incoming edge, which is what a build that only ever added
+code should look like.
+
+Then Umbra was run on the session that built it. On the commit where it changed
+its own `shadow.Build`, all twelve dependents came back umbra, including every
+scenario test. That reading is correct, and the reason is the most useful thing
+this project learned about itself: the change was made with a shell command
+rather than the editing tool, so the session produced no read and no edit event
+for that file. **Umbra's examined set is built from tool activity, so an agent
+that edits through the shell leaves no trace Umbra can see.** It is the same
+shape of blind spot the product exists to find, pointed at the product. The
+report is in `umbra/site/self/`.
+
+Running the report on itself also found two bugs in the scrubber, both fixed:
+paths from outside the repository were reaching the timeline through search
+output, and the base64 heuristic was redacting git object ids and worktree
+paths, which is exactly the text a reader needs in order to check a line.
 
 ## Prior work and AI disclosure
 

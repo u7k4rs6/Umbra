@@ -3,6 +3,7 @@ package transcript
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -232,6 +233,54 @@ func TestFilesListsEverythingTouched(t *testing.T) {
 		}
 		if !found {
 			t.Fatalf("expected %s in %v", w, files)
+		}
+	}
+}
+
+// A search that happens to list files elsewhere on the machine must not put
+// those paths in the report. They can never match a symbol in the field, and
+// carrying them out would leak the layout of the machine the session ran on.
+func TestPathsOutsideTheRepositoryAreDropped(t *testing.T) {
+	blob := []byte(
+		`{"type":"assistant","cwd":"/repo","timestamp":"2026-09-05T10:00:00.000Z","message":{"content":[{"type":"tool_use","id":"a","name":"Bash","input":{"command":"find /home"}}]}}` + "\n" +
+			`{"type":"user","cwd":"/repo","timestamp":"2026-09-05T10:00:01.000Z","message":{"content":[{"type":"tool_result","tool_use_id":"a","content":"/home/someone/other/HANDOFF.md\n/home/someone/Downloads/notes.md\napp/service.py\n"}]}}` + "\n")
+
+	s, err := ClaudeCode{RepoRoot: "/repo"}.Parse(blob)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	for _, e := range s.Events {
+		for _, p := range e.Paths {
+			if strings.HasPrefix(p, "/") || strings.Contains(p, "someone") {
+				t.Fatalf("a path outside the repository reached the events: %q", p)
+			}
+		}
+	}
+	// The one path that is inside the repository survives.
+	found := false
+	for _, e := range s.Events {
+		for _, p := range e.Paths {
+			if p == "app/service.py" {
+				found = true
+			}
+		}
+	}
+	if !found {
+		t.Fatal("a repository path should still be recovered")
+	}
+}
+
+// A read of a file outside the repository is outside the field, so it produces
+// no event rather than an event nothing can match.
+func TestReadOutsideTheRepositoryProducesNoEvent(t *testing.T) {
+	blob := []byte(`{"type":"assistant","cwd":"/repo","timestamp":"2026-09-05T10:00:00.000Z","message":{"content":[{"type":"tool_use","id":"a","name":"Read","input":{"file_path":"/etc/passwd"}}]}}` + "\n")
+	s, err := ClaudeCode{RepoRoot: "/repo"}.Parse(blob)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	for _, e := range s.Events {
+		if e.Kind == Read {
+			t.Fatalf("expected no read event, got %q", e.Path)
 		}
 	}
 }

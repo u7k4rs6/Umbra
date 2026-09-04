@@ -1,0 +1,4156 @@
+{
+  "umbra_version": "0.1.0",
+  "checkpoint": {
+    "id": "01M1PY8KZ28HS7TG95ZVKQSZ2W",
+    "commit": "13adcddaa88b36e7b6df56bb0d5f183be3957a30",
+    "parent": "31fa246c254c447e3672286112684632bd7a657b",
+    "agent": "Claude Code",
+    "route": "trailer",
+    "session_ids": [
+      "8017734d-cdf6-4a18-b2f8-f4b5f637ec35"
+    ]
+  },
+  "inputs": {
+    "adapter": "claude-code",
+    "depth": 2,
+    "test_runner": "",
+    "run": "none",
+    "audit": true,
+    "history": false,
+    "snippets": false,
+    "relations_used": [
+      "ACCESSES",
+      "ASYNC_CALLS",
+      "CALLS",
+      "DATA_FLOWS",
+      "EXTENDS",
+      "FILE_CHANGES_WITH",
+      "IMPLEMENTS",
+      "IMPORTS",
+      "INHERITS",
+      "OVERRIDES",
+      "PARAM_TYPE",
+      "READS_FIELD",
+      "RETURNS_TYPE",
+      "TESTS",
+      "USES_TYPE",
+      "WRITES_FIELD"
+    ],
+    "relations_ignored": [
+      "CONFIGURES",
+      "CONSTRUCTS",
+      "EMITS",
+      "HANDLES_GRAPHQL",
+      "HANDLES_GRPC",
+      "HANDLES_ROUTE",
+      "HANDLES_TOOL",
+      "HANDLES_TRPC",
+      "HTTP_CALLS",
+      "LISTENS_ON",
+      "RESOURCE_DEPENDS_ON",
+      "SIMILAR_TO"
+    ],
+    "channels": {
+      "callsites": true,
+      "graph": true,
+      "mentions": true,
+      "reads": true
+    }
+  },
+  "session_said": "Let me verify no network requests at all, then commit phase 9.",
+  "session_said_from": "the last thing the agent said, because Entire stored no summary",
+  "notes": [
+    "16 changed entity(s) in languages the graph cannot resolve calls for were not treated as sources"
+  ],
+  "sources": [
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:drawField",
+      "name": "drawField",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        36,
+        139
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:boot",
+      "name": "boot",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        508,
+        527
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 0
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:tierRank",
+      "name": "tierRank",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        729,
+        732
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:stateAt",
+      "name": "stateAt",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        736,
+        770
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:consider",
+      "name": "consider",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        742,
+        744
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireReplay",
+      "name": "wireReplay",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        782,
+        896
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:render",
+      "name": "render",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        822,
+        833
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 16
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:goTo",
+      "name": "goTo",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        835,
+        838
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 3
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:step",
+      "name": "step",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        840,
+        845
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 4
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:play",
+      "name": "play",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        847,
+        855
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:pause",
+      "name": "pause",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        857,
+        862
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 3
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:tick",
+      "name": "tick",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        864,
+        871
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 6
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:anyEvidence",
+      "name": "anyEvidence",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        898,
+        904
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf",
+      "name": "indexOf",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        906,
+        912
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 8
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:eventAt",
+      "name": "eventAt",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        914,
+        916
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:describe",
+      "name": "describe",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        919,
+        939
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:applyState",
+      "name": "applyState",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        943,
+        973
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:rewireNodes",
+      "name": "rewireNodes",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        975,
+        984
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireSpotlight",
+      "name": "wireSpotlight",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1055,
+        1080
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:toViewBox",
+      "name": "toViewBox",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1082,
+        1089
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:revealNear",
+      "name": "revealNear",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1093,
+        1098
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireKeyboard",
+      "name": "wireKeyboard",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1103,
+        1132
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:focusAt",
+      "name": "focusAt",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1109,
+        1120
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:toggleLabels",
+      "name": "toggleLabels",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        1134,
+        1142
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+      "name": "Build",
+      "file": "umbra/internal/shadow/build.go",
+      "span": [
+        27,
+        91
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 4
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:AddCoChange",
+      "name": "AddCoChange",
+      "file": "umbra/internal/shadow/build.go",
+      "span": [
+        96,
+        150
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 0
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:exposuresFor",
+      "name": "exposuresFor",
+      "file": "umbra/internal/shadow/build.go",
+      "span": [
+        185,
+        196
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsNode",
+      "name": "jsNode",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        20,
+        24
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 3
+    },
+    {
+      "id": "",
+      "name": "jsNode.ID",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        21,
+        21
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 46
+    },
+    {
+      "id": "",
+      "name": "jsNode.Name",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        22,
+        22
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 84
+    },
+    {
+      "id": "",
+      "name": "jsNode.Span",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        23,
+        23
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 26
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsExposure",
+      "name": "jsExposure",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        26,
+        30
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 3
+    },
+    {
+      "id": "",
+      "name": "jsExposure.Seq",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        27,
+        27
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 33
+    },
+    {
+      "id": "",
+      "name": "jsExposure.Kind",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        28,
+        28
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 67
+    },
+    {
+      "id": "",
+      "name": "jsExposure.Range",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        29,
+        29
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 20
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsCase",
+      "name": "jsCase",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        32,
+        39
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 1
+    },
+    {
+      "id": "",
+      "name": "jsCase.Node",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        33,
+        33
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 51
+    },
+    {
+      "id": "",
+      "name": "jsCase.Exposures",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        34,
+        34
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 9
+    },
+    {
+      "id": "",
+      "name": "jsCase.T0",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        35,
+        35
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 4
+    },
+    {
+      "id": "",
+      "name": "jsCase.HasAny",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        36,
+        36
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "",
+      "name": "jsCase.WantState",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        37,
+        37
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "",
+      "name": "jsCase.WantTier",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        38,
+        38
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 2
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:function:TestJavaScriptMirrorsTheGoClassifier",
+      "name": "TestJavaScriptMirrorsTheGoClassifier",
+      "file": "umbra/internal/shadow/jsmirror_test.go",
+      "span": [
+        51,
+        154
+      ],
+      "change": "added",
+      "weight": 0.3,
+      "dependents": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+      "name": "runScenario",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        87,
+        125
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario"
+      ],
+      "state": "umbra",
+      "modifiers": [],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 114,
+      "dependents": 17,
+      "score": 15.51,
+      "factors": {
+        "dependents": 5.17,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioBeacon",
+      "name": "TestScenarioBeacon",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        252,
+        309
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioBeacon"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 285,
+      "dependents": 1,
+      "score": 9,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:hasMod",
+      "name": "hasMod",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        210,
+        212
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf"
+      ],
+      "relation": "data flow",
+      "depth": 1,
+      "path": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf",
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:hasMod"
+      ],
+      "state": "umbra",
+      "modifiers": [],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/report/assets/umbra.js",
+      "call_site": 0,
+      "dependents": 5,
+      "score": 7.17,
+      "factors": {
+        "dependents": 3.585,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 2,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:nodeGroup",
+      "name": "nodeGroup",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        253,
+        325
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf"
+      ],
+      "relation": "data flow",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf",
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:hasMod",
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:nodeGroup"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/report/assets/umbra.js",
+      "call_site": 0,
+      "dependents": 5,
+      "score": 7.17,
+      "factors": {
+        "dependents": 3.585,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 2,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:styleEdge",
+      "name": "styleEdge",
+      "file": "umbra/internal/report/assets/umbra.js",
+      "span": [
+        189,
+        208
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf"
+      ],
+      "relation": "data flow",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf",
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:hasMod",
+        "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:styleEdge"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/report/assets/umbra.js",
+      "call_site": 0,
+      "dependents": 4,
+      "score": 6.644,
+      "factors": {
+        "dependents": 3.322,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 2,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioClassic",
+      "name": "TestScenarioClassic",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        158,
+        169
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioClassic"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 159,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEcho",
+      "name": "TestScenarioEcho",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        208,
+        216
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEcho"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 209,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEverythingLit",
+      "name": "TestScenarioEverythingLit",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        142,
+        155
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEverythingLit"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 143,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioLeak",
+      "name": "TestScenarioLeak",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        219,
+        249
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioLeak"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 220,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioNoReads",
+      "name": "TestScenarioNoReads",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        192,
+        205
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioNoReads"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 193,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPartialRead",
+      "name": "TestScenarioPartialRead",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        172,
+        178
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPartialRead"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 173,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPreChange",
+      "name": "TestScenarioPreChange",
+      "file": "umbra/internal/shadow/scenarios_test.go",
+      "span": [
+        181,
+        189
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario",
+        "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPreChange"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned umbra/internal/shadow/scenarios_test.go",
+      "call_site": 182,
+      "dependents": 1,
+      "score": 6,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    }
+  ],
+  "timeline": [
+    {
+      "seq": 3,
+      "ts": "2026-09-04T17:51:19Z",
+      "kind": "command",
+      "cmd": "pwd \u0026\u0026 echo \"--- ls ---\" \u0026\u0026 ls -la \u0026\u0026 echo \"--- git ---\" \u0026\u0026 git rev-parse --is-inside-work-tree 2\u003e\u00261 | head -5"
+    },
+    {
+      "seq": 5,
+      "ts": "2026-09-04T17:51:22Z",
+      "kind": "command",
+      "cmd": "find . -maxdepth 4 | head -80"
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-04T17:51:27Z",
+      "kind": "command",
+      "cmd": "echo \"--- entire ---\"; command -v entire || echo \"entire: NOT FOUND\" echo \"--- entire status ---\"; entire status 2\u003e\u00261 | ..."
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-04T17:51:34Z",
+      "kind": "command",
+      "cmd": "cd \"\u003crepo\u003e/files (1)\" \u0026\u0026 wc -l docs/*.md echo \"=== searching home for HANDOFF/KICKOFF/entire-graph ===\" find \u003chome\u003e -max..."
+    },
+    {
+      "seq": 8,
+      "kind": "mention",
+      "symbols": [
+        "Umbra",
+        "files"
+      ]
+    },
+    {
+      "seq": 9,
+      "ts": "2026-09-04T17:51:41Z",
+      "kind": "command",
+      "cmd": "head -20 \u003chome\u003e/Downloads/HANDOFF.md; echo \"=====KICKOFF=====\"; head -15 \u003chome\u003e/Downloads/KICKOFF_PROMPT.md; echo \"=====..."
+    },
+    {
+      "seq": 10,
+      "kind": "mention",
+      "symbols": [
+        "Umbra",
+        "files"
+      ]
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-04T17:51:50Z",
+      "kind": "command",
+      "cmd": "cd \"\u003crepo\u003e/files (1)/docs\" \u0026\u0026 for f in PRD.md ARCHITECTURE.md SECURITY_AND_ACCESS.md FRONTEND_SPEC.md; do echo \"===== $f..."
+    },
+    {
+      "seq": 12,
+      "ts": "2026-09-04T17:51:59Z",
+      "kind": "command",
+      "cmd": "ls \u003chome\u003e/.local/bin 2\u003e/dev/null | head -20; echo \"--- npm global ---\"; npm ls -g --depth=0 2\u003e/dev/null | head -20; echo..."
+    },
+    {
+      "seq": 13,
+      "ts": "2026-09-04T17:52:02Z",
+      "kind": "quoted",
+      "paths": [
+        "clang-format-diff.py",
+        "coverage-3.14"
+      ]
+    },
+    {
+      "seq": 14,
+      "kind": "mention",
+      "symbols": [
+        "Build",
+        "File",
+        "Umbra",
+        "command",
+        "enabled",
+        "file",
+        "files",
+        "order",
+        "record",
+        "repo",
+        "status"
+      ]
+    },
+    {
+      "seq": 16,
+      "kind": "mention",
+      "symbols": [
+        "repo"
+      ]
+    },
+    {
+      "seq": 17,
+      "ts": "2026-09-04T17:54:44Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 echo \"--- gh ---\" \u0026\u0026 (command -v gh \u0026\u0026 gh auth status 2\u003e\u00261 | head -10) || echo \"gh: NOT FOUND\" echo \"--- gi..."
+    },
+    {
+      "seq": 18,
+      "ts": "2026-09-04T17:54:47Z",
+      "kind": "quoted",
+      "paths": [
+        "github.com",
+        "utkarshbahuguna10@gmail.com"
+      ]
+    },
+    {
+      "seq": 19,
+      "ts": "2026-09-04T17:54:57Z",
+      "kind": "command",
+      "cmd": "echo \"--- entireio/entire-graph ---\"; gh repo view entireio/entire-graph 2\u003e\u00261 | head -8 echo \"--- entireio org ---\"; gh ..."
+    },
+    {
+      "seq": 20,
+      "kind": "mention",
+      "symbols": [
+        "first",
+        "repo"
+      ]
+    },
+    {
+      "seq": 21,
+      "ts": "2026-09-04T17:55:12Z",
+      "kind": "command",
+      "cmd": "git init -q -b main \u0026\u0026 mkdir -p umbra/docs \u0026\u0026 cp \"files (1)/docs/\"*.md umbra/docs/ \u0026\u0026 rm -rf \"files (1)\" \u0026\u0026 ls -R . | he..."
+    },
+    {
+      "seq": 22,
+      "ts": "2026-09-04T17:55:14Z",
+      "kind": "quoted",
+      "paths": [
+        "ARCHITECTURE.md",
+        "FRONTEND_SPEC.md",
+        "PRD.md",
+        "SECURITY_AND_ACCESS.md"
+      ]
+    },
+    {
+      "seq": 23,
+      "ts": "2026-09-04T17:55:21Z",
+      "kind": "command",
+      "cmd": "cat \u003e README.md \u003c\u003c'EOF' # Umbra Umbra is a plugin for the Entire CLI that finds the code an AI agent's change affects bu..."
+    },
+    {
+      "seq": 24,
+      "ts": "2026-09-04T17:55:26Z",
+      "kind": "command",
+      "cmd": "gh repo create Umbra --private --source=. --remote=origin --push --description \"Finds the code an AI agent's change affe..."
+    },
+    {
+      "seq": 25,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "Repo"
+      ]
+    },
+    {
+      "seq": 26,
+      "ts": "2026-09-04T17:55:37Z",
+      "kind": "command",
+      "cmd": "echo \"--- cli releases ---\"; gh release list --repo entireio/cli --limit 5 2\u003e\u00261 | head echo \"--- latest assets ---\"; gh ..."
+    },
+    {
+      "seq": 27,
+      "ts": "2026-09-04T17:55:42Z",
+      "kind": "quoted",
+      "paths": [
+        "checksums.txt",
+        "entire_darwin_amd64.tar.gz",
+        "entire_darwin_arm64.tar.gz",
+        "entire_linux_amd64.tar.gz",
+        "entire_linux_arm64.tar.gz",
+        "entire_windows_amd64.zip",
+        "entire_windows_arm64.zip",
+        "v0.10.5"
+      ]
+    },
+    {
+      "seq": 29,
+      "ts": "2026-09-04T17:55:49Z",
+      "kind": "command",
+      "cmd": "cd /tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad 2\u003e/dev/null || cd /tmp gh..."
+    },
+    {
+      "seq": 30,
+      "ts": "2026-09-04T17:55:51Z",
+      "kind": "quoted",
+      "paths": [
+        "checksums.txt",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_darwin_amd64.tar.gz",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_darwin_arm64.tar.gz",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_linux_amd64.tar.gz",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_linux_arm64.tar.gz",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_windows_amd64.zip",
+        "entire-graph_0.4.1-nightly.202609030616.ddcebd05_windows_arm64.zip",
+        "v0.4.1-nightly.202609030616.ddcebd05"
+      ]
+    },
+    {
+      "seq": 31,
+      "ts": "2026-09-04T17:56:03Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad mkdir -p \"$SP/dl\" ..."
+    },
+    {
+      "seq": 32,
+      "ts": "2026-09-04T17:56:24Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad install -m755 \"$SP..."
+    },
+    {
+      "seq": 33,
+      "ts": "2026-09-04T17:56:26Z",
+      "kind": "quoted",
+      "paths": [
+        "v0.4.1-nightly.202609030616.ddcebd05"
+      ]
+    },
+    {
+      "seq": 34,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "enabled"
+      ]
+    },
+    {
+      "seq": 35,
+      "ts": "2026-09-04T17:56:30Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\" echo \"--- top-level commands ---\"; entire --help 2\u003e\u00261 | sed -n '1,60p'"
+    },
+    {
+      "seq": 36,
+      "ts": "2026-09-04T17:56:34Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire auth status 2\u003e\u00261 | head -15"
+    },
+    {
+      "seq": 37,
+      "ts": "2026-09-04T17:56:41Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire enable --help 2\u003e\u00261 | head -40"
+    },
+    {
+      "seq": 39,
+      "ts": "2026-09-04T17:56:50Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire enable --agent claude-code --telemetry=false 2\u003e\u00261 | tail -30 echo..."
+    },
+    {
+      "seq": 40,
+      "ts": "2026-09-04T17:56:52Z",
+      "kind": "quoted",
+      "paths": [
+        ".entire/settings.json"
+      ]
+    },
+    {
+      "seq": 41,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "status"
+      ]
+    },
+    {
+      "seq": 42,
+      "ts": "2026-09-04T17:56:57Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- capabilities ---\"; entire graph capabilities --json 2\u003e\u00261 | hea..."
+    },
+    {
+      "seq": 43,
+      "kind": "mention",
+      "symbols": [
+        "JSON",
+        "Now",
+        "now",
+        "status"
+      ]
+    },
+    {
+      "seq": 44,
+      "ts": "2026-09-04T17:57:14Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/docs \u0026\u0026 cat PRD.md"
+    },
+    {
+      "seq": 45,
+      "ts": "2026-09-04T17:57:16Z",
+      "kind": "command",
+      "cmd": "cat ARCHITECTURE.md"
+    },
+    {
+      "seq": 46,
+      "ts": "2026-09-04T17:57:18Z",
+      "kind": "command",
+      "cmd": "cat SECURITY_AND_ACCESS.md"
+    },
+    {
+      "seq": 47,
+      "ts": "2026-09-04T17:57:21Z",
+      "kind": "command",
+      "cmd": "cat FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 48,
+      "ts": "2026-09-04T17:57:25Z",
+      "kind": "command",
+      "cmd": "grep -n '^#\\{1,3\\} ' FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 49,
+      "ts": "2026-09-04T17:57:29Z",
+      "kind": "command",
+      "cmd": "sed -n '15,51p;303,347p' FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 50,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 51,
+      "ts": "2026-09-04T17:57:32Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e; entire graph agent-guide 2\u003e\u00261 | head -80"
+    },
+    {
+      "seq": 52,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 53,
+      "ts": "2026-09-04T17:57:58Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e mkdir -p umbra/fixtures/app/app umbra/fixtures/app/tests cat \u003e umbra/fixtures/app/app/__init__.py \u003c\u003c'PY..."
+    },
+    {
+      "seq": 54,
+      "ts": "2026-09-04T17:58:13Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e app/service.py \u003c\u003c'PY' \"\"\"Order totals and the rounding rules that go with them..."
+    },
+    {
+      "seq": 55,
+      "ts": "2026-09-04T17:58:34Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e tests/__init__.py \u003c\u003c'PY' PY cat \u003e tests/test_service.py \u003c\u003c'PY' \"\"\"Totals and r..."
+    },
+    {
+      "seq": 56,
+      "ts": "2026-09-04T17:58:35Z",
+      "kind": "quoted",
+      "paths": [
+        "__init__.py",
+        "test_api.py",
+        "test_models.py",
+        "test_refunds.py",
+        "test_service.py"
+      ]
+    },
+    {
+      "seq": 57,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "pytest"
+      ]
+    },
+    {
+      "seq": 58,
+      "ts": "2026-09-04T17:58:42Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e pytest.ini \u003c\u003c'INI' [pytest] testpaths = tests python_files = test_*.py python_..."
+    },
+    {
+      "seq": 59,
+      "ts": "2026-09-04T17:58:54Z",
+      "kind": "command",
+      "cmd": "./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -20"
+    },
+    {
+      "seq": 61,
+      "ts": "2026-09-04T17:59:09Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: fixture app for the probe A small Python ord..."
+    },
+    {
+      "seq": 62,
+      "ts": "2026-09-04T17:59:15Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- checkpoint list ---\"; entire checkpoint list --json 2\u003e\u00261 | hea..."
+    },
+    {
+      "seq": 63,
+      "kind": "mention",
+      "symbols": [
+        "checkpoints",
+        "hooks"
+      ]
+    },
+    {
+      "seq": 64,
+      "ts": "2026-09-04T17:59:28Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e echo \"--- .entire ---\"; ls -la .entire/ 2\u003e/dev/null; echo; cat .entire/settings.json 2\u003e/dev/null | head -40 ec..."
+    },
+    {
+      "seq": 65,
+      "ts": "2026-09-04T17:59:34Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e; ls .git/hooks/ | grep -v sample; echo \"--- post-commit ---\"; cat .git/hooks/post-commit 2\u003e/dev/null | head -2..."
+    },
+    {
+      "seq": 66,
+      "ts": "2026-09-04T17:59:42Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- last commit body ---\"; git log -1 --format=%B echo \"--- prepar..."
+    },
+    {
+      "seq": 67,
+      "ts": "2026-09-04T17:59:47Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import --help 2\u003e\u00261 | head -30"
+    },
+    {
+      "seq": 68,
+      "kind": "mention",
+      "symbols": [
+        "first",
+        "hooks",
+        "run"
+      ]
+    },
+    {
+      "seq": 69,
+      "ts": "2026-09-04T17:59:56Z",
+      "kind": "read",
+      "path": "umbra/fixtures/app/app/service.py"
+    },
+    {
+      "seq": 70,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "compute_total"
+      ]
+    },
+    {
+      "seq": 71,
+      "ts": "2026-09-04T18:00:03Z",
+      "kind": "read",
+      "path": "umbra/fixtures/app/app/api.py",
+      "range": [
+        1,
+        12
+      ]
+    },
+    {
+      "seq": 73,
+      "ts": "2026-09-04T18:00:24Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" --include=*.py ."
+    },
+    {
+      "seq": 74,
+      "ts": "2026-09-04T18:00:26Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" app tests"
+    },
+    {
+      "seq": 75,
+      "ts": "2026-09-04T18:00:26Z",
+      "kind": "quoted",
+      "paths": [
+        "app/api.py",
+        "app/refunds.py",
+        "app/service.py",
+        "tests/test_service.py"
+      ]
+    },
+    {
+      "seq": 76,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/app/refunds.py"
+      ],
+      "symbols": [
+        "Now",
+        "apply_refund",
+        "files"
+      ]
+    },
+    {
+      "seq": 77,
+      "ts": "2026-09-04T18:01:05Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/service.py"
+    },
+    {
+      "seq": 78,
+      "ts": "2026-09-04T18:01:07Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 79,
+      "ts": "2026-09-04T18:01:11Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 80,
+      "ts": "2026-09-04T18:01:13Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 81,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "calls"
+      ]
+    },
+    {
+      "seq": 82,
+      "ts": "2026-09-04T18:01:16Z",
+      "kind": "command",
+      "cmd": "./.venv/bin/python -m pytest tests/test_api.py 2\u003e\u00261 | tail -8"
+    },
+    {
+      "seq": 83,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/tests/test_api.py"
+      ],
+      "symbols": [
+        "calls",
+        "message"
+      ]
+    },
+    {
+      "seq": 84,
+      "ts": "2026-09-04T18:01:25Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"make the tax rate explicit on compute_total compute..."
+    },
+    {
+      "seq": 85,
+      "ts": "2026-09-04T18:01:30Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 ./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -12"
+    },
+    {
+      "seq": 86,
+      "ts": "2026-09-04T18:01:32Z",
+      "kind": "quoted",
+      "paths": [
+        "tests/test_service.py"
+      ]
+    },
+    {
+      "seq": 87,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/tests/test_api.py"
+      ],
+      "symbols": [
+        "Now",
+        "files"
+      ]
+    },
+    {
+      "seq": 88,
+      "ts": "2026-09-04T18:01:38Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --help 2\u003e\u00261 | head -30"
+    },
+    {
+      "seq": 89,
+      "ts": "2026-09-04T18:01:42Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --dry-run 2\u003e\u00261 | head -20"
+    },
+    {
+      "seq": 90,
+      "ts": "2026-09-04T18:01:47Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code 2\u003e\u00261 | head -20 echo \"=== checkpoint list ===\"..."
+    },
+    {
+      "seq": 91,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 92,
+      "ts": "2026-09-04T18:01:57Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 93,
+      "ts": "2026-09-04T18:02:03Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 94,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 95,
+      "ts": "2026-09-04T18:02:10Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"--- tool_use names ..."
+    },
+    {
+      "seq": 96,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "Paths"
+      ]
+    },
+    {
+      "seq": 97,
+      "ts": "2026-09-04T18:02:18Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"--- Edit inputs (ke..."
+    },
+    {
+      "seq": 98,
+      "kind": "mention",
+      "symbols": [
+        "All",
+        "Now",
+        "path"
+      ]
+    },
+    {
+      "seq": 99,
+      "ts": "2026-09-04T18:02:27Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"--- tool_result con..."
+    },
+    {
+      "seq": 100,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/app/refunds.py"
+      ],
+      "symbols": [
+        "Now",
+        "path",
+        "summary"
+      ]
+    },
+    {
+      "seq": 101,
+      "ts": "2026-09-04T18:02:38Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== --short ===\"; entire checkpoint explain b20f84567474 --short 2..."
+    },
+    {
+      "seq": 102,
+      "kind": "mention",
+      "symbols": [
+        "checkpoints",
+        "summary"
+      ]
+    },
+    {
+      "seq": 103,
+      "ts": "2026-09-04T18:02:54Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 104,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "record"
+      ]
+    },
+    {
+      "seq": 105,
+      "ts": "2026-09-04T18:03:01Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"=== record_type val..."
+    },
+    {
+      "seq": 106,
+      "kind": "mention",
+      "symbols": [
+        "IDs",
+        "Now",
+        "Symbols",
+        "relation"
+      ]
+    },
+    {
+      "seq": 107,
+      "ts": "2026-09-04T18:03:09Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"=== CALLS relations..."
+    },
+    {
+      "seq": 108,
+      "ts": "2026-09-04T18:03:15Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad echo \"=== CALLS relations..."
+    },
+    {
+      "seq": 109,
+      "kind": "mention",
+      "symbols": [
+        "All",
+        "Now",
+        "detail",
+        "file",
+        "name",
+        "path"
+      ]
+    },
+    {
+      "seq": 110,
+      "ts": "2026-09-04T18:03:24Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== impact --help ===\"; entire graph impact --help 2\u003e\u00261 | head -25"
+    },
+    {
+      "seq": 111,
+      "ts": "2026-09-04T18:03:28Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== impact text ===\"; entire graph impact --symbol compute_total -..."
+    },
+    {
+      "seq": 112,
+      "kind": "mention",
+      "symbols": [
+        "JSON",
+        "handle_order"
+      ]
+    },
+    {
+      "seq": 113,
+      "ts": "2026-09-04T18:03:36Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire graph impact --symbol compute_total --repo . --format json 2\u003e\u00261 |..."
+    },
+    {
+      "seq": 114,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 115,
+      "ts": "2026-09-04T18:03:43Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== graph subcommands ===\"; entire graph --help 2\u003e\u00261 | sed -n '/Av..."
+    },
+    {
+      "seq": 116,
+      "ts": "2026-09-04T18:03:47Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e; entire graph --help 2\u003e\u00261 | head -50"
+    },
+    {
+      "seq": 117,
+      "ts": "2026-09-04T18:03:52Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== graph checkpoint b20f84567474 ===\"; entire graph checkpoint b2..."
+    },
+    {
+      "seq": 118,
+      "kind": "mention",
+      "symbols": [
+        "JSON",
+        "body",
+        "checkpoints"
+      ]
+    },
+    {
+      "seq": 119,
+      "ts": "2026-09-04T18:04:00Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== commit --help ===\"; entire graph commit --help 2\u003e\u00261 | head -20..."
+    },
+    {
+      "seq": 120,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "sources"
+      ]
+    },
+    {
+      "seq": 121,
+      "ts": "2026-09-04T18:04:07Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire graph verify --help 2\u003e\u00261 | head -40"
+    },
+    {
+      "seq": 122,
+      "ts": "2026-09-04T18:04:12Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== verify on fixture, selected node IDs ===\" entire graph verify ..."
+    },
+    {
+      "seq": 124,
+      "ts": "2026-09-04T18:04:25Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 125,
+      "ts": "2026-09-04T18:04:27Z",
+      "kind": "quoted",
+      "paths": [
+        "pytest.ini",
+        "requirements.txt",
+        "setup.sh"
+      ]
+    },
+    {
+      "seq": 126,
+      "ts": "2026-09-04T18:04:32Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 127,
+      "kind": "mention",
+      "symbols": [
+        "pytest"
+      ]
+    },
+    {
+      "seq": 128,
+      "ts": "2026-09-04T18:04:45Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 129,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "head",
+        "pytest",
+        "run"
+      ]
+    },
+    {
+      "seq": 130,
+      "ts": "2026-09-04T18:04:56Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 131,
+      "kind": "mention",
+      "symbols": [
+        "Note",
+        "file"
+      ]
+    },
+    {
+      "seq": 132,
+      "ts": "2026-09-04T18:05:09Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 133,
+      "kind": "mention",
+      "symbols": [
+        "All"
+      ]
+    },
+    {
+      "seq": 134,
+      "ts": "2026-09-04T18:05:21Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e cat \u003e ~/.local/bin/entire-umbraprobe \u003c\u003c'SH' #!/bin/sh echo \"ARGS: $*\" ec..."
+    },
+    {
+      "seq": 136,
+      "ts": "2026-09-04T18:05:32Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 137,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/ARCHITECTURE.md"
+      ],
+      "symbols": [
+        "file"
+      ]
+    },
+    {
+      "seq": 138,
+      "ts": "2026-09-04T18:05:53Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f..."
+    },
+    {
+      "seq": 139,
+      "ts": "2026-09-04T18:05:57Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"=== impact on the Open-questions section ===\" entire graph impact ..."
+    },
+    {
+      "seq": 140,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/ARCHITECTURE.md"
+      ],
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 141,
+      "ts": "2026-09-04T18:06:58Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/docs python3 - \u003c\u003c'PYEOF' import io path = \"ARCHITECTURE.md\" text = io.open(path, encoding=\"utf-8\").read(..."
+    },
+    {
+      "seq": 143,
+      "ts": "2026-09-04T18:07:11Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 1 probe findings and degradations (tes..."
+    },
+    {
+      "seq": 144,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "Runner"
+      ]
+    },
+    {
+      "seq": 145,
+      "ts": "2026-09-04T18:07:33Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra mkdir -p cmd/entire-umbra internal/runner internal/checkpoint internal/transcript internal/graph ..."
+    },
+    {
+      "seq": 146,
+      "ts": "2026-09-04T18:07:46Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/runner cat \u003e runner.go \u003c\u003c'EOF' // Package runner is the single boundary between Umbra an..."
+    },
+    {
+      "seq": 147,
+      "ts": "2026-09-04T18:07:59Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/runner cat \u003e exec.go \u003c\u003c'EOF' package runner import ( \"bytes\" \"context\" \"os\" \"os/exec\" \"s..."
+    },
+    {
+      "seq": 148,
+      "ts": "2026-09-04T18:08:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/runner cat \u003e record.go \u003c\u003c'EOF' package runner import ( \"context\" \"encoding/json\" \"fmt\" \"..."
+    },
+    {
+      "seq": 149,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 150,
+      "ts": "2026-09-04T18:09:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e resolve.go \u003c\u003c'EOF' // Package checkpoint turns whatever the user typed ..."
+    },
+    {
+      "seq": 151,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 152,
+      "ts": "2026-09-04T18:09:52Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e worktree.go \u003c\u003c'EOF' package checkpoint import ( \"context\" \"fmt\" \"os\" \"p..."
+    },
+    {
+      "seq": 153,
+      "ts": "2026-09-04T18:10:11Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e fetch.go \u003c\u003c'EOF' package checkpoint import ( \"context\" \"fmt\" \"strings\" ..."
+    },
+    {
+      "seq": 154,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 155,
+      "ts": "2026-09-04T18:10:55Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e resolve_test.go \u003c\u003c'EOF' package checkpoint import ( \"context\" \"testing\"..."
+    },
+    {
+      "seq": 156,
+      "ts": "2026-09-04T18:10:59Z",
+      "kind": "quoted",
+      "paths": [
+        "resolve_test.go"
+      ]
+    },
+    {
+      "seq": 157,
+      "kind": "mention",
+      "symbols": [
+        "ParseListing"
+      ]
+    },
+    {
+      "seq": 158,
+      "ts": "2026-09-04T18:11:18Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint python3 - \u003c\u003c'PYEOF' import io p = \"resolve.go\" s = io.open(p, encoding=\"utf-8..."
+    },
+    {
+      "seq": 159,
+      "ts": "2026-09-04T18:11:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e fetch_test.go \u003c\u003c'EOF' package checkpoint import \"testing\" // Real outpu..."
+    },
+    {
+      "seq": 160,
+      "ts": "2026-09-04T18:11:58Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/runner cat \u003e record_test.go \u003c\u003c'EOF' package runner import ( \"context\" \"os\" \"path/filepat..."
+    },
+    {
+      "seq": 161,
+      "ts": "2026-09-04T18:12:20Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint cat \u003e worktree_test.go \u003c\u003c'EOF' package checkpoint import ( \"context\" \"path/fi..."
+    },
+    {
+      "seq": 162,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 163,
+      "ts": "2026-09-04T18:12:43Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e options.go \u003c\u003c'EOF' package main import ( \"fmt\" \"strings\" ) // Version is s..."
+    },
+    {
+      "seq": 164,
+      "ts": "2026-09-04T18:13:09Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e main.go \u003c\u003c'EOF' // Command entire-umbra finds the code an agent's change a..."
+    },
+    {
+      "seq": 165,
+      "ts": "2026-09-04T18:13:35Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e options_test.go \u003c\u003c'EOF' package main import ( \"reflect\" \"strings\" \"testing..."
+    },
+    {
+      "seq": 166,
+      "kind": "mention",
+      "symbols": [
+        "repo"
+      ]
+    },
+    {
+      "seq": 167,
+      "ts": "2026-09-04T18:13:44Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 168,
+      "kind": "mention",
+      "symbols": [
+        "first"
+      ]
+    },
+    {
+      "seq": 169,
+      "ts": "2026-09-04T18:14:08Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra python3 - \u003c\u003c'PYEOF' import io p = \"main.go\" s = io.open(p, encoding=\"utf-8\").rea..."
+    },
+    {
+      "seq": 170,
+      "ts": "2026-09-04T18:14:21Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e\u003e options_test.go \u003c\u003c'EOF' // The PRD's command surface is `entire umbra \u003cre..."
+    },
+    {
+      "seq": 171,
+      "ts": "2026-09-04T18:14:27Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 172,
+      "kind": "mention",
+      "symbols": [
+        "dir"
+      ]
+    },
+    {
+      "seq": 173,
+      "ts": "2026-09-04T18:14:40Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; cd \u003crepo\u003e/umbra go test ./... -v 2\u003e\u00261 | grep -c '^==..."
+    },
+    {
+      "seq": 174,
+      "ts": "2026-09-04T18:14:52Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e sed -i 's|^# Umbra$|# Umbra|' README.md git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 2..."
+    },
+    {
+      "seq": 176,
+      "ts": "2026-09-04T18:15:37Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e event.go \u003c\u003c'EOF' // Package transcript turns an agent's stored session ..."
+    },
+    {
+      "seq": 177,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 178,
+      "ts": "2026-09-04T18:16:17Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e claudecode.go \u003c\u003c'EOF' package transcript import ( \"bufio\" \"bytes\" \"enco..."
+    },
+    {
+      "seq": 179,
+      "ts": "2026-09-04T18:16:19Z",
+      "kind": "quoted",
+      "paths": [
+        "internal/transcript/claudecode.go"
+      ]
+    },
+    {
+      "seq": 180,
+      "kind": "mention",
+      "symbols": [
+        "pytest"
+      ]
+    },
+    {
+      "seq": 181,
+      "ts": "2026-09-04T18:16:35Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e paths.go \u003c\u003c'EOF' package transcript import ( \"path/filepath\" \"regexp\" \"..."
+    },
+    {
+      "seq": 182,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 183,
+      "ts": "2026-09-04T18:16:56Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e mentions.go \u003c\u003c'EOF' package transcript import ( \"regexp\" \"sort\" \"string..."
+    },
+    {
+      "seq": 184,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 185,
+      "ts": "2026-09-04T18:17:07Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra mkdir -p internal/transcript/testdata SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf..."
+    },
+    {
+      "seq": 186,
+      "kind": "mention",
+      "symbols": [
+        "record",
+        "repo"
+      ]
+    },
+    {
+      "seq": 187,
+      "ts": "2026-09-04T18:17:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript/testdata python3 - \u003c\u003c'PYEOF' import json, io CWD = \"/repo\" SID = \"0000-sessio..."
+    },
+    {
+      "seq": 188,
+      "ts": "2026-09-04T18:18:03Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e claudecode_test.go \u003c\u003c'EOF' package transcript import ( \"os\" \"path/filep..."
+    },
+    {
+      "seq": 189,
+      "kind": "mention",
+      "symbols": [
+        "All",
+        "Now",
+        "first"
+      ]
+    },
+    {
+      "seq": 190,
+      "ts": "2026-09-04T18:18:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/transcript cat \u003e mentions_test.go \u003c\u003c'EOF' package transcript import \"testing\" func vocab..."
+    },
+    {
+      "seq": 191,
+      "ts": "2026-09-04T18:18:36Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; cd \u003crepo\u003e/umbra go test ./... 2\u003e\u00261 | tail -6 N=$(go ..."
+    },
+    {
+      "seq": 192,
+      "ts": "2026-09-04T18:18:48Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 3 transcript adapter, mentions and tim..."
+    },
+    {
+      "seq": 193,
+      "kind": "mention",
+      "symbols": [
+        "read",
+        "relation"
+      ]
+    },
+    {
+      "seq": 194,
+      "ts": "2026-09-04T18:19:24Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e relations.go \u003c\u003c'EOF' // Package graph reads the code graph through documente..."
+    },
+    {
+      "seq": 195,
+      "ts": "2026-09-04T18:19:55Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e snapshot.go \u003c\u003c'EOF' package graph import ( \"bufio\" \"bytes\" \"encoding/json\" \"..."
+    },
+    {
+      "seq": 196,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "field",
+        "sources"
+      ]
+    },
+    {
+      "seq": 197,
+      "ts": "2026-09-04T18:20:23Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e bfs.go \u003c\u003c'EOF' package graph import \"sort\" // Reach is one dependent found b..."
+    },
+    {
+      "seq": 198,
+      "ts": "2026-09-04T18:20:57Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e sources.go \u003c\u003c'EOF' package graph import ( \"context\" \"encoding/json\" \"fmt\" \"s..."
+    },
+    {
+      "seq": 199,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 200,
+      "ts": "2026-09-04T18:21:27Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e impact.go \u003c\u003c'EOF' package graph import ( \"context\" \"encoding/json\" \"regexp\" ..."
+    },
+    {
+      "seq": 201,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 202,
+      "ts": "2026-09-04T18:21:41Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra mkdir -p internal/graph/testdata SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a1..."
+    },
+    {
+      "seq": 203,
+      "ts": "2026-09-04T18:21:53Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra # Capture graph commit and capabilities as testdata too. SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop..."
+    },
+    {
+      "seq": 204,
+      "ts": "2026-09-04T18:22:52Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e graph_test.go \u003c\u003c'EOF' package graph import ( \"os\" \"path/filepath\" \"testing\" ..."
+    },
+    {
+      "seq": 205,
+      "ts": "2026-09-04T18:23:08Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph python3 - \u003c\u003c'PYEOF' import io p = \"graph_test.go\" s = io.open(p, encoding=\"utf-8\")..."
+    },
+    {
+      "seq": 206,
+      "ts": "2026-09-04T18:23:21Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 4 field, relations, BFS, impact and so..."
+    },
+    {
+      "seq": 208,
+      "ts": "2026-09-04T18:24:55Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e state.go \u003c\u003c'EOF' // Package shadow decides what the session did and did not..."
+    },
+    {
+      "seq": 209,
+      "ts": "2026-09-04T18:26:54Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e examined.go \u003c\u003c'EOF' package shadow import ( \"sort\" \"github.com/u7k4rs6/Umbr..."
+    },
+    {
+      "seq": 210,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 211,
+      "ts": "2026-09-04T18:27:18Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e callsite.go \u003c\u003c'EOF' package shadow import ( \"bufio\" \"os\" \"path/filepath\" \"r..."
+    },
+    {
+      "seq": 212,
+      "kind": "mention",
+      "symbols": [
+        "Node",
+        "Now",
+        "type"
+      ]
+    },
+    {
+      "seq": 213,
+      "ts": "2026-09-04T18:27:53Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e rank.go \u003c\u003c'EOF' package shadow import ( \"math\" \"sort\" \"github.com/u7k4rs6/U..."
+    },
+    {
+      "seq": 214,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "field",
+        "nodes"
+      ]
+    },
+    {
+      "seq": 215,
+      "ts": "2026-09-04T18:28:18Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e build.go \u003c\u003c'EOF' package shadow import ( \"context\" \"regexp\" \"strings\" \"gith..."
+    },
+    {
+      "seq": 216,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 217,
+      "ts": "2026-09-04T18:29:05Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e classify_test.go \u003c\u003c'EOF' package shadow import ( \"testing\" \"github.com/u7k4..."
+    },
+    {
+      "seq": 218,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 219,
+      "ts": "2026-09-04T18:29:53Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e rank_test.go \u003c\u003c'EOF' package shadow import ( \"math\" \"testing\" \"github.com/u..."
+    },
+    {
+      "seq": 220,
+      "ts": "2026-09-04T18:30:22Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e callsite_test.go \u003c\u003c'EOF' package shadow import ( \"os\" \"path/filepath\" \"test..."
+    },
+    {
+      "seq": 221,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 222,
+      "ts": "2026-09-04T18:30:50Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e scrub.go \u003c\u003c'EOF' // Package report renders the analysis: the terminal table..."
+    },
+    {
+      "seq": 223,
+      "ts": "2026-09-04T18:31:09Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e model.go \u003c\u003c'EOF' package report import ( \"github.com/u7k4rs6/Umbra/umbra/in..."
+    },
+    {
+      "seq": 224,
+      "ts": "2026-09-04T18:31:50Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e table.go \u003c\u003c'EOF' package report import ( \"fmt\" \"io\" \"os\" \"strings\" \"github...."
+    },
+    {
+      "seq": 225,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 226,
+      "ts": "2026-09-04T18:32:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e analyze.go \u003c\u003c'EOF' package main import ( \"context\" \"fmt\" \"os\" \"sort\" \"stri..."
+    },
+    {
+      "seq": 227,
+      "ts": "2026-09-04T18:32:44Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra python3 - \u003c\u003c'PYEOF' import io p = \"main.go\" s = io.open(p, encoding=\"utf-8\").rea..."
+    },
+    {
+      "seq": 228,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "run"
+      ]
+    },
+    {
+      "seq": 229,
+      "ts": "2026-09-04T18:32:52Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" go build -trimpath -o ~/.loca..."
+    },
+    {
+      "seq": 230,
+      "kind": "mention",
+      "symbols": [
+        "apply_refund"
+      ]
+    },
+    {
+      "seq": 231,
+      "ts": "2026-09-04T18:33:48Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io # 1. Session.SentenceAfter: the agent's summing-up about the change..."
+    },
+    {
+      "seq": 232,
+      "kind": "mention",
+      "symbols": [
+        "file",
+        "read"
+      ]
+    },
+    {
+      "seq": 233,
+      "ts": "2026-09-04T18:34:02Z",
+      "kind": "read",
+      "path": "umbra/fixtures/app/tests/test_service.py",
+      "range": [
+        1,
+        5
+      ]
+    },
+    {
+      "seq": 234,
+      "ts": "2026-09-04T18:34:08Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e entire import claud..."
+    },
+    {
+      "seq": 235,
+      "kind": "mention",
+      "symbols": [
+        "checkpoints"
+      ]
+    },
+    {
+      "seq": 236,
+      "ts": "2026-09-04T18:34:24Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire checkpoint list --json 2\u003e\u00261 | python3 -c \" import json,sys t=sys...."
+    },
+    {
+      "seq": 237,
+      "kind": "mention",
+      "symbols": [
+        "New",
+        "checkpoints",
+        "hooks",
+        "now"
+      ]
+    },
+    {
+      "seq": 238,
+      "ts": "2026-09-04T18:34:37Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e for c in $(git log --format=%H -5); do echo \"--- $(git log -1 --format='..."
+    },
+    {
+      "seq": 239,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/ARCHITECTURE.md"
+      ],
+      "symbols": [
+        "IDs"
+      ]
+    },
+    {
+      "seq": 240,
+      "ts": "2026-09-04T18:35:30Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint python3 - \u003c\u003c'PYEOF' import io p = \"resolve.go\" s = io.open(p, encoding=\"utf-8..."
+    },
+    {
+      "seq": 241,
+      "ts": "2026-09-04T18:35:36Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; go test ./internal/checkpoint/ 2\u003e\u00261 | head -20"
+    },
+    {
+      "seq": 242,
+      "ts": "2026-09-04T18:35:39Z",
+      "kind": "quoted",
+      "paths": [
+        "resolve_test.go"
+      ]
+    },
+    {
+      "seq": 243,
+      "kind": "mention",
+      "symbols": [
+        "now"
+      ]
+    },
+    {
+      "seq": 244,
+      "ts": "2026-09-04T18:35:48Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/checkpoint python3 - \u003c\u003c'PYEOF' import io p = \"resolve_test.go\" s = io.open(p, encoding=\"..."
+    },
+    {
+      "seq": 245,
+      "kind": "mention",
+      "symbols": [
+        "add"
+      ]
+    },
+    {
+      "seq": 246,
+      "ts": "2026-09-04T18:36:27Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e table_test.go \u003c\u003c'EOF' package report import ( \"strings\" \"testing\" \"github.c..."
+    },
+    {
+      "seq": 247,
+      "ts": "2026-09-04T18:36:45Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e scrub_test.go \u003c\u003c'EOF' package report import \"testing\" func TestScrubRemoves..."
+    },
+    {
+      "seq": 248,
+      "ts": "2026-09-04T18:36:59Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 5 classifier, call-site window, ranker..."
+    },
+    {
+      "seq": 249,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "files",
+        "now"
+      ]
+    },
+    {
+      "seq": 250,
+      "ts": "2026-09-04T18:37:29Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/service.py"
+    },
+    {
+      "seq": 251,
+      "ts": "2026-09-04T18:37:36Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app python3 - \u003c\u003c'PYEOF' import io p = \"app/service.py\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 252,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/tests/test_api.py"
+      ],
+      "symbols": [
+        "now"
+      ]
+    },
+    {
+      "seq": 253,
+      "ts": "2026-09-04T18:37:51Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/bin:$PATH\" cd \u003crepo\u003e git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"require an..."
+    },
+    {
+      "seq": 254,
+      "kind": "mention",
+      "symbols": [
+        "now"
+      ]
+    },
+    {
+      "seq": 255,
+      "ts": "2026-09-04T18:37:58Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire umbra HEAD --run none --no-audit 2\u003e\u00261 echo \"=== exit: $? ===\""
+    },
+    {
+      "seq": 256,
+      "kind": "mention",
+      "symbols": [
+        "ParseSummary"
+      ]
+    },
+    {
+      "seq": 257,
+      "ts": "2026-09-04T18:38:34Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io p = \"internal/checkpoint/fetch.go\" s = io.open(p, encoding=\"utf-8\")..."
+    },
+    {
+      "seq": 258,
+      "ts": "2026-09-04T18:38:42Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire umbra HEAD --run none --no-audit 2\u003e\u00261 echo \"=== exit: $? ===\""
+    },
+    {
+      "seq": 259,
+      "kind": "mention",
+      "paths": [
+        "umbra/NOTES.md"
+      ]
+    },
+    {
+      "seq": 260,
+      "ts": "2026-09-04T18:39:04Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; cd \u003crepo\u003e/umbra go test ./... 2\u003e\u00261 | tail -8 N=$(go ..."
+    },
+    {
+      "seq": 261,
+      "ts": "2026-09-04T18:40:01Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad py..."
+    },
+    {
+      "seq": 262,
+      "ts": "2026-09-04T18:40:10Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 5 notes, summary placeholder fix (test..."
+    },
+    {
+      "seq": 263,
+      "kind": "mention",
+      "paths": [
+        "umbra/NOTES.md",
+        "umbra/docs/ARCHITECTURE.md",
+        "umbra/fixtures/app/tests/test_refunds.py"
+      ],
+      "symbols": [
+        "Default",
+        "IDs",
+        "Now",
+        "apply_refund",
+        "block",
+        "body",
+        "changes",
+        "checkpoints",
+        "file",
+        "first",
+        "pytest",
+        "read",
+        "repo",
+        "said",
+        "short"
+      ]
+    },
+    {
+      "seq": 264,
+      "ts": "2026-09-04T18:41:07Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e select.go \u003c\u003c'EOF' package shadow import ( \"path\" \"regexp\" \"sort\" \"strings\" ..."
+    },
+    {
+      "seq": 265,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 266,
+      "ts": "2026-09-04T18:41:35Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e verify.go \u003c\u003c'EOF' package graph import ( \"context\" \"regexp\" \"sort\" \"strings\"..."
+    },
+    {
+      "seq": 267,
+      "kind": "mention",
+      "symbols": [
+        "Verify"
+      ]
+    },
+    {
+      "seq": 268,
+      "ts": "2026-09-04T18:41:47Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph python3 - \u003c\u003c'PYEOF' import io p = \"verify.go\" s = io.open(p, encoding=\"utf-8\").rea..."
+    },
+    {
+      "seq": 269,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "order"
+      ]
+    },
+    {
+      "seq": 270,
+      "ts": "2026-09-04T18:42:16Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e sweep.go \u003c\u003c'EOF' package shadow import ( \"fmt\" \"sort\" \"strings\" \"github.com..."
+    },
+    {
+      "seq": 271,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 272,
+      "ts": "2026-09-04T18:42:47Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e execute.go \u003c\u003c'EOF' package main import ( \"context\" \"fmt\" \"path/filepath\" \"..."
+    },
+    {
+      "seq": 273,
+      "ts": "2026-09-04T18:42:50Z",
+      "kind": "quoted",
+      "paths": [
+        "cmd/entire-umbra/execute.go"
+      ]
+    },
+    {
+      "seq": 274,
+      "kind": "mention",
+      "symbols": [
+        "run"
+      ]
+    },
+    {
+      "seq": 275,
+      "ts": "2026-09-04T18:43:22Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io p = \"cmd/entire-umbra/analyze.go\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 276,
+      "ts": "2026-09-04T18:43:25Z",
+      "kind": "quoted",
+      "paths": [
+        "cmd/entire-umbra/analyze.go",
+        "cmd/entire-umbra/main.go"
+      ]
+    },
+    {
+      "seq": 277,
+      "ts": "2026-09-04T18:43:28Z",
+      "kind": "command",
+      "cmd": "sed -n '20,40p' cmd/entire-umbra/options.go"
+    },
+    {
+      "seq": 278,
+      "kind": "mention",
+      "symbols": [
+        "field"
+      ]
+    },
+    {
+      "seq": 279,
+      "ts": "2026-09-04T18:43:35Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io p = \"cmd/entire-umbra/options.go\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 280,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 281,
+      "ts": "2026-09-04T18:43:43Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" go build -trimpath -o ~/.loca..."
+    },
+    {
+      "seq": 282,
+      "kind": "mention",
+      "paths": [
+        "umbra/NOTES.md"
+      ],
+      "symbols": [
+        "Execution",
+        "first",
+        "now",
+        "sources"
+      ]
+    },
+    {
+      "seq": 283,
+      "ts": "2026-09-04T18:44:28Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e\u003e sources.go \u003c\u003c'EOF' // SemanticLanguages returns the languages the installed..."
+    },
+    {
+      "seq": 284,
+      "ts": "2026-09-04T18:45:06Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io p = \"cmd/entire-umbra/analyze.go\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 285,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 286,
+      "ts": "2026-09-04T18:45:27Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" go build -trimpath -o ~/.loca..."
+    },
+    {
+      "seq": 287,
+      "kind": "mention",
+      "symbols": [
+        "calls"
+      ]
+    },
+    {
+      "seq": 288,
+      "ts": "2026-09-04T18:46:01Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import io p = \"cmd/entire-umbra/execute.go\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 289,
+      "ts": "2026-09-04T18:46:08Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e PY=\u003crepo\u003e/umbra/fixtures/app/.venv/bin/python echo \"=== the classic case..."
+    },
+    {
+      "seq": 290,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "Umbra",
+        "file"
+      ]
+    },
+    {
+      "seq": 291,
+      "ts": "2026-09-04T18:46:48Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/graph cat \u003e verify_test.go \u003c\u003c'EOF' package graph import ( \"context\" \"strings\" \"testing\" ..."
+    },
+    {
+      "seq": 292,
+      "ts": "2026-09-04T18:47:19Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e select_test.go \u003c\u003c'EOF' package shadow import ( \"testing\" \"github.com/u7k4rs..."
+    },
+    {
+      "seq": 293,
+      "ts": "2026-09-04T18:48:04Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e sweep_test.go \u003c\u003c'EOF' package shadow import ( \"strings\" \"testing\" \"github.c..."
+    },
+    {
+      "seq": 294,
+      "ts": "2026-09-04T18:48:34Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; cd \u003crepo\u003e/umbra go test ./... 2\u003e\u00261 | tail -8 N=$(go ..."
+    },
+    {
+      "seq": 295,
+      "kind": "mention",
+      "symbols": [
+        "message"
+      ]
+    },
+    {
+      "seq": 296,
+      "ts": "2026-09-04T18:48:48Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e git -c commit.gpgsign=false commit --amend -q -m \"umbra: phase 6 selecti..."
+    },
+    {
+      "seq": 297,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/ARCHITECTURE.md"
+      ],
+      "symbols": [
+        "JSON",
+        "replay"
+      ]
+    },
+    {
+      "seq": 298,
+      "ts": "2026-09-04T18:49:36Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e json.go \u003c\u003c'EOF' package report import ( \"encoding/json\" \"io\" \"github.com/u7..."
+    },
+    {
+      "seq": 299,
+      "ts": "2026-09-04T18:49:38Z",
+      "kind": "quoted",
+      "paths": [
+        "internal/report/json.go"
+      ]
+    },
+    {
+      "seq": 300,
+      "kind": "mention",
+      "symbols": [
+        "Layout",
+        "read"
+      ]
+    },
+    {
+      "seq": 301,
+      "ts": "2026-09-04T18:49:49Z",
+      "kind": "command",
+      "cmd": "sed -n '100,175p' \u003crepo\u003e/umbra/docs/FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 302,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 303,
+      "ts": "2026-09-04T18:50:28Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e layout.go \u003c\u003c'EOF' package report import ( \"math\" \"sort\" \"github.com/u7k4rs6..."
+    },
+    {
+      "seq": 304,
+      "ts": "2026-09-04T18:50:32Z",
+      "kind": "quoted",
+      "paths": [
+        "internal/report/json.go"
+      ]
+    },
+    {
+      "seq": 305,
+      "ts": "2026-09-04T18:50:36Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/internal/report \u0026\u0026 grep -n \"Execution\\|Limitations\\|Commands\" model.go | head"
+    },
+    {
+      "seq": 306,
+      "ts": "2026-09-04T18:50:49Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report python3 - \u003c\u003c'PYEOF' import io p = \"model.go\" s = io.open(p, encoding=\"utf-8\").rea..."
+    },
+    {
+      "seq": 307,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "Packet"
+      ]
+    },
+    {
+      "seq": 308,
+      "ts": "2026-09-04T18:51:34Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e packet.go \u003c\u003c'EOF' package report import ( \"fmt\" \"io\" \"strings\" \"github.com/..."
+    },
+    {
+      "seq": 309,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "record"
+      ]
+    },
+    {
+      "seq": 310,
+      "ts": "2026-09-04T18:51:51Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e output.go \u003c\u003c'EOF' package main import ( \"fmt\" \"os\" \"path/filepath\" \"github..."
+    },
+    {
+      "seq": 311,
+      "ts": "2026-09-04T18:52:03Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 312,
+      "ts": "2026-09-04T18:52:12Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad head -60 \"$SP/out/umbra.p..."
+    },
+    {
+      "seq": 313,
+      "kind": "mention",
+      "symbols": [
+        "FarField",
+        "field",
+        "path",
+        "word"
+      ]
+    },
+    {
+      "seq": 314,
+      "ts": "2026-09-04T18:52:48Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow python3 - \u003c\u003c'PYEOF' import io p = \"callsite.go\" s = io.open(p, encoding=\"utf-8\")...."
+    },
+    {
+      "seq": 315,
+      "ts": "2026-09-04T18:53:06Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" go build -trimpath -o ~/.loca..."
+    },
+    {
+      "seq": 316,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "field",
+        "now",
+        "record"
+      ]
+    },
+    {
+      "seq": 317,
+      "ts": "2026-09-04T18:53:59Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/cmd/entire-umbra cat \u003e record.go \u003c\u003c'EOF' package main import ( \"context\" \"flag\" \"fmt\" \"os\" \"githu..."
+    },
+    {
+      "seq": 318,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "replay"
+      ]
+    },
+    {
+      "seq": 319,
+      "ts": "2026-09-04T18:54:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra mkdir -p fixtures/recorded python3 - \u003c\u003c'PYEOF' import json, io, os BASE = \"fixtures/recorded\" CWD..."
+    },
+    {
+      "seq": 320,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "replay"
+      ]
+    },
+    {
+      "seq": 321,
+      "ts": "2026-09-04T18:55:25Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow cat \u003e scenarios_test.go \u003c\u003c'EOF' package shadow import ( \"os\" \"path/filepath\" \"tes..."
+    },
+    {
+      "seq": 322,
+      "ts": "2026-09-04T18:55:29Z",
+      "kind": "quoted",
+      "paths": [
+        "scenarios_test.go"
+      ]
+    },
+    {
+      "seq": 323,
+      "kind": "mention",
+      "symbols": [
+        "message",
+        "read"
+      ]
+    },
+    {
+      "seq": 324,
+      "ts": "2026-09-04T18:55:57Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra python3 - \u003c\u003c'PYEOF' import json, io, os CWD=\"/repo\"; SID=\"scenario-session\"; APP=\"umbra/fixtures/..."
+    },
+    {
+      "seq": 325,
+      "kind": "mention",
+      "symbols": [
+        "All",
+        "JSON",
+        "add"
+      ]
+    },
+    {
+      "seq": 326,
+      "ts": "2026-09-04T18:56:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e json_test.go \u003c\u003c'EOF' package report import ( \"bytes\" \"encoding/json\" \"strin..."
+    },
+    {
+      "seq": 327,
+      "ts": "2026-09-04T18:57:02Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e layout_test.go \u003c\u003c'EOF' package report import ( \"encoding/json\" \"math\" \"test..."
+    },
+    {
+      "seq": 328,
+      "ts": "2026-09-04T18:57:33Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e packet_test.go \u003c\u003c'EOF' package report import ( \"strings\" \"testing\" \"github...."
+    },
+    {
+      "seq": 329,
+      "kind": "mention",
+      "symbols": [
+        "record"
+      ]
+    },
+    {
+      "seq": 330,
+      "ts": "2026-09-04T18:57:43Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 331,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/SECURITY_AND_ACCESS.md"
+      ],
+      "symbols": [
+        "record"
+      ]
+    },
+    {
+      "seq": 332,
+      "ts": "2026-09-04T18:58:24Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra rm -rf fixtures/recorded/classic-live cat \u003e fixtures/recorded/README.md \u003c\u003c'EOF' # Recorded scenar..."
+    },
+    {
+      "seq": 333,
+      "kind": "mention",
+      "paths": [
+        "umbra/docs/FRONTEND_SPEC.md"
+      ]
+    },
+    {
+      "seq": 334,
+      "ts": "2026-09-04T18:58:39Z",
+      "kind": "command",
+      "cmd": "sed -n '52,99p' \u003crepo\u003e/umbra/docs/FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 335,
+      "ts": "2026-09-04T18:58:42Z",
+      "kind": "command",
+      "cmd": "sed -n '174,302p' \u003crepo\u003e/umbra/docs/FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 336,
+      "kind": "mention",
+      "symbols": [
+        "field",
+        "first",
+        "nodes",
+        "now",
+        "read"
+      ]
+    },
+    {
+      "seq": 337,
+      "ts": "2026-09-04T18:59:06Z",
+      "kind": "command",
+      "cmd": "set -e mkdir -p \u003crepo\u003e/umbra/internal/report/assets cd \u003crepo\u003e/umbra/internal/report/assets cat \u003e umbra.css \u003c\u003c'CSS' /* Um..."
+    },
+    {
+      "seq": 338,
+      "ts": "2026-09-04T18:59:34Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets cat \u003e umbra.js \u003c\u003c'JS' // Umbra report. Vanilla JavaScript, no libraries, n..."
+    },
+    {
+      "seq": 339,
+      "ts": "2026-09-04T18:59:51Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets cat \u003e umbra.html.tmpl \u003c\u003c'TMPL' \u003c!doctype html\u003e \u003chtml lang=\"en\"\u003e \u003chead\u003e \u003cme..."
+    },
+    {
+      "seq": 340,
+      "ts": "2026-09-04T19:00:19Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e html.go \u003c\u003c'EOF' package report import ( \"bytes\" \"embed\" \"fmt\" \"html/templat..."
+    },
+    {
+      "seq": 341,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "field"
+      ]
+    },
+    {
+      "seq": 342,
+      "ts": "2026-09-04T19:00:32Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 343,
+      "kind": "mention",
+      "symbols": [
+        "field"
+      ]
+    },
+    {
+      "seq": 345,
+      "kind": "mention",
+      "symbols": [
+        "file"
+      ]
+    },
+    {
+      "seq": 346,
+      "ts": "2026-09-04T19:01:36Z",
+      "kind": "command",
+      "cmd": "cd /tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad/out \u0026\u0026 nohup python3 -m h..."
+    },
+    {
+      "seq": 347,
+      "ts": "2026-09-04T19:01:59Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad python3 - \u003c\u003cPY import re,..."
+    },
+    {
+      "seq": 348,
+      "kind": "mention",
+      "symbols": [
+        "JSON",
+        "block"
+      ]
+    },
+    {
+      "seq": 349,
+      "ts": "2026-09-04T19:02:18Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report python3 - \u003c\u003c'PYEOF' import io p = \"html.go\" s = io.open(p, encoding=\"utf-8\").read..."
+    },
+    {
+      "seq": 351,
+      "ts": "2026-09-04T19:02:40Z",
+      "kind": "command",
+      "cmd": "find / -name \"lightfield-01.png\" -newermt \"-3 minutes\" 2\u003e/dev/null | head -3"
+    },
+    {
+      "seq": 352,
+      "ts": "2026-09-04T19:02:53Z",
+      "kind": "command",
+      "cmd": "ls -la ~/.playwright-mcp 2\u003e/dev/null | head; find \u003chome\u003e -name \"*.png\" -newermt \"-5 minutes\" 2\u003e/dev/null | head -5; find..."
+    },
+    {
+      "seq": 353,
+      "ts": "2026-09-04T19:03:10Z",
+      "kind": "command",
+      "cmd": "for b in chromium chromium-browser google-chrome google-chrome-stable rsvg-convert inkscape; do command -v $b \u003e/dev/null..."
+    },
+    {
+      "seq": 354,
+      "kind": "mention",
+      "symbols": [
+        "render"
+      ]
+    },
+    {
+      "seq": 355,
+      "ts": "2026-09-04T19:03:21Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad mkdir -p \"$SP/shot..."
+    },
+    {
+      "seq": 356,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "field",
+        "nodes"
+      ]
+    },
+    {
+      "seq": 357,
+      "ts": "2026-09-04T19:05:22Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e docket.go \u003c\u003c'EOF' package report import ( \"fmt\" \"sort\" \"strings\" \"github.co..."
+    },
+    {
+      "seq": 358,
+      "ts": "2026-09-04T19:05:51Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.html.tmpl\" s = io.open(p, encodin..."
+    },
+    {
+      "seq": 359,
+      "kind": "mention",
+      "symbols": [
+        "CSS",
+        "Now",
+        "edge",
+        "label",
+        "node"
+      ]
+    },
+    {
+      "seq": 360,
+      "ts": "2026-09-04T19:06:17Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets cat \u003e\u003e umbra.css \u003c\u003c'CSS' /* Docket */ .docket-head h2 { font-size: 18px; f..."
+    },
+    {
+      "seq": 361,
+      "ts": "2026-09-04T19:07:27Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 363,
+      "ts": "2026-09-04T19:08:25Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.css\" s = io.open(p, encoding=\"utf..."
+    },
+    {
+      "seq": 364,
+      "ts": "2026-09-04T19:08:55Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 365,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "chip",
+        "text"
+      ]
+    },
+    {
+      "seq": 366,
+      "ts": "2026-09-04T19:10:02Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.css\" s = io.open(p, encoding=\"utf..."
+    },
+    {
+      "seq": 367,
+      "kind": "mention",
+      "symbols": [
+        "map",
+        "sources"
+      ]
+    },
+    {
+      "seq": 368,
+      "ts": "2026-09-04T19:11:44Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 369,
+      "kind": "mention",
+      "symbols": [
+        "now"
+      ]
+    },
+    {
+      "seq": 370,
+      "ts": "2026-09-04T19:12:15Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets sed -i 's|var share = ids.length \u003e 1 ? 1 / ids.length : 1;|var share = ids..."
+    },
+    {
+      "seq": 372,
+      "kind": "mention",
+      "symbols": [
+        "path"
+      ]
+    },
+    {
+      "seq": 373,
+      "ts": "2026-09-04T19:13:29Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.html.tmpl\" s = io.open(p, encodin..."
+    },
+    {
+      "seq": 374,
+      "kind": "mention",
+      "symbols": [
+        "detail"
+      ]
+    },
+    {
+      "seq": 375,
+      "ts": "2026-09-04T19:14:38Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 376,
+      "ts": "2026-09-04T19:15:04Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.html.tmpl\" s = io.open(p, encodin..."
+    },
+    {
+      "seq": 377,
+      "kind": "mention",
+      "symbols": [
+        "detail"
+      ]
+    },
+    {
+      "seq": 378,
+      "ts": "2026-09-04T19:15:22Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad cat \u003e \"$SP/click.j..."
+    },
+    {
+      "seq": 379,
+      "kind": "mention",
+      "symbols": [
+        "path"
+      ]
+    },
+    {
+      "seq": 380,
+      "ts": "2026-09-04T19:15:48Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 381,
+      "kind": "mention",
+      "symbols": [
+        "HTML",
+        "add",
+        "render"
+      ]
+    },
+    {
+      "seq": 382,
+      "ts": "2026-09-04T19:18:31Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report cat \u003e html_test.go \u003c\u003c'EOF' package report import ( \"strings\" \"testing\" \"github.co..."
+    },
+    {
+      "seq": 383,
+      "ts": "2026-09-04T19:18:38Z",
+      "kind": "quoted",
+      "paths": [
+        "html_test.go"
+      ]
+    },
+    {
+      "seq": 384,
+      "ts": "2026-09-04T19:18:45Z",
+      "kind": "command",
+      "cmd": "cat \u003e /tmp/t.go \u003c\u003c'EOF' package main import ( \"encoding/json\" \"fmt\" ) func main() { b, _ := json.Marshal(map[string]stri..."
+    },
+    {
+      "seq": 385,
+      "kind": "mention",
+      "symbols": [
+        "JSON"
+      ]
+    },
+    {
+      "seq": 386,
+      "ts": "2026-09-04T19:19:04Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report python3 - \u003c\u003c'PYEOF' import io p = \"html_test.go\" s = io.open(p, encoding=\"utf-8\")..."
+    },
+    {
+      "seq": 387,
+      "ts": "2026-09-04T19:19:26Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: phase 8 HTML map, docket and detail panel (t..."
+    },
+    {
+      "seq": 388,
+      "kind": "mention",
+      "symbols": [
+        "JSON",
+        "node",
+        "replay"
+      ]
+    },
+    {
+      "seq": 389,
+      "ts": "2026-09-04T19:20:03Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/shadow python3 - \u003c\u003c'PYEOF' import io p = \"build.go\" s = io.open(p, encoding=\"utf-8\").rea..."
+    },
+    {
+      "seq": 390,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "replay"
+      ]
+    },
+    {
+      "seq": 391,
+      "ts": "2026-09-04T19:20:53Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 392,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "replay"
+      ]
+    },
+    {
+      "seq": 393,
+      "ts": "2026-09-04T19:21:40Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 394,
+      "ts": "2026-09-04T19:22:31Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" cd \u003crepo\u003e/umbra go build -tri..."
+    },
+    {
+      "seq": 395,
+      "kind": "mention",
+      "symbols": [
+        "Now",
+        "replay"
+      ]
+    },
+    {
+      "seq": 396,
+      "ts": "2026-09-04T19:23:19Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 397,
+      "kind": "mention",
+      "symbols": [
+        "stateAt"
+      ]
+    },
+    {
+      "seq": 398,
+      "ts": "2026-09-04T19:23:32Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.js\" s = io.open(p, encoding=\"utf-..."
+    },
+    {
+      "seq": 399,
+      "ts": "2026-09-04T19:23:39Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$PATH\"; cd \u003crepo\u003e/umbra \u0026\u0026 go test ./internal/shadow/ -run T..."
+    },
+    {
+      "seq": 400,
+      "kind": "mention",
+      "symbols": [
+        "Now"
+      ]
+    },
+    {
+      "seq": 401,
+      "ts": "2026-09-04T19:24:10Z",
+      "kind": "command",
+      "cmd": "set -e export PATH=\"$HOME/.local/share/mise/installs/go/1.26.3/bin:$HOME/.local/bin:$PATH\" go build -trimpath -o ~/.loca..."
+    },
+    {
+      "seq": 403,
+      "ts": "2026-09-04T19:24:31Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad cat \u003e \"$SP/diag.js\" \u003c\u003c'JS..."
+    },
+    {
+      "seq": 404,
+      "kind": "mention",
+      "symbols": [
+        "command",
+        "edge",
+        "footer",
+        "replay",
+        "reproduce",
+        "tick"
+      ]
+    },
+    {
+      "seq": 405,
+      "ts": "2026-09-04T19:24:56Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.css\" s = io.open(p, encoding=\"utf..."
+    },
+    {
+      "seq": 406,
+      "kind": "mention",
+      "symbols": [
+        "All"
+      ]
+    },
+    {
+      "seq": 407,
+      "ts": "2026-09-04T19:25:17Z",
+      "kind": "command",
+      "cmd": "SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad python3 -c \" from PIL imp..."
+    },
+    {
+      "seq": 408,
+      "kind": "mention",
+      "symbols": [
+        "read"
+      ]
+    },
+    {
+      "seq": 409,
+      "ts": "2026-09-04T19:26:36Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/internal/report/assets python3 - \u003c\u003c'PYEOF' import io p = \"umbra.css\" s = io.open(p, encoding=\"utf..."
+    },
+    {
+      "seq": 410,
+      "kind": "mention",
+      "symbols": [
+        "now"
+      ]
+    },
+    {
+      "seq": 411,
+      "ts": "2026-09-04T19:27:27Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad cat \u003e \"$SP/net.js\"..."
+    }
+  ],
+  "t0": 0,
+  "execution": {
+    "selected": [],
+    "new_failures": [],
+    "fixed": [],
+    "sweep": false,
+    "leaks": []
+  },
+  "summary": {
+    "lit": 0,
+    "penumbra": 0,
+    "umbra": 12,
+    "unknown": 0,
+    "illumination": 0
+  },
+  "layout": {
+    "view_box": [
+      0,
+      0,
+      1200,
+      800
+    ],
+    "centre": {
+      "x": 600,
+      "y": 400
+    },
+    "rings": [
+      {
+        "depth": 1,
+        "radius": 170,
+        "dashed": false,
+        "label": "1 hop"
+      },
+      {
+        "depth": 2,
+        "radius": 280,
+        "dashed": false,
+        "label": "2 hops"
+      }
+    ],
+    "sources": {
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:AddCoChange": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:Build": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/build.go:function:exposuresFor": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:function:TestJavaScriptMirrorsTheGoClassifier": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsCase": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsExposure": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsNode": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:anyEvidence": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:applyState": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:boot": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:consider": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:describe": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:drawField": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:eventAt": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:focusAt": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:goTo": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:indexOf": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:pause": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:play": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:render": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:revealNear": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:rewireNodes": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:stateAt": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:step": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:tick": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:tierRank": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:toViewBox": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:toggleLabels": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireKeyboard": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireReplay": {
+        "x": 600,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:wireSpotlight": {
+        "x": 600,
+        "y": 400
+      }
+    },
+    "nodes": {
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioBeacon": {
+        "x": 617.77,
+        "y": 569.07,
+        "angle": 174,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "below",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioClassic": {
+        "x": 774.94,
+        "y": 618.62,
+        "angle": 141.33333333333334,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEcho": {
+        "x": 348.34,
+        "y": 277.26,
+        "angle": 296,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioEverythingLit": {
+        "x": 873.19,
+        "y": 461.4,
+        "angle": 102.66666666666666,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioLeak": {
+        "x": 480.19,
+        "y": 146.93,
+        "angle": 334.6666666666667,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioNoReads": {
+        "x": 326.81,
+        "y": 461.4,
+        "angle": 257.33333333333337,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPartialRead": {
+        "x": 600,
+        "y": 680,
+        "angle": 180,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "below",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:TestScenarioPreChange": {
+        "x": 425.06,
+        "y": 618.62,
+        "angle": 218.66666666666669,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/scenarios_test.go:function:runScenario": {
+        "x": 744.17,
+        "y": 309.91,
+        "angle": 58,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:hasMod": {
+        "x": 447.21,
+        "y": 325.48,
+        "angle": 296,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:nodeGroup": {
+        "x": 837.45,
+        "y": 251.62,
+        "angle": 58,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/u7k4rs6/Umbra:JavaScript:umbra/internal/report/assets/umbra.js:function:styleEdge": {
+        "x": 692.7,
+        "y": 135.79,
+        "angle": 19.333333333333332,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "above",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      }
+    },
+    "sources_collapsed": true
+  },
+  "limitations": [
+    "graph edges are incomplete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined",
+    "read evidence is file and line-range based; a mention in the agent's text is attention, not reading, and is the weakest tier",
+    "fault lines and beacons are matched by a regex window around the call site, not by a parser",
+    "ranking weights are hand set and printed; they are a heuristic, not a measurement",
+    "relations not traversed: CONFIGURES, CONSTRUCTS, EMITS, HANDLES_GRAPHQL, HANDLES_GRPC, HANDLES_ROUTE, HANDLES_TOOL, HANDLES_TRPC, HTTP_CALLS, LISTENS_ON, RESOURCE_DEPENDS_ON, SIMILAR_TO"
+  ],
+  "commands_run": [
+    "entire checkpoint list --json",
+    "git -C \u003crepo\u003e rev-parse --verify 13adcdd^{commit}",
+    "git -C \u003crepo\u003e rev-list --parents -n 1 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
+    "git -C \u003crepo\u003e log -1 --format=%B 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
+    "entire graph capabilities --json",
+    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/h...",
+    "entire graph checkpoint 01M1PY8KZ28HS7TG95ZVKQSZ2W --json",
+    "entire graph impact --symbol drawField --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
+    "entire graph impact --symbol boot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
+    "entire graph impact --symbol tierRank --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
+    "entire graph impact --symbol stateAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
+    "entire graph impact --symbol consider --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
+    "entire graph impact --symbol wireReplay --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
+    "entire graph impact --symbol render --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
+    "entire graph impact --symbol goTo --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
+    "entire graph impact --symbol step --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
+    "entire graph impact --symbol play --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
+    "entire graph impact --symbol pause --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
+    "entire graph impact --symbol tick --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
+    "entire graph impact --symbol anyEvidence --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
+    "entire graph impact --symbol indexOf --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
+    "entire graph impact --symbol eventAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
+    "entire graph impact --symbol describe --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
+    "entire graph impact --symbol applyState --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
+    "entire graph impact --symbol rewireNodes --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
+    "entire graph impact --symbol wireSpotlight --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df5...",
+    "entire graph impact --symbol toViewBox --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
+    "entire graph impact --symbol revealNear --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
+    "entire graph impact --symbol wireKeyboard --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
+    "entire graph impact --symbol focusAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
+    "entire graph impact --symbol toggleLabels --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
+    "entire graph impact --symbol Build --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
+    "entire graph impact --symbol AddCoChange --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
+    "entire graph impact --symbol exposuresFor --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
+    "entire graph impact --symbol jsNode --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
+    "entire graph impact --symbol jsExposure --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
+    "entire graph impact --symbol jsCase --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
+    "entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/w...",
+    "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --raw-transcript",
+    "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --short"
+  ]
+}

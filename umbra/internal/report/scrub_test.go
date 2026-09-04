@@ -1,6 +1,9 @@
 package report
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestScrubRemovesTokenShapes(t *testing.T) {
 	s := &Scrubber{}
@@ -80,5 +83,45 @@ func TestSentenceCollapsesWhitespace(t *testing.T) {
 func TestScrubEmptyInput(t *testing.T) {
 	if got := (&Scrubber{}).Clean(""); got != "" {
 		t.Fatalf("Clean(\"\") = %q", got)
+	}
+}
+
+// A git object id is forty hex characters and matches the base64 shape. The
+// reproduce list is only useful if a reader can check the commits in it, so
+// hex runs survive while real base64 does not.
+func TestScrubKeepsGitObjectIDs(t *testing.T) {
+	s := &Scrubber{}
+	sha := "00634433c2bc2ac6d1da8e76f45847e7f6702a36"
+	got := s.Clean("git log -1 --format=%B " + sha)
+	if !strings.Contains(got, sha) {
+		t.Fatalf("a git object id must survive the scrub, got %q", got)
+	}
+}
+
+func TestScrubRemovesRealBase64(t *testing.T) {
+	s := &Scrubber{}
+	blob := "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqaw=="
+	got := s.Clean("value " + blob)
+	if strings.Contains(got, blob) {
+		t.Fatalf("a long base64 run must be redacted, got %q", got)
+	}
+}
+
+func TestScrubLeavesOrdinaryProseAlone(t *testing.T) {
+	s := &Scrubber{}
+	in := "Checked the callers of compute_total and updated them."
+	if got := s.Clean(in); got != in {
+		t.Fatalf("Clean rewrote ordinary prose: %q", got)
+	}
+}
+
+// A file path is a long run of letters, digits and slashes. Treating the slash
+// as a base64 character redacted every worktree path in the reproduce list.
+func TestScrubKeepsLongPaths(t *testing.T) {
+	s := &Scrubber{}
+	path := "/var/lib/entire/plugins/data/umbra/wt/00634433c2bc2ac6/head"
+	got := s.Clean("entire graph snapshot --repo " + path)
+	if !strings.Contains(got, path) {
+		t.Fatalf("a long path must survive the scrub, got %q", got)
 	}
 }
