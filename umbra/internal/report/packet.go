@@ -40,8 +40,8 @@ func Packet(w io.Writer, a *Analysis) error {
 	} else {
 		fmt.Fprintf(b, "| Symbol | Change | Where | Dependents |\n|---|---|---|---|\n")
 		for _, s := range a.Sources {
-			fmt.Fprintf(b, "| `%s` | %s changed | `%s:%d` | %d |\n",
-				s.Name, s.Change, s.File, s.Span[0], s.Dependents)
+			fmt.Fprintf(b, "| `%s` | %s | `%s:%d` | %d |\n",
+				s.Name, s.KindLabel(), s.File, s.Span[0], s.Dependents)
 		}
 		b.WriteString("\n")
 	}

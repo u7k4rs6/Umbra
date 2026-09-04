@@ -73,6 +73,7 @@ type jsonSource struct {
 	File         string  `json:"file"`
 	Span         [2]int  `json:"span"`
 	Change       string  `json:"change"`
+	KindLabel    string  `json:"kind_label"`
 	Weight       float64 `json:"weight"`
 	Dependents   int     `json:"dependents"`
 	OldSignature string  `json:"old_signature,omitempty"`
@@ -161,7 +162,7 @@ func BuildJSON(a *Analysis) jsonReport {
 	for _, s := range a.Sources {
 		r.Sources = append(r.Sources, jsonSource{
 			ID: s.Symbol, Name: s.Name, File: s.File, Span: s.Span,
-			Change: s.Change, Weight: s.Weight, Dependents: s.Dependents,
+			Change: s.Change, KindLabel: s.KindLabel(), Weight: s.Weight, Dependents: s.Dependents,
 			OldSignature: snippet(a, s.OldSignature), NewSignature: snippet(a, s.NewSignature),
 		})
 	}

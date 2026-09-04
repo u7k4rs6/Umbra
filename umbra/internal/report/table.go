@@ -86,7 +86,7 @@ func Table(w io.Writer, a *Analysis, o TableOptions) error {
 
 	// Sources: the lights.
 	for _, s := range a.Sources {
-		fmt.Fprintf(b, "%s  %s changed  %s:%d\n", s.Name, s.Change, s.File, s.Span[0])
+		fmt.Fprintf(b, "%s  %s  %s:%d\n", s.Name, s.KindLabel(), s.File, s.Span[0])
 	}
 	if len(a.Sources) == 0 {
 		fmt.Fprintf(b, "%s\n", dim(o, "no changed entities were reported for this commit"))

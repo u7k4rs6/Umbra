@@ -510,7 +510,9 @@
       var kind = el("text", {
         x: lx, y: ly + SOURCE_KIND_OFFSET, "text-anchor": anchor, "class": "src-kind"
       });
-      kind.textContent = s.change + " changed";
+      // The wording comes from the report, so the map cannot say it
+      // differently from the table and the packet.
+      kind.textContent = s.kind_label || s.change;
       g.appendChild(kind);
     });
 

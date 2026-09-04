@@ -553,3 +553,67 @@ func TestLoadSourcesIgnoresACheckpointThatDoesNotOwnTheCommit(t *testing.T) {
 		t.Fatalf("sources = %v", got.Sources)
 	}
 }
+
+// A field is not a thing a caller calls, and its dependent count is every use
+// of the type it sits in. Adding one struct to a test file put jsNode.ID in a
+// report as a source with 46 dependents, beside jsNode itself.
+func TestFoldFieldsDropsAFieldWhoseTypeIsAlreadyASource(t *testing.T) {
+	in := []Source{
+		{Name: "jsNode", Kind: "type", File: "x_test.go", Span: [2]int{10, 10}, Change: "added", Dependents: 3},
+		{Name: "jsNode.ID", Kind: "field", File: "x_test.go", Span: [2]int{11, 11}, Change: "added", Dependents: 46},
+		{Name: "jsNode.Name", Kind: "field", File: "x_test.go", Span: [2]int{12, 12}, Change: "added", Dependents: 46},
+		{Name: "compute_total", Kind: "function", File: "app/service.py", Span: [2]int{20, 20}, Change: "signature", Dependents: 7},
+	}
+	got := FoldFields(in)
+
+	var names []string
+	for _, s := range got {
+		names = append(names, s.Name)
+	}
+	if len(got) != 2 {
+		t.Fatalf("sources = %v, want the type and the function only", names)
+	}
+	for _, s := range got {
+		if s.Kind == "field" {
+			t.Errorf("a field survived as a source: %s", s.Name)
+		}
+	}
+}
+
+// When the type itself did not change, the field folds into one entry for it
+// rather than vanishing: something in that type did change.
+func TestFoldFieldsFoldsIntoTheTypeWhenItIsNotASource(t *testing.T) {
+	in := []Source{
+		{Name: "Options.TestRoot", Kind: "field", File: "opt.go", Span: [2]int{30, 30}, Change: "added", Dependents: 12},
+		{Name: "Options.Depth", Kind: "field", File: "opt.go", Span: [2]int{31, 31}, Change: "added", Dependents: 12},
+	}
+	got := FoldFields(in)
+	if len(got) != 1 {
+		t.Fatalf("got %d sources, want one entry for the type", len(got))
+	}
+	if got[0].Name != "Options" || got[0].Kind != "type" {
+		t.Fatalf("folded into %s (%s), want Options (type)", got[0].Name, got[0].Kind)
+	}
+}
+
+func TestFoldFieldsLeavesOrdinarySourcesAlone(t *testing.T) {
+	in := []Source{
+		{Name: "compute_total", Kind: "function", File: "a.py", Span: [2]int{1, 1}, Change: "signature"},
+		{Name: "handle_order", Kind: "function", File: "b.py", Span: [2]int{2, 2}, Change: "body"},
+	}
+	if got := FoldFields(in); len(got) != 2 {
+		t.Fatalf("got %d, want both kept", len(got))
+	}
+}
+
+func TestKindLabel(t *testing.T) {
+	cases := map[string]string{
+		"added": "added", "removed": "removed", "renamed": "renamed",
+		"signature": "signature changed", "body": "body changed",
+	}
+	for change, want := range cases {
+		if got := (Source{Change: change}).KindLabel(); got != want {
+			t.Errorf("KindLabel(%q) = %q, want %q", change, got, want)
+		}
+	}
+}
