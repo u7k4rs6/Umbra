@@ -326,6 +326,57 @@ both tests in `tests/test_refunds.py`, with a full sweep and 0 leaks. The
 reasoning is written up in `fixtures/app/runner_test_note.md` and summarised in
 the README and on the landing page.
 
+### Phase 12: the fresh minimal record
+
+`fixtures/recorded/minimal/recording.json` is now committed: a full Runner
+recording of a short real session on the fixture app. The session read
+`app/models.py` in full, read `app/refunds.py` with an offset and limit that
+stop before `apply_refund`, searched for `round_money`, changed that one
+function so negative amounts round away from zero, and ran
+`tests/test_models.py`. Nothing else.
+
+**The 900 KB recording of the build session is deliberately not committed, and
+this is why.** A full recording embeds the checkpoint transcript, and for this
+repository that transcript is the entire build session. `umbra record` scrubs
+it, so absolute paths, the user and host name, the author name, the email
+address and token shapes are all gone. But SECURITY_AND_ACCESS.md requires a
+fixture recording to be **hand reviewed** before it is committed, and 900 KB of
+conversation cannot honestly be read line by line. Committing it and saying it
+was reviewed would be exactly the kind of unchecked claim this project exists
+to catch. The minimal recording is twelve transcript records; it was actually
+read end to end, record by record, and that reading is what the rule asks for.
+
+Two things had to be worked out to get a recording worth committing:
+
+1. **Where it was recorded from.** Taken inside the Umbra repository the same
+   short session produces **3.8 MB**, of which **3.4 MB is one `graph snapshot`
+   of the whole codebase**. None of that bulk says anything about the session.
+   Recorded against a repository holding only the fixture app it is **135 KB**.
+   The session's paths were relocated to that root; every tool call, range,
+   result and timestamp is the real one, and the scrub replaces the prefix with
+   `<repo>` in any case.
+
+2. **Graph refuses a worktree under a restricted path.** With the fixture
+   repository in the session scratch directory, `graph commit` answered
+   `refuse Git subprocesses for unsafe or unreadable repository metadata`,
+   because the worktree metadata pointed into a directory it could not treat as
+   safe. Moving the repository under `$HOME` fixed it. Worth knowing before
+   anyone tries to record from a temporary directory.
+
+**The hand review found a real scrubber gap.** The first recording contained
+`author   Utkarsh Bahuguna <redacted-address>`, from the author line that
+`checkpoint explain --short` prints and Umbra reads for the session-said
+sentence. The scrubber had no rule for an email address and no way to know a
+display name. Both are fixed: an email pattern is always redacted, and
+`umbra record` now asks git for the author names configured in the repository
+and removes them by value, since a name cannot be recognised by shape. The
+author line in the committed recording reads `author   <author> <<redacted>>`.
+
+Checks that now run as tests: the recording replays every call it holds, it
+contains the calls a real analysis makes, and it carries no absolute home path,
+email address or token shape while still showing the `<repo>` and `<home>`
+placeholders that prove the scrub ran rather than found nothing.
+
 ### Where the build deviates from the letter of the plan
 
 - **The README is at the repository root, not a one-line pointer.** That rule
@@ -335,13 +386,8 @@ the README and on the landing page.
   A runner has to start in the project directory, and the fixture app is nested
   at `umbra/fixtures/app`. It is found automatically from the project files near
   the tests; the flag only exists for when that search picks wrong.
-- **Full Runner recordings are not committed.** `umbra record` works and was run
-  for real, but a full recording embeds the checkpoint transcript, which for
-  this repository is about 900 KB of the session that built Umbra.
-  SECURITY_AND_ACCESS.md requires a fixture recording to be hand reviewed before
-  commit, and prose of that length cannot honestly be reviewed line by line. The
-  eight scenario transcripts are authored instead. The reason is in
-  `fixtures/recorded/README.md`.
+- **The recording of the build session is deliberately not committed; a small
+  one is.** See the phase 12 section below.
 - **The docket merges the file path into the symbol cell** rather than giving it
   its own column. The column list in FRONTEND_SPEC.md has six; the wireframe in
   the same document shows the path under the symbol, and at 38 percent of the

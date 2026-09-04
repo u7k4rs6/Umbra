@@ -20,6 +20,11 @@ var tokenREs = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}`),
 	regexp.MustCompile(`(?i)\b(api[_-]?key|secret|password|token)\s*[:=]\s*\S+`),
 	regexp.MustCompile(`(?i)-----BEGIN [A-Z ]*PRIVATE KEY-----`),
+	// An email address is personal data and is never something Umbra needs.
+	// It reaches a recording through the author line that
+	// `checkpoint explain --short` prints, which Umbra reads for the
+	// session-said sentence.
+	regexp.MustCompile(`\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b`),
 	// A long unbroken run of base64 is handled separately, in redactBase64,
 	// because it needs a condition a single pattern cannot express here.
 }
@@ -32,6 +37,11 @@ type Scrubber struct {
 	Repo string
 	User string
 	Host string
+	// Names are display names to remove, such as a git author. A name cannot
+	// be recognised by shape, so the caller supplies any it knows about. The
+	// author line that `checkpoint explain --short` prints is the way one
+	// reaches a report.
+	Names []string
 }
 
 // NewScrubber builds a scrubber for this machine.
@@ -64,6 +74,11 @@ func (s *Scrubber) Clean(text string) string {
 		}
 		if s.Host != "" && len(s.Host) > 2 {
 			text = strings.ReplaceAll(text, s.Host, "<host>")
+		}
+		for _, n := range s.Names {
+			if len(n) > 2 {
+				text = strings.ReplaceAll(text, n, "<author>")
+			}
 		}
 	}
 	for _, re := range tokenREs {

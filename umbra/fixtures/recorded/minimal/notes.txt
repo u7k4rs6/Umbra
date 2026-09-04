@@ -1,0 +1,27 @@
+A full Runner recording of a short real session on the fixture app.
+
+The session did five things and nothing else: read app/models.py in full, read
+app/refunds.py with an offset and limit that stop before apply_refund, searched
+for round_money, changed that one function so negative amounts round away from
+zero, and ran tests/test_models.py.
+
+Unlike the eight scenario transcripts, which are authored, this is what
+`entire umbra record` writes: every Runner call of a real analysis with its
+real output, so a replay can drive the whole pipeline including the graph and
+verify calls with no Entire, no git and no agent.
+
+It was recorded against a repository holding only the fixture app, so the graph
+snapshot in it covers ten Python files rather than the whole of Umbra. The same
+recording taken inside the Umbra repository is 3.8 MB, of which 3.4 MB is one
+snapshot of the entire codebase, and none of that bulk says anything about the
+session.
+
+The session's paths were relocated from umbra/fixtures/app to that repository
+root. Every tool call, range, result and timestamp is the real one; only the
+path prefix differs, and the scrub replaces it with <repo> anyway.
+
+Hand reviewed against docs/SECURITY_AND_ACCESS.md before commit: no absolute
+paths, no user, host or author name, no email address, no token shapes, and no
+file content beyond the fixture app, which is committed source in this
+repository. The transcript inside it is twelve records long and was read end to
+end.
