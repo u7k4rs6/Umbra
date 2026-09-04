@@ -1,0 +1,1 @@
+i if you're designing the frontend of that website, check @../Concepts/ , it has the ideas i made for the landing page.
