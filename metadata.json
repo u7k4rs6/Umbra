@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1Q4NZW4RRM3BEPQ47KS7X5G",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/cmd/entire-umbra/analyze.go",
+    "umbra/internal/graph/graph_test.go",
+    "umbra/internal/graph/sources.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 16126,
+    "cache_read_tokens": 5481799,
+    "output_tokens": 10028,
+    "api_call_count": 7
+  }
+}
