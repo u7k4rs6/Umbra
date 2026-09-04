@@ -13,7 +13,7 @@ def health() -> Dict[str, str]:
 
 def handle_order(order: Order) -> Dict[str, object]:
     """Price an order and return the payload the client receives."""
-    total = compute_total(order.items, TAX_RATE)
+    total = compute_total(order.items, TAX_RATE, order.currency)
     return {
         "order_id": order.order_id,
         "currency": order.currency,
@@ -26,4 +26,4 @@ def handle_order(order: Order) -> Dict[str, object]:
 def quote(sku: str, quantity: int, unit_price: float) -> float:
     """Price a single hypothetical line without creating an order."""
     item = LineItem(sku=sku, quantity=quantity, unit_price=unit_price)
-    return compute_total([item], TAX_RATE)
+    return compute_total([item], TAX_RATE, "USD")
