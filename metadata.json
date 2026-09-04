@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1PWJR81QK7YAARFXEARC5FT",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/fixtures/recorded/README.md",
+    "umbra/fixtures/recorded/beacon/notes.txt",
+    "umbra/fixtures/recorded/beacon/transcript.jsonl",
+    "umbra/fixtures/recorded/classic/notes.txt",
+    "umbra/fixtures/recorded/classic/transcript.jsonl",
+    "umbra/fixtures/recorded/echo/notes.txt",
+    "umbra/fixtures/recorded/echo/transcript.jsonl",
+    "umbra/fixtures/recorded/everything-lit/notes.txt",
+    "umbra/fixtures/recorded/everything-lit/transcript.jsonl",
+    "umbra/fixtures/recorded/leak/notes.txt",
+    "umbra/fixtures/recorded/leak/transcript.jsonl",
+    "umbra/fixtures/recorded/no-reads/notes.txt",
+    "umbra/fixtures/recorded/no-reads/transcript.jsonl",
+    "umbra/fixtures/recorded/partial-read/notes.txt",
+    "umbra/fixtures/recorded/partial-read/transcript.jsonl",
+    "umbra/fixtures/recorded/pre-change/notes.txt",
+    "umbra/fixtures/recorded/pre-change/transcript.jsonl",
+    "umbra/internal/report/json.go",
+    "umbra/internal/report/json_test.go",
+    "umbra/internal/report/layout.go",
+    "umbra/internal/report/layout_test.go",
+    "umbra/internal/report/model.go",
+    "umbra/internal/report/packet.go",
+    "umbra/internal/report/packet_test.go",
+    "umbra/internal/shadow/callsite.go",
+    "umbra/internal/shadow/callsite_test.go",
+    "umbra/internal/shadow/scenarios_test.go",
+    "umbra/internal/shadow/sweep_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 49270,
+    "cache_read_tokens": 7806841,
+    "output_tokens": 43506,
+    "api_call_count": 20
+  }
+}
