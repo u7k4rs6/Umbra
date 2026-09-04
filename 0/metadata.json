@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1PTA4JEYGB7TB1WW4G38JX2",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-04T18:18:51.911408436Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "2105b7c58fc7",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 234,
+    "cache_creation_tokens": 202605,
+    "cache_read_tokens": 15608996,
+    "output_tokens": 105920,
+    "api_call_count": 117
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 203,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "umbra/internal/transcript/event.go": 203
+      }
+    }
+  ]
+}
