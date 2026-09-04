@@ -57,3 +57,30 @@ func TestIntent(t *testing.T) {
 		t.Fatalf("Intent = %q, want %q", got, want)
 	}
 }
+
+// A checkpoint written by the git hook has no summary either, but Entire
+// words the placeholder differently from the imported case.
+const probeShortNotGenerated = `● Checkpoint 01M1PVD1WBK1J1J8GWDNJJR7XZ
+  session  8017734d
+────────────────────────────────────────────────────────────
+## Intent
+
+require an explicit currency
+
+## Summary
+
+*Not generated yet. Run 'entire checkpoint explain --generate 01M1PVD1WBK1J1J8GWDNJJR7XZ' to create an AI summary.*
+`
+
+func TestParseSummaryAbsentWhenNotGenerated(t *testing.T) {
+	if got := ParseSummary(probeShortNotGenerated); got != "" {
+		t.Fatalf("ParseSummary = %q, want empty so the caller falls back", got)
+	}
+}
+
+func TestParseSummaryKeepsRealProse(t *testing.T) {
+	text := "## Summary\n\nChecked the callers. All tests pass.\n"
+	if got := ParseSummary(text); got != "Checked the callers. All tests pass." {
+		t.Fatalf("ParseSummary = %q", got)
+	}
+}
