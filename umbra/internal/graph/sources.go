@@ -212,3 +212,67 @@ func findSymbol(f *Field, file, name string, line int) (string, *Symbol) {
 	}
 	return bestID, f.Symbols[bestID]
 }
+
+// SemanticLanguages returns the languages the installed Graph can resolve
+// calls for. A language outside this set is inventory only: Graph reports its
+// headings or blocks as symbols, but they have no callers, so a change to one
+// cannot cast a shadow.
+func SemanticLanguages(c *Capabilities) map[string]bool {
+	out := map[string]bool{}
+	if c == nil {
+		return out
+	}
+	for lang, rels := range c.RelationByLanguage {
+		for _, r := range rels {
+			if f, ok := familyOf[r]; ok && (f == FamilyCalls || f == FamilyTypeUse || f == FamilyDataFlow) {
+				out[lang] = true
+				break
+			}
+		}
+	}
+	return out
+}
+
+// FilterSources drops changed entities that cannot have dependents.
+//
+// `graph commit` reports every changed entity, including Markdown headings and
+// code fences, because they are symbols in the snapshot. They have no callers
+// and never will, so treating them as light sources fills the map with
+// documentation noise. A source is kept when its language can carry call, type
+// or data-flow relations, which is read from capabilities rather than assumed.
+//
+// The dropped entities are returned so the header can say what was set aside.
+func FilterSources(sources []Source, f *Field, c *Capabilities) (kept []Source, dropped []Source) {
+	semantic := SemanticLanguages(c)
+	for _, s := range sources {
+		if isCodeSource(s, f, semantic) {
+			kept = append(kept, s)
+		} else {
+			dropped = append(dropped, s)
+		}
+	}
+	return kept, dropped
+}
+
+func isCodeSource(s Source, f *Field, semantic map[string]bool) bool {
+	if s.Symbol != "" {
+		if sym := f.Symbols[s.Symbol]; sym != nil {
+			if len(semantic) > 0 && !semantic[sym.Language] {
+				return false
+			}
+			switch sym.Kind {
+			case "section", "code_fence", "document", "config", "import":
+				return false
+			}
+			return true
+		}
+	}
+	// A removed symbol has no entry in the head snapshot. Fall back to the
+	// language of the file it lived in, judged from any symbol still there.
+	if len(semantic) > 0 {
+		for _, id := range f.ByFile[s.File] {
+			return semantic[f.Symbols[id].Language]
+		}
+	}
+	return true
+}

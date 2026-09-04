@@ -445,3 +445,62 @@ func TestVocabulary(t *testing.T) {
 		t.Fatal("expected apply_refund in the symbol vocabulary")
 	}
 }
+
+// graph commit reports Markdown headings and code fences as changed entities.
+// They have no callers and never will, so they must not become light sources.
+func TestFilterSourcesDropsInventoryOnlyLanguages(t *testing.T) {
+	c, err := ParseCapabilities(read(t, "capabilities.json"))
+	if err != nil {
+		t.Fatalf("ParseCapabilities: %v", err)
+	}
+	f := &Field{
+		Symbols: map[string]*Symbol{
+			"py":  {ID: "py", Name: "compute_total", Kind: "function", File: "app/service.py", Language: "Python"},
+			"md":  {ID: "md", Name: "Build-notes", Kind: "section", File: "NOTES.md", Language: "Markdown"},
+			"fen": {ID: "fen", Name: "code_fence_1_text", Kind: "code_fence", File: "NOTES.md", Language: "Markdown"},
+		},
+		ByFile: map[string][]string{"app/service.py": {"py"}, "NOTES.md": {"md", "fen"}},
+	}
+	in := []Source{
+		{Symbol: "py", Name: "compute_total", File: "app/service.py", Change: "signature"},
+		{Symbol: "md", Name: "Build-notes", File: "NOTES.md", Change: "added"},
+		{Symbol: "fen", Name: "code_fence_1_text", File: "NOTES.md", Change: "added"},
+	}
+	kept, dropped := FilterSources(in, f, c)
+	if len(kept) != 1 || kept[0].Name != "compute_total" {
+		t.Fatalf("kept = %v, want only compute_total", kept)
+	}
+	if len(dropped) != 2 {
+		t.Fatalf("dropped = %d, want 2", len(dropped))
+	}
+}
+
+func TestSemanticLanguagesFromRealCapabilities(t *testing.T) {
+	c, err := ParseCapabilities(read(t, "capabilities.json"))
+	if err != nil {
+		t.Fatalf("ParseCapabilities: %v", err)
+	}
+	sem := SemanticLanguages(c)
+	for _, want := range []string{"Python", "Go", "TypeScript", "Rust"} {
+		if !sem[want] {
+			t.Errorf("%s should be semantic", want)
+		}
+	}
+	for _, notWant := range []string{"Markdown", "JSON", "CSS"} {
+		if sem[notWant] {
+			t.Errorf("%s is inventory only and must not be semantic", notWant)
+		}
+	}
+}
+
+// With no capabilities available the filter must not silently drop real code.
+func TestFilterSourcesKeepsEverythingWithoutCapabilities(t *testing.T) {
+	f := &Field{
+		Symbols: map[string]*Symbol{"a": {ID: "a", Kind: "function", File: "x.py", Language: "Python"}},
+		ByFile:  map[string][]string{"x.py": {"a"}},
+	}
+	kept, dropped := FilterSources([]Source{{Symbol: "a", File: "x.py"}}, f, nil)
+	if len(kept) != 1 || len(dropped) != 0 {
+		t.Fatalf("kept %d dropped %d, want everything kept", len(kept), len(dropped))
+	}
+}
