@@ -595,8 +595,12 @@ The disclosure the fork's README would carry, three lines:
 **`scripts/checkpoint-refs-audit.sh`** reads the checkpoint refs on a remote
 and reports, per ref, the bytes it holds and how many lines carry an absolute
 home path or an email address. It deletes nothing and pushes nothing. Its
-output today: **30 refs, 288,677,347 bytes, 48,408 lines with a home path, 420
-with an email address.** The largest single ref is about 11.8 MB. The two
+output grows with every push, which is the point of running it rather than
+guessing. Before the phase 14 commits went up it read 30 refs, 288,677,347
+bytes, 48,408 lines with a home path and 420 with an email address. Straight
+after that push it read **39 refs, 413,032,568 bytes, 71,147 lines with a home
+path and 708 with an email address**: nine commits added 124 MB and 288 more
+addressed lines. The largest single ref is about 15.8 MB. The two
 smallest are the ones worth noticing: `120ebb04a45d` at 27 KB with 15 path
 lines and no addresses, which is the minimal session recorded in phase 12, and
 it shows what a checkpoint looks like when the session that made it was short.
