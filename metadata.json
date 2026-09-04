@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1PYWRQHXGA29X3546B5YTBA",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore",
+    ".playwright-mcp/console-2026-09-04T19-01-44-484Z.log",
+    ".playwright-mcp/page-2026-09-04T19-01-44-554Z.yml",
+    ".playwright-mcp/page-2026-09-04T19-02-31-375Z.yml",
+    "umbra/cmd/entire-umbra/analyze.go",
+    "umbra/cmd/entire-umbra/execute.go",
+    "umbra/cmd/entire-umbra/main.go",
+    "umbra/cmd/entire-umbra/options.go",
+    "umbra/cmd/entire-umbra/options_test.go",
+    "umbra/cmd/entire-umbra/output.go",
+    "umbra/cmd/entire-umbra/record.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 8677,
+    "cache_read_tokens": 5663991,
+    "output_tokens": 5798,
+    "api_call_count": 10
+  }
+}
