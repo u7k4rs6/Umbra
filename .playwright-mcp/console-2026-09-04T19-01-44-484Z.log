@@ -1,0 +1,3 @@
+[      32ms] TypeError: Cannot read properties of undefined (reading 'view_box')
+    at drawField (http://127.0.0.1:8731/umbra.html:223:21)
+    at HTMLDocument.boot (http://127.0.0.1:8731/umbra.html:323:5)

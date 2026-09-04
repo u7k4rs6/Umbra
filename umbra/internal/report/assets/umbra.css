@@ -1,0 +1,342 @@
+/* Umbra report styles. No fonts are fetched; system stacks only. */
+
+:root {
+  --night: #10141C;
+  --ink: #D9DBE1;
+  --ink-2: #8B909C;
+  --rule: #262B35;
+  --lit: #FFF1C9;
+  --lit-glow: #F3C46B;
+  --penumbra: #8E7B57;
+  --umbra: #2B303A;
+  --umbra-edge: #4A5060;
+  --unknown: #5A6070;
+  --fail: #C8553D;
+  --pass: #8FBF9F;
+  --focus: #9CC4FF;
+
+  --ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --night: #FBFBFA;
+    --ink: #1C1F26;
+    --ink-2: #5E6470;
+    --rule: #DAD9D4;
+    --lit: #FFFFFF;
+    --lit-glow: #E8B85A;
+    --penumbra: #B9AE93;
+    --umbra: #1C1F26;
+    --umbra-edge: #6B7080;
+    --unknown: #9AA0AC;
+    --fail: #B3452F;
+    --pass: #3E8A5C;
+    --focus: #1A4F9C;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--night);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--ui);
+}
+
+a { color: var(--focus); }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Header */
+
+.head-line {
+  font-family: var(--mono);
+  color: var(--ink-2);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.head-line strong { color: var(--ink); font-weight: 600; }
+
+.said {
+  margin: 12px 0;
+}
+.said-label {
+  font-size: 12px;
+  color: var(--ink-2);
+  display: block;
+  margin-bottom: 2px;
+}
+.said-text {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--ink);
+}
+.said-from {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  margin: 14px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.fact { display: flex; align-items: center; gap: 8px; }
+.notice { color: var(--ink-2); font-size: 13px; margin: 4px 0; }
+
+/* Two columns above 1100px: map 62%, docket 38%. */
+
+.wrap { display: block; }
+
+@media (min-width: 1101px) {
+  .wrap {
+    display: grid;
+    grid-template-columns: 62% 38%;
+    gap: 0;
+  }
+  .col-docket {
+    border-left: 1px solid var(--rule);
+    padding-left: 20px;
+    margin-left: 20px;
+  }
+}
+
+.col-map { min-width: 0; }
+.col-docket { min-width: 0; max-width: 72ch; }
+.col-docket { overflow-x: hidden; }
+
+#map { width: 100%; height: auto; display: block; }
+
+.noscript {
+  color: var(--ink-2);
+  padding: 40px 0;
+}
+
+/* Footer */
+
+footer {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 13px;
+}
+footer p { margin: 8px 0; }
+footer code, footer pre { font-family: var(--mono); font-size: 12px; }
+footer pre { white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+
+/* Docket */
+
+.docket-head h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+.sub { color: var(--ink-2); font-size: 12px; font-weight: 400; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.filters button {
+  font: 400 12px/1 var(--ui);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 7px 10px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.filters button.on { color: var(--ink); border-color: var(--ink-2); }
+
+table.docket {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.docket col.c-state { width: 14%; }
+table.docket col.c-sym   { width: 35%; }
+table.docket col.c-rel   { width: 14%; }
+table.docket col.c-mods  { width: 28%; }
+table.docket col.c-score { width: 9%; }
+table.docket caption {
+  text-align: left;
+  color: var(--ink-2);
+  font-size: 12px;
+  padding-bottom: 8px;
+}
+table.docket th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 8px 6px 0;
+}
+table.docket td {
+  border-bottom: 1px solid var(--rule);
+  padding: 10px 8px 10px 0;
+  vertical-align: top;
+}
+table.docket td.num, table.docket th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.docket code { font-family: var(--mono); font-size: 12px; }
+
+/* The symbol name stays whole; the path under it is truncated with an
+   ellipsis and carries the full text in its title, which is what the
+   wireframe in the frontend spec shows. */
+td.sym code.name { overflow-wrap: anywhere; }
+td.sym code.path {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-2);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.docket th { white-space: nowrap; }
+table.docket tr.pinned { background: rgba(243, 196, 107, 0.05); }
+table.docket tr.on { background: rgba(156, 196, 255, 0.08); }
+table.docket tr[hidden] { display: none; }
+
+.glyph { font-size: 15px; }
+.state-lit { color: var(--lit-glow); }
+.state-penumbra { color: var(--penumbra); }
+.state-umbra { color: var(--umbra-edge); }
+.state-unknown { color: var(--unknown); }
+.word { font-weight: 600; font-size: 12px; }
+.crack { color: var(--fail); font-weight: 600; }
+.pin { color: var(--lit-glow); font-size: 9px; }
+.reason { display: block; color: var(--ink-2); font-size: 12px; margin-top: 4px; }
+
+.chip {
+  display: inline-block;
+  max-width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 2px 6px;
+  margin: 0 6px 4px 0;
+  line-height: 1.25;
+}
+.chip b { display: block; font-size: 12px; font-weight: 400; white-space: nowrap; }
+.chip i { display: block; font-size: 10.5px; font-style: normal; color: var(--ink-2); overflow-wrap: normal; }
+
+details summary {
+  cursor: pointer;
+  color: var(--ink-2);
+  font-size: 12px;
+  margin-top: 4px;
+}
+details p { margin: 6px 0; }
+details pre {
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  color: var(--fail);
+  margin: 6px 0;
+}
+.lit-note { margin-top: 10px; }
+
+/* Map interaction */
+
+.node { cursor: pointer; }
+.node .hit { fill: transparent; }
+.label { font-family: var(--mono); font-size: 12px; pointer-events: none; }
+.label.lit { fill: var(--ink); }
+.label.dim { fill: var(--ink-2); paint-order: stroke; stroke: var(--night); stroke-width: 3px; stroke-linejoin: round; }
+.label[hidden] { display: none; }
+.src-label { font-family: var(--mono); font-size: 22px; fill: var(--ink); }
+.src-kind {
+  font-family: var(--ui);
+  font-size: 11px;
+  fill: var(--ink-2);
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.src-label {
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.edge { fill: none; }
+.node:focus { outline: none; }
+.node:focus .ring-focus { display: block; }
+.ring-focus { display: none; }
+.src-label.src-small { font-size: 14px; }
+
+/* Detail panel. It overlays the docket column on desktop and slides up from
+   the bottom on a narrow screen. */
+
+.detail {
+  position: absolute;
+  inset: 0 0 auto 0;
+  background: var(--night);
+  border: 1px solid var(--rule);
+  padding: 16px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.col-docket { position: relative; }
+
+.detail h3 { font-family: var(--mono); font-size: 18px; font-weight: 400; margin: 0 0 2px; }
+.detail p { margin: 8px 0; }
+.detail-h { font-weight: 600; font-size: 12px; color: var(--ink-2); margin-top: 16px; }
+.detail-state b { font-weight: 600; }
+.detail ul { margin: 6px 0; padding-left: 18px; font-size: 13px; }
+.detail pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 6px 8px;
+  margin: 6px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.detail-close {
+  float: right;
+  font: 400 12px var(--ui);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 8px 10px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.chain button {
+  font: 400 12px var(--mono);
+  color: var(--focus);
+  background: transparent;
+  border: 0;
+  padding: 2px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* The score factors as a stacked bar, drawn in CSS. No chart library. */
+.bar { display: flex; width: 100%; height: 22px; border: 1px solid var(--rule); }
+.bar .seg {
+  font-size: 10px;
+  line-height: 20px;
+  color: var(--night);
+  overflow: hidden;
+  white-space: nowrap;
+  padding-left: 3px;
+}
+.seg-relation  { background: var(--lit-glow); }
+.seg-dependents{ background: var(--penumbra); }
+.seg-state     { background: var(--ink-2); }
+.seg-farfield  { background: var(--umbra-edge); }
+.seg-faultline { background: var(--fail); }
+.seg-scar      { background: var(--unknown); }
+.seg-test      { background: var(--pass); }
