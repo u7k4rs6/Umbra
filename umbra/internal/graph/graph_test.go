@@ -1,10 +1,13 @@
 package graph
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/u7k4rs6/Umbra/umbra/internal/runner"
 )
 
 func read(t *testing.T, name string) []byte {
@@ -506,5 +509,47 @@ func TestFilterSourcesKeepsEverythingWithoutCapabilities(t *testing.T) {
 	kept, dropped := FilterSources([]Source{{Symbol: "a", File: "x.py"}}, f, nil)
 	if len(kept) != 1 || len(dropped) != 0 {
 		t.Fatalf("kept %d dropped %d, want everything kept", len(kept), len(dropped))
+	}
+}
+
+// graph checkpoint returns the changes of the commit the checkpoint belongs
+// to. When a reference was paired with a checkpoint by session time, that is a
+// different commit, and using it would describe one commit under another one's
+// name. This came out of a fresh clone, where the pairing chose a checkpoint
+// that owned a commit and the report described that commit instead.
+func TestLoadSourcesIgnoresACheckpointThatDoesNotOwnTheCommit(t *testing.T) {
+	f := runner.NewFake()
+	f.Set("entire", []string{"graph", "checkpoint", "CK", "--json"},
+		runner.Result{Stdout: `{"base":"x","head":"y","files":[{"path":"other/file.go","status":"M","language":"Go",
+		 "changes":[{"type":"body_changed","kind":"function","name":"somethingElse","after_start_line":1,"dependents_count":0}]}]}`})
+	f.Set("entire", []string{"graph", "commit", "SHA", "--repo", "/repo", "--json"},
+		runner.Result{Stdout: `{"base":"p","head":"SHA","files":[{"path":"app/service.py","status":"M","language":"Python",
+		 "changes":[{"type":"signature_changed","kind":"function","name":"compute_total","after_start_line":20,"dependents_count":7}]}]}`})
+
+	// Not owned: the checkpoint must be ignored entirely.
+	got, err := LoadSources(context.Background(), f, "/repo", "CK", "SHA", false)
+	if err != nil {
+		t.Fatalf("LoadSources: %v", err)
+	}
+	if got.Route != "graph commit" {
+		t.Fatalf("route = %q, want the commit route", got.Route)
+	}
+	if len(got.Sources) != 1 || got.Sources[0].Name != "compute_total" {
+		t.Fatalf("sources = %v, want the commit's own change", got.Sources)
+	}
+	if got.Note == "" || !strings.Contains(got.Note, "session time") {
+		t.Fatalf("the header should say why, got %q", got.Note)
+	}
+
+	// Owned: the documented bridge is used.
+	got, err = LoadSources(context.Background(), f, "/repo", "CK", "SHA", true)
+	if err != nil {
+		t.Fatalf("LoadSources: %v", err)
+	}
+	if got.Route != "graph checkpoint" {
+		t.Fatalf("route = %q, want the checkpoint route", got.Route)
+	}
+	if len(got.Sources) != 1 || got.Sources[0].Name != "somethingElse" {
+		t.Fatalf("sources = %v", got.Sources)
 	}
 }
