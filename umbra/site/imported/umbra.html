@@ -3,182 +3,692 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src data:; connect-src 'self'">
-<title>Umbra</title>
-<link rel="stylesheet" href="umbra.css">
-<style>
-  body { padding: 0; }
-  main { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
-  h1 { font-size: 40px; font-weight: 600; margin: 0 0 12px; letter-spacing: -0.01em; }
-  h2 { font-size: 18px; font-weight: 600; margin: 40px 0 10px; }
-  p { max-width: 72ch; }
-  .lede { font-size: 16px; }
-  .hero { margin: 28px 0; }
-  .hero svg { width: 100%; height: auto; }
-  .caption { color: var(--ink-2); font-size: 13px; max-width: 72ch; }
-  .drop {
-    border: 1px dashed var(--rule);
-    border-radius: 3px;
-    padding: 28px 20px;
-    text-align: center;
-    color: var(--ink-2);
-    margin: 16px 0;
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<title>Eclipse map 9b940c5e4916</title>
+<style>/* Umbra report styles. No fonts are fetched; system stacks only. */
+
+:root {
+  --night: #10141C;
+  --ink: #D9DBE1;
+  --ink-2: #8B909C;
+  --rule: #262B35;
+  --lit: #FFF1C9;
+  --lit-glow: #F3C46B;
+  --penumbra: #8E7B57;
+  --umbra: #2B303A;
+  --umbra-edge: #4A5060;
+  --unknown: #5A6070;
+  --fail: #C8553D;
+  --pass: #8FBF9F;
+  --focus: #9CC4FF;
+  /* On the night scheme a pool is simply the absence of glow, so nothing is
+     painted over it. */
+  --pool-ink: transparent;
+
+  --ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --night: #FBFBFA;
+    --ink: #1C1F26;
+    --ink-2: #5E6470;
+    --rule: #DAD9D4;
+    --lit: #FFFFFF;
+    --lit-glow: #E8B85A;
+    --penumbra: #B9AE93;
+    --umbra: #1C1F26;
+    --umbra-edge: #6B7080;
+    --unknown: #9AA0AC;
+    --fail: #B3452F;
+    --pass: #3E8A5C;
+    --focus: #1A4F9C;
+    /* On a light ground, removing the warm glow makes a pool brighter than
+       its surroundings, which reads as more light rather than less. The pools
+       are painted instead, so shadow means the same thing in both schemes. */
+    --pool-ink: rgba(28, 31, 38, 0.17);
   }
-  .drop.over { border-color: var(--focus); color: var(--ink); }
-  .drop input { margin-top: 10px; color: var(--ink-2); }
-  table.states { border-collapse: collapse; margin: 12px 0; }
-  table.states td, table.states th {
-    border-bottom: 1px solid var(--rule);
-    padding: 8px 14px 8px 0;
-    text-align: left;
-    vertical-align: top;
+}
+
+* { box-sizing: border-box; }
+
+html, body { max-width: 100%; overflow-x: hidden; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--night);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--ui);
+}
+
+a { color: var(--focus); }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Header */
+
+.head-line {
+  font-family: var(--mono);
+  color: var(--ink-2);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.head-line strong { color: var(--ink); font-weight: 600; }
+
+.said {
+  margin: 12px 0;
+}
+.said-label {
+  font-size: 12px;
+  color: var(--ink-2);
+  display: block;
+  margin-bottom: 2px;
+}
+.said-text {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--ink);
+}
+.said-from {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  margin: 14px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.fact { display: flex; align-items: center; gap: 8px; }
+.notice { color: var(--ink-2); font-size: 13px; margin: 4px 0; }
+
+/* Two columns above 1100px: map 62%, docket 38%. */
+
+.wrap { display: block; }
+
+@media (min-width: 1101px) {
+  .wrap {
+    display: grid;
+    grid-template-columns: 62% 38%;
+    gap: 0;
   }
-  table.states th { font-size: 12px; color: var(--ink-2); font-weight: 600; }
-  pre.block {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    border: 1px solid var(--rule);
-    padding: 12px;
-    overflow-x: auto;
-    white-space: pre;
+  .col-docket {
+    border-left: 1px solid var(--rule);
+    padding-left: 20px;
+    margin-left: 20px;
   }
-  ul { max-width: 72ch; }
-  li { margin: 6px 0; }
-  .back { margin-left: 10px; }
+}
+
+.col-map { min-width: 0; }
+.col-docket { min-width: 0; max-width: 72ch; }
+.col-docket { overflow-x: hidden; }
+
+#map { width: 100%; height: auto; display: block; }
+
+.noscript {
+  color: var(--ink-2);
+  padding: 40px 0;
+}
+
+/* Footer */
+
+footer {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 13px;
+}
+footer p { margin: 8px 0; }
+footer code, footer pre {
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+footer code { display: inline-block; max-width: 100%; }
+footer pre { white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+
+/* Docket */
+
+.docket-head h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+.sub { color: var(--ink-2); font-size: 12px; font-weight: 400; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.filters button {
+  font: 400 12px/1 var(--ui);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 7px 10px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.filters button.on { color: var(--ink); border-color: var(--ink-2); }
+
+table.docket {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.docket col.c-state { width: 14%; }
+table.docket col.c-sym   { width: 35%; }
+table.docket col.c-rel   { width: 14%; }
+table.docket col.c-mods  { width: 28%; }
+table.docket col.c-score { width: 9%; }
+table.docket caption {
+  text-align: left;
+  color: var(--ink-2);
+  font-size: 12px;
+  padding-bottom: 8px;
+}
+table.docket th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 8px 6px 0;
+}
+table.docket td {
+  border-bottom: 1px solid var(--rule);
+  padding: 10px 8px 10px 0;
+  vertical-align: top;
+}
+table.docket td.num, table.docket th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.docket code { font-family: var(--mono); font-size: 12px; }
+
+/* The symbol name stays whole; the path under it is truncated with an
+   ellipsis and carries the full text in its title, which is what the
+   wireframe in the frontend spec shows. */
+td.sym code.name { overflow-wrap: anywhere; }
+td.sym code.path {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-2);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.docket th { white-space: nowrap; }
+table.docket tr.pinned { background: rgba(243, 196, 107, 0.05); }
+table.docket tr.on { background: rgba(156, 196, 255, 0.08); }
+table.docket tr[hidden] { display: none; }
+
+.glyph { font-size: 15px; }
+.state-lit { color: var(--lit-glow); }
+.state-penumbra { color: var(--penumbra); }
+.state-umbra { color: var(--umbra-edge); }
+.state-unknown { color: var(--unknown); }
+.word { font-weight: 600; font-size: 12px; }
+.crack { color: var(--fail); font-weight: 600; }
+.pin { color: var(--lit-glow); font-size: 9px; }
+.reason { display: block; color: var(--ink-2); font-size: 12px; margin-top: 4px; }
+
+.chip {
+  display: inline-block;
+  max-width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 2px 6px;
+  margin: 0 6px 4px 0;
+  line-height: 1.25;
+}
+.chip b { display: block; font-size: 12px; font-weight: 400; white-space: nowrap; }
+.chip i { display: block; font-size: 10.5px; font-style: normal; color: var(--ink-2); overflow-wrap: normal; }
+
+details summary {
+  cursor: pointer;
+  color: var(--ink-2);
+  font-size: 12px;
+  margin-top: 4px;
+}
+details p { margin: 6px 0; }
+details pre {
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  color: var(--fail);
+  margin: 6px 0;
+}
+.lit-note { margin-top: 10px; }
+
+/* Map interaction */
+
+.node { cursor: pointer; }
+.node .hit { fill: transparent; }
+.label { font-family: var(--mono); font-size: 12px; pointer-events: none; }
+.label.lit { fill: var(--ink); }
+.label.dim { fill: var(--ink-2); paint-order: stroke; stroke: var(--night); stroke-width: 3px; stroke-linejoin: round; }
+.label[hidden] { display: none; }
+.src-label { font-family: var(--mono); font-size: 22px; fill: var(--ink); }
+.src-kind {
+  font-family: var(--ui);
+  font-size: 11px;
+  fill: var(--ink-2);
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.src-label {
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.edge { fill: none; }
+.node:focus { outline: none; }
+.node:focus .ring-focus { display: block; }
+.ring-focus { display: none; }
+.src-label.src-small { font-size: 14px; }
+
+/* Detail panel. It overlays the docket column on desktop and slides up from
+   the bottom on a narrow screen. */
+
+.detail {
+  position: absolute;
+  inset: 0 0 auto 0;
+  background: var(--night);
+  border: 1px solid var(--rule);
+  padding: 16px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.col-docket { position: relative; }
+
+.detail h3 { font-family: var(--mono); font-size: 18px; font-weight: 400; margin: 0 0 2px; }
+.detail p { margin: 8px 0; }
+.detail-h { font-weight: 600; font-size: 12px; color: var(--ink-2); margin-top: 16px; }
+.detail-state b { font-weight: 600; }
+.detail ul { margin: 6px 0; padding-left: 18px; font-size: 13px; }
+.detail pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 6px 8px;
+  margin: 6px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.detail-close {
+  float: right;
+  font: 400 12px var(--ui);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 8px 10px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.chain button {
+  font: 400 12px var(--mono);
+  color: var(--focus);
+  background: transparent;
+  border: 0;
+  padding: 2px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* The score factors as a stacked bar, drawn in CSS. No chart library. */
+.bar { display: flex; width: 100%; height: 22px; border: 1px solid var(--rule); }
+.bar .seg {
+  font-size: 10px;
+  line-height: 20px;
+  color: var(--night);
+  overflow: hidden;
+  white-space: nowrap;
+  padding-left: 3px;
+}
+.seg-relation  { background: var(--lit-glow); }
+.seg-dependents{ background: var(--penumbra); }
+.seg-state     { background: var(--ink-2); }
+.seg-farfield  { background: var(--umbra-edge); }
+.seg-faultline { background: var(--fail); }
+.seg-scar      { background: var(--unknown); }
+.seg-test      { background: var(--pass); }
+
+/* Attention replay */
+
+.replay {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.replay-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.replay-label { font-weight: 600; margin-right: 6px; }
+.replay button {
+  font: 400 12px var(--ui);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 8px 12px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.counter { color: var(--ink-2); font-size: 12px; margin-left: auto; }
+
+.track {
+  position: relative;
+  height: 40px;
+  margin: 10px 8px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+button.tick {
+  position: absolute;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  /* The control styling above sets a 40px minimum for touch targets; a tick
+     is not a control of that kind, and min-height would stretch it. */
+  min-height: 0;
+  min-width: 0;
+  margin-left: -4.5px;
+  padding: 0;
+  border: 1px solid var(--ink-2);
+  background: var(--ink-2);
+  border-radius: 50%;
+  cursor: pointer;
+}
+button.tick-grep, button.tick-glob { background: transparent; }
+button.tick-mention { background: transparent; border-style: dotted; }
+button.tick-quoted { background: linear-gradient(to right, var(--ink-2) 50%, transparent 50%); }
+button.tick-edit { border-radius: 0; transform: rotate(45deg); background: var(--lit-glow); border-color: var(--lit-glow); }
+button.tick-command { border-radius: 0; width: 3px; margin-left: -1.5px; height: 13px; }
+button.tick.cut {
+  width: 13px; height: 13px; margin-left: -6.5px; top: 10px;
+  background: var(--lit); border-color: var(--lit);
+}
+.playhead {
+  position: absolute;
+  top: 4px;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--focus);
+  pointer-events: none;
+}
+.now { color: var(--ink-2); font-size: 12px; font-family: var(--mono); margin: 4px 0 0; min-height: 1.4em; }
+
+.torch { pointer-events: none; mix-blend-mode: screen; }
+
+/* Motion happens only in response to an action, and never on load. */
+.node circle, .node path, .node polyline { transition: fill 240ms ease-out, opacity 240ms ease-out, r 240ms ease-out; }
+.pools circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .node circle, .node path, .node polyline, .pools circle { transition: none; }
+  .torch { display: none; }
+}
+
+/* Print: day scheme, static map with every label, docket expanded, no replay. */
+@media print {
+  :root {
+    --night: #FFFFFF;
+    --ink: #1C1F26;
+    --ink-2: #5E6470;
+    --rule: #DAD9D4;
+    --lit: #FFFFFF;
+    --lit-glow: #E8B85A;
+    --penumbra: #B9AE93;
+    --umbra: #1C1F26;
+    --umbra-edge: #6B7080;
+    --unknown: #9AA0AC;
+    --fail: #B3452F;
+    --pass: #3E8A5C;
+    --focus: #1A4F9C;
+    --pool-ink: rgba(28, 31, 38, 0.17);
+  }
+  .replay, .filters, .detail, .torch { display: none !important; }
+  .label[hidden] { display: block !important; }
+  table.docket tr[hidden] { display: table-row !important; }
+  details { display: block; }
+  details > summary { display: none; }
+  table.docket tr, .chip { break-inside: avoid; page-break-inside: avoid; }
+  .wrap { display: block; }
+}
+
+.coverage { color: var(--ink-2); font-size: 13px; margin: 4px 0; }
+.coverage-note { max-width: 72ch; }
 </style>
 </head>
 <body>
-<main>
 
-<h1>Umbra</h1>
-<p class="lede">Umbra shows the code an AI agent's change affects but the agent never looked at. It runs as a plugin for the Entire CLI, takes the dependents from Entire Graph, subtracts what the session actually read according to the checkpoint, and runs the tests that reach whatever is left in shadow.</p>
+<header>
+  <p class="head-line">
+    Umbra 0.1.0&nbsp; checkpoint <strong>9b940c5e4916</strong>&nbsp;
+    commit <strong>0941dad</strong>&nbsp; parent <strong>b77883b</strong>&nbsp;
+    agent <strong>Claude Code</strong>&nbsp; depth <strong>2</strong>
+  </p>
 
-<section class="hero">
-  <p id="said" class="said-text"></p>
-  <svg id="map" viewBox="0 0 1200 800" aria-label="Eclipse map"></svg>
-  <noscript><p class="caption">The map needs JavaScript. Everything else on this page reads without it.</p></noscript>
+  
 
-  <section id="replay" class="replay" aria-label="Attention replay">
-    <div class="replay-controls">
-      <span class="replay-label">Sweep <span class="sub">replay the session's attention</span></span>
-      <button type="button" data-act="play" aria-label="Play the sweep">Play</button>
-      <button type="button" data-act="back" aria-label="Step back">&#9664;&#9664;</button>
-      <button type="button" data-act="fwd" aria-label="Step forward">&#9654;&#9654;</button>
-      <button type="button" data-act="speed" aria-label="Playback speed">1x</button>
-      <span class="counter"></span>
+  <div class="facts">
+    <span class="fact"><svg width="22" height="22" viewBox="0 0 22 22" role="img" aria-label="0 of 4 dependents lit"><circle cx="11" cy="11" r="9" fill="var(--lit)"/><circle cx="11.00" cy="11" r="9" fill="var(--umbra)"/></svg> <span>0 of 4 dependents lit</span></span>
+    <span class="fact">probes not run</span>
+    <span class="fact">no sweep</span>
+  </div>
+
+  <p class="coverage">How the session worked: 40 file reads, 122 edits, 0 searches, 1156 shell commands.</p>
+  
+
+  <p class="notice">commit 0941dad carries no Entire-Checkpoint trailer, so it was paired with checkpoint 9b940c5 by session time</p><p class="notice">the checkpoint was paired with this commit by session time and owns a commit of its own, so the change came from graph commit</p><p class="notice">21 changed entity(s) in languages the graph cannot resolve calls for were not treated as sources</p>
+</header>
+
+<div class="wrap">
+  <div class="col-map">
+    <svg id="map" viewBox="0 0 1200 800" aria-label="Eclipse map"></svg>
+    <noscript><p class="noscript">The map needs JavaScript. The docket below lists every shadowed dependent.</p></noscript>
+  </div>
+  <div class="col-docket">
+    <div class="docket-head">
+      <h2>Docket <span class="sub">the shadowed dependents, ranked</span></h2>
+      <div class="filters" id="filters">
+        <button type="button" data-filter="shadowed" class="on">shadowed only</button>
+        <button type="button" data-filter="all">all</button>
+        <button type="button" data-filter="probes">probes only</button>
+        <button type="button" data-filter="cracks">cracks only</button>
+        <button type="button" data-filter="leaks">leaks</button>
+      </div>
     </div>
-    <div class="track"></div>
-    <p class="now" aria-live="polite"></p>
-  </section>
 
-  <p class="caption">
-    A real session, on a seeded fixture. The map is the report of checkpoint
-    <code>b20f84567474</code> against commit <code>0063443</code> of this repository, where an
-    agent changed the signature of <code>compute_total</code> in <code>umbra/fixtures/app</code>.
-    The session, the tool activity and the test results are all real; what is arranged is the
-    fixture itself, which was built to have callers the session would miss.
-    The sentence above the map is the agent's own account of the change, taken from the
-    transcript Entire stored, because that checkpoint carries no generated summary; the header
-    says so and Umbra never checks whether the sentence is true.
-    Press play to watch where the session actually looked. The cracked nodes are tests it never
-    opened.
-  </p>
-</section>
+    <table class="docket" id="docket">
+      <caption>Every dependent the change reaches, with the evidence for its state and the six factors behind its score.</caption>
+      <colgroup>
+        <col class="c-state"><col class="c-sym">
+        <col class="c-rel"><col class="c-mods"><col class="c-score">
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Symbol and where</th>
+          <th scope="col">Relation</th>
+          <th scope="col">Why it ranks</th>
+          <th scope="col" class="num">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+      
+        <tr data-id="local/head:Python:certify/rmsnorm_trace.py:function:summarize_repeat" data-state="umbra"
+            data-leak="0"
+            data-crack="0"
+            data-probe="0"
+            >
+          <td class="state">
+            
+            <span class="glyph state-umbra">○</span>
+            <span class="word">umbra</span>
+            
+          </td>
+          <td class="sym">
+            <code class="name">summarize_repeat</code>
+            <code class="path" title="certify/rmsnorm_trace.py:150">certify/rmsnorm_trace.py:150</code>
+          </td>
+          <td class="rel">direct caller<br><span class="sub">depth 1</span></td>
+          <td class="mods">
+            
+            
+            <details>
+              <summary>evidence</summary>
+              <p>nothing in the session touched or mentioned certify/rmsnorm_trace.py</p>
+              
+              <p class="sub">relation 3 x dependents 2.585 x state 1 x far field 1 x fault line 1</p>
+              
+              
+              
+            </details>
+          </td>
+          <td class="num">7.8</td>
+        </tr>
+      
+        <tr data-id="local/head:Python:certify/sched_trace.py:function:per_token_widths" data-state="umbra"
+            data-leak="0"
+            data-crack="0"
+            data-probe="0"
+            >
+          <td class="state">
+            
+            <span class="glyph state-umbra">○</span>
+            <span class="word">umbra</span>
+            
+          </td>
+          <td class="sym">
+            <code class="name">per_token_widths</code>
+            <code class="path" title="certify/sched_trace.py:73">certify/sched_trace.py:73</code>
+          </td>
+          <td class="rel">direct caller<br><span class="sub">depth 1</span></td>
+          <td class="mods">
+            
+            
+            <details>
+              <summary>evidence</summary>
+              <p>nothing in the session touched or mentioned certify/sched_trace.py</p>
+              
+              <p class="sub">relation 3 x dependents 2.585 x state 1 x far field 1 x fault line 1</p>
+              
+              
+              
+            </details>
+          </td>
+          <td class="num">7.8</td>
+        </tr>
+      
+        <tr data-id="local/head:Python:certify/rmsnorm_trace.py:function:analyse" data-state="umbra"
+            data-leak="0"
+            data-crack="0"
+            data-probe="0"
+            >
+          <td class="state">
+            
+            <span class="glyph state-umbra">○</span>
+            <span class="word">umbra</span>
+            
+          </td>
+          <td class="sym">
+            <code class="name">analyse</code>
+            <code class="path" title="certify/rmsnorm_trace.py:168">certify/rmsnorm_trace.py:168</code>
+          </td>
+          <td class="rel">transitive caller<br><span class="sub">depth 2</span></td>
+          <td class="mods">
+            <span class="chip"><b>transitive</b><i>reached through another symbol</i></span>
+            
+            <details>
+              <summary>evidence</summary>
+              <p>nothing in the session touched or mentioned certify/rmsnorm_trace.py</p>
+              
+              <p class="sub">relation 1.5 x dependents 3.322 x state 1 x far field 1 x fault line 1</p>
+              
+              
+              
+            </details>
+          </td>
+          <td class="num">5.0</td>
+        </tr>
+      
+        <tr data-id="local/head:Python:certify/rmsnorm_artifact.py:function:collect" data-state="umbra"
+            data-leak="0"
+            data-crack="0"
+            data-probe="0"
+            >
+          <td class="state">
+            
+            <span class="glyph state-umbra">○</span>
+            <span class="word">umbra</span>
+            
+          </td>
+          <td class="sym">
+            <code class="name">collect</code>
+            <code class="path" title="certify/rmsnorm_artifact.py:77">certify/rmsnorm_artifact.py:77</code>
+          </td>
+          <td class="rel">transitive caller<br><span class="sub">depth 2</span></td>
+          <td class="mods">
+            <span class="chip"><b>transitive</b><i>reached through another symbol</i></span>
+            
+            <details>
+              <summary>evidence</summary>
+              <p>nothing in the session touched or mentioned certify/rmsnorm_artifact.py</p>
+              
+              <p class="sub">relation 1.5 x dependents 2.585 x state 1 x far field 1 x fault line 1</p>
+              
+              
+              
+            </details>
+          </td>
+          <td class="num">3.9</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
 
-<h2>Not seeded</h2>
-<section class="hero">
-  <p id="said-imported" class="said-text"></p>
-  <svg id="map-imported" viewBox="0 0 1200 800" aria-label="Eclipse map of an imported session"></svg>
-  <p class="caption">
-    A real session from another project, imported into Entire. Nothing here was arranged.
-    The session changed <code>block_width</code> and <code>main</code> in a Python project of the
-    builder's, and every one of the four symbols that depend on them came back umbra, including
-    two in the very file it was editing. It is not a session that ignored its files: it made
-    40 file reads and 122 edits. It read plenty. It did not read these.
-    Tests were not run, because that project's runner is not set up on this machine, so the map
-    shows the shadow without probes.
-  </p>
-</section>
-
-<h2>View your own report</h2>
-<div class="drop" id="drop">
-  <p>Drop an <code>umbra.json</code> here to view it. Nothing is uploaded; the map is drawn in your browser.</p>
-  <input type="file" id="file" accept="application/json,.json" aria-label="Choose an umbra.json file">
-  <button type="button" id="back" class="back" hidden>back to the sample</button>
+    <aside id="detail" class="detail" hidden aria-label="Node detail">
+      <button type="button" class="detail-close" aria-label="Close detail">Close</button>
+      <div class="detail-body"></div>
+    </aside>
+  </div>
 </div>
-<p class="caption" id="dropmsg" role="status"></p>
 
-<h2>What the states mean</h2>
-<table class="states">
-  <thead><tr><th>State</th><th>Meaning</th></tr></thead>
-  <tbody>
-    <tr><td><span class="glyph state-lit">&#9679;</span> <b>Lit</b></td>
-        <td>The session read the file with a range covering the symbol, at or after the change began, or it edited the file.</td></tr>
-    <tr><td><span class="glyph state-penumbra">&#9680;</span> <b>Penumbra</b></td>
-        <td>Half seen. One of the five tiers below.</td></tr>
-    <tr><td><span class="glyph state-umbra">&#9675;</span> <b>Umbra</b></td>
-        <td>Nothing in the session touched or mentioned the file.</td></tr>
-    <tr><td><span class="glyph state-unknown">?</span> <b>Unknown</b></td>
-        <td>The transcript carries no tool events and no mentions, so no state can be computed. This is an answer, not an error.</td></tr>
-  </tbody>
-</table>
-
-<p>The penumbra tiers, strongest evidence first:</p>
-<p>
-  <span class="chip"><b>glance</b><i>a partial read whose range missed the symbol</i></span>
-  <span class="chip"><b>glimpse</b><i>only a search hit on the file</i></span>
-  <span class="chip"><b>quoted</b><i>its content appeared inside a tool result</i></span>
-  <span class="chip"><b>afterimage</b><i>read fully, but only before the change began</i></span>
-  <span class="chip"><b>echo</b><i>named in the agent's own words, never opened</i></span>
-</p>
-
-<h2>How the ranking works</h2>
-<p>Every shadowed node gets a score from six factors, and every factor is printed next to the node so you can recompute the number by hand.</p>
-<ul>
-  <li><b>Relation weight.</b> A direct caller is 3, a data flow or type consumer 2, a caller reached through another symbol 1.5, a co-change file 1.</li>
-  <li><b>How much depends on it.</b> Multiplied by 1 plus the base-two logarithm of 1 plus its own dependents.</li>
-  <li><b>How weakly it was seen.</b> Multiplied by 1 for umbra, 0.7 for echo, 0.6 for afterimage, 0.5 for the other penumbra tiers, 0 for lit.</li>
-  <li><b>Far field.</b> Multiplied by 1.5 when it sits in a different package from the symbol that changed.</li>
-  <li><b>Fault line.</b> Multiplied by 1.5 when the call site sits inside error handling.</li>
-  <li><b>Tests.</b> Plus 3 if it is a test, plus 2 if a test reaches it.</li>
-</ul>
-<p>Worked from the sample: <code>test_rounding</code> is a direct caller, so 3. It has no dependents of its own, so the second factor is 1. It is full umbra, so 1. It lives in <code>tests/</code> while the change is in <code>app/</code>, so 1.5. The call site is ordinary code, so 1. It is a test, so add 3. That is 3 x 1 x 1 x 1.5 x 1 + 3 = 7.5.</p>
-<p><b>The beacon override.</b> A call site within four lines of a <code>SAFETY</code>, <code>CRITICAL</code> or <code>INVARIANT</code> comment is pinned to the top of the docket whatever it scored, with the comment shown. Somebody wrote that note by hand; it outranks a heuristic.</p>
-<p><b>The scar factor</b> is opt in with <code>--history</code>: a file with several recent fix commits is multiplied by up to 2. It is off by default because it is noisy, and printed like every other factor when it is on.</p>
-<p><b>The full sweep.</b> After the selected tests, the whole suite runs once. Any test that changed state but was not selected is a leak, and each leak carries the reason the selection missed it: a path deeper than the search went, no resolved call edges from the test file, a path only over a relation Umbra does not follow, or nothing the graph can see at all. The count is printed even when it is zero, because a selection that audits itself is worth more than one that does not.</p>
-
-<h2>Install and run</h2>
-<pre class="block">go install github.com/u7k4rs6/Umbra/umbra/cmd/entire-umbra@main
-entire umbra HEAD --test "pytest -v" --out ./umbra-out
-open ./umbra-out/umbra.html</pre>
-<p>Requires the Entire CLI with Checkpoints enabled and the entire-graph plugin. Works offline. There is no model anywhere in Umbra.</p>
-<p class="caption">The runner is <code>pytest -v</code> rather than <code>pytest -q</code>: quiet mode prints no per-test names, so the verifier cannot tell you which test broke.</p>
-
-<h2>Reproduce the demo</h2>
-<pre class="block">git clone https://github.com/u7k4rs6/Umbra
-cd Umbra/umbra/fixtures/app && ./setup.sh
-cd ../../..
-. umbra/fixtures/app/.venv/bin/activate
-entire umbra 0063443 --test "pytest -v"</pre>
-<p class="caption">The venv is activated because the runner has to be on <code>PATH</code>. Umbra runs the tests in a detached worktree of the commit, so a runner given as a path relative to the repository root will not resolve there, and a runner that cannot start leaves the verifier nothing to parse.</p>
-<p>The fixture is seeded: it is built to produce lit, penumbra and umbra nodes, and a signature change that breaks tests in two files the session never opened. The report says so, and so does this page.</p>
-
-<h2>Limitations</h2>
-<ul>
-  <li>Read evidence is file and line-range based. A mention in the agent's text is attention, not reading, and is ranked as the weakest tier.</li>
-  <li>Graph edges are not complete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined. The sweep's leak reasons are how you see the gap.</li>
-  <li>Fault lines and beacons are detected by a regular expression window around the call-site line, not by a parser.</li>
-  <li>Ranking weights are hand set and printed. They are a heuristic, not a measurement.</li>
-  <li>One transcript adapter. An agent whose transcript carries no tool records gets the unknown state, which is the correct answer rather than a guess.</li>
-</ul>
+<section id="replay" class="replay" aria-label="Attention replay">
+  <div class="replay-controls">
+    <span class="replay-label">Sweep <span class="sub">replay the session's attention</span></span>
+    <button type="button" data-act="play" aria-label="Play the sweep">Play</button>
+    <button type="button" data-act="back" aria-label="Step back">&#9664;&#9664;</button>
+    <button type="button" data-act="fwd" aria-label="Step forward">&#9654;&#9654;</button>
+    <button type="button" data-act="speed" aria-label="Playback speed">1x</button>
+    <span class="counter" aria-live="off"></span>
+  </div>
+  <div class="track"></div>
+  <p class="now" aria-live="polite"></p>
+</section>
 
 <footer>
-  <p>Built during Bengaluru Tech Week on the Entire ecosystem. Source, checkpoints and the session record are in the repository: <a href="https://github.com/u7k4rs6/Umbra">github.com/u7k4rs6/Umbra</a></p>
+  <p>graph edges are incomplete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined. read evidence is file and line-range based; a mention in the agent&#39;s text is attention, not reading, and is the weakest tier. fault lines and beacons are matched by a regex window around the call site, not by a parser. ranking weights are hand set and printed; they are a heuristic, not a measurement. relations not traversed: CONFIGURES, CONSTRUCTS, EMITS, HANDLES_GRAPHQL, HANDLES_GRPC, HANDLES_ROUTE, HANDLES_TOOL, HANDLES_TRPC, HTTP_CALLS, LISTENS_ON, RESOURCE_DEPENDS_ON, SIMILAR_TO. </p>
+  <p>Reproduce: <code>entire umbra 9b940c5e4916 --run none</code></p>
+  <p>Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
 </footer>
 
-</main>
-
-<script type="application/json" id="umbra-imported">{
+<script type="application/json" id="umbra-data">{
   "umbra_version": "0.1.0",
   "checkpoint": {
     "id": "9b940c5e4916",
@@ -16683,1285 +17193,1181 @@ entire umbra 0063443 --test "pytest -v"</pre>
     "entire checkpoint explain 9b940c5e4916 --raw-transcript",
     "entire checkpoint explain 9b940c5e4916 --short"
   ]
-}
+}</script>
+<script>// Umbra report. Vanilla JavaScript, no libraries, no requests.
+//
+// Layout positions come from the JSON. This file never computes a position; it
+// draws what layout.go decided and styles it by state.
+
+(function () {
+  "use strict";
+
+  var SVG = "http://www.w3.org/2000/svg";
+
+  function el(name, attrs) {
+    var node = document.createElementNS(SVG, name);
+    if (attrs) {
+      for (var k in attrs) {
+        if (Object.prototype.hasOwnProperty.call(attrs, k)) {
+          node.setAttribute(k, String(attrs[k]));
+        }
+      }
+    }
+    return node;
+  }
+
+  function readData() {
+    var tag = document.getElementById("umbra-data");
+    if (!tag) { return null; }
+    try {
+      return JSON.parse(tag.textContent);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // The light field: background, ring guides, the glow around each source, and
+  // the shadow mask whose blurred blobs subtract light where the unexamined
+  // nodes are. Drawn in the order the spec sets, before anything else.
+  function drawField(svg, data) {
+    var layout = data.layout;
+    var vb = layout.view_box;
+    svg.setAttribute("viewBox", vb.join(" "));
+    svg.setAttribute("role", "group");
+
+    var defs = el("defs");
+    svg.appendChild(defs);
+
+    // 1. Background.
+    svg.appendChild(el("rect", {
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: "var(--night)"
+    }));
+
+    // 2. Ring guides.
+    var rings = el("g", { "class": "rings" });
+    (layout.rings || []).forEach(function (r) {
+      var c = el("circle", {
+        cx: layout.centre.x, cy: layout.centre.y, r: r.radius,
+        fill: "none", stroke: "var(--rule)", "stroke-width": 1, opacity: 0.5
+      });
+      if (r.dashed) { c.setAttribute("stroke-dasharray", "4 5"); }
+      rings.appendChild(c);
+
+      if (r.label) {
+        var t = el("text", {
+          x: layout.centre.x, y: layout.centre.y - r.radius - 6,
+          "text-anchor": "middle", fill: "var(--ink-2)", "font-size": 10.5,
+          "font-family": "var(--ui)"
+        });
+        t.textContent = r.label;
+        rings.appendChild(t);
+      }
+    });
+    svg.appendChild(rings);
+
+    // Unknown state draws no light field and no mask: the map goes flat.
+    if (allUnknown(data)) { return; }
+
+    // 3. The radial glow around each source, masked by the shadow blobs.
+    var grad = el("radialGradient", { id: "glow" });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.32 }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
+    defs.appendChild(grad);
+
+    // 4. The shadow mask. White lets light through; the blurred black blobs
+    // subtract it, so several umbra nodes close together merge into one pool.
+    var mask = el("mask", { id: "shadow", maskUnits: "userSpaceOnUse",
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3] });
+    mask.appendChild(el("rect", {
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: "#fff"
+    }));
+
+    var blobs = el("g", { filter: "url(#pool)", "class": "pools" });
+    (data.nodes || []).forEach(function (n) {
+      var place = layout.nodes[n.id];
+      if (!place) { return; }
+      var spec = poolFor(n.state);
+      if (!spec) { return; }
+      blobs.appendChild(el("circle", {
+        cx: place.x, cy: place.y, r: spec.r, fill: spec.fill,
+        "data-pool": n.id
+      }));
+    });
+    mask.appendChild(blobs);
+    defs.appendChild(mask);
+
+    var blur = el("filter", { id: "pool", x: "-50%", y: "-50%", width: "200%", height: "200%" });
+    blur.appendChild(el("feGaussianBlur", { stdDeviation: 14 }));
+    defs.appendChild(blur);
+
+    var light = el("g", { mask: "url(#shadow)", "class": "light" });
+
+    // Several sources each draw the same gradient, and overlapping gradients
+    // add up: four of them at full strength wash the middle of the map out
+    // and take the labels with it. Scaling by the count keeps the brightest
+    // point near the single-source value however many lights there are.
+    var ids = Object.keys(layout.sources || {});
+    var share = ids.length > 1 ? 1 / Math.sqrt(ids.length) : 1;
+    ids.forEach(function (id) {
+      var p = layout.sources[id];
+      light.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: 500, fill: "url(#glow)", opacity: share
+      }));
+    });
+    svg.appendChild(light);
+
+    // The same blobs again, painted rather than subtracted. On the night
+    // scheme --pool-ink is transparent and this layer does nothing; on a light
+    // ground it is what makes a pool darker instead of brighter.
+    var shade = el("g", { filter: "url(#pool)", "class": "shade" });
+    (data.nodes || []).forEach(function (n) {
+      var place = layout.nodes[n.id];
+      if (!place) { return; }
+      var spec = poolFor(n.state);
+      if (!spec) { return; }
+      shade.appendChild(el("circle", {
+        cx: place.x, cy: place.y, r: spec.r, fill: "var(--pool-ink)",
+        opacity: n.state === "penumbra" ? 0.55 : 1,
+        "data-shade": n.id
+      }));
+    });
+    svg.appendChild(shade);
+  }
+
+  // poolFor returns the mask blob for a state, or null when the state casts no
+  // shadow. Umbra pools are the largest and fully black; penumbra pools are
+  // smaller and partial, so a half-seen node dims the light without hiding it.
+  function poolFor(state) {
+    if (state === "umbra") { return { r: 42, fill: "#000" }; }
+    if (state === "penumbra") { return { r: 28, fill: "rgba(0,0,0,0.55)" }; }
+    return null;
+  }
+
+  function allUnknown(data) {
+    var nodes = data.nodes || [];
+    if (!nodes.length) { return false; }
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].state !== "unknown") { return false; }
+    }
+    return true;
+  }
+
+  // 5. Edges, under the nodes. Each node draws one edge to the previous step
+  // on its shortest path to a source; a co-change node draws a dashed edge.
+  function drawEdges(svg, data) {
+    var layout = data.layout;
+    var g = el("g", { "class": "edges" });
+
+    (data.nodes || []).forEach(function (n) {
+      var to = layout.nodes[n.id];
+      if (!to) { return; }
+      var prev = previousOnPath(n);
+      var from = (prev && layout.nodes[prev]) || layout.sources[prev] ||
+        (n.sources && layout.sources[n.sources[0]]) || layout.centre;
+      if (!from) { return; }
+
+      var line = el("line", {
+        x1: from.x, y1: from.y, x2: to.x, y2: to.y,
+        "class": "edge", "data-edge": n.id
+      });
+      styleEdge(line, n);
+      g.appendChild(line);
+    });
+    svg.appendChild(g);
+  }
+
+  function previousOnPath(n) {
+    var p = n.path || [];
+    if (p.length < 2) { return (n.sources || [])[0]; }
+    return p[p.length - 2];
+  }
+
+  function styleEdge(line, n) {
+    var state = n.state;
+    if (state === "lit") {
+      line.setAttribute("stroke", "var(--lit-glow)");
+      line.setAttribute("stroke-opacity", 0.55);
+      line.setAttribute("stroke-width", 1.25);
+    } else if (state === "penumbra") {
+      line.setAttribute("stroke", "var(--lit-glow)");
+      line.setAttribute("stroke-opacity", 0.3);
+      line.setAttribute("stroke-width", 1.25);
+    } else {
+      line.setAttribute("stroke", "var(--umbra-edge)");
+      line.setAttribute("stroke-opacity", 0.45);
+      line.setAttribute("stroke-width", 1.25);
+      line.setAttribute("stroke-dasharray", "2 3");
+    }
+    if (hasMod(n, "co-change only")) {
+      line.setAttribute("stroke-dasharray", "6 5");
+    }
+  }
+
+  function hasMod(n, name) {
+    return (n.modifiers || []).indexOf(name) >= 0;
+  }
+
+  // 6. Nodes. The shape carries the state so the map survives greyscale: a
+  // filled disc with a halo is lit, a half disc is penumbra, a hatched disc is
+  // umbra, a dashed outline is unknown.
+  function drawNodes(svg, data, defs) {
+    var layout = data.layout;
+
+    // The hatch that makes umbra readable without colour.
+    var pat = el("pattern", {
+      id: "hatch", width: 4, height: 4, patternUnits: "userSpaceOnUse",
+      patternTransform: "rotate(45)"
+    });
+    pat.appendChild(el("rect", { width: 4, height: 4, fill: "var(--umbra)" }));
+    pat.appendChild(el("line", { x1: 0, y1: 0, x2: 0, y2: 4, stroke: "var(--umbra-edge)", "stroke-width": 1 }));
+    defs.appendChild(pat);
+
+    var halo = el("filter", { id: "halo", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+    halo.appendChild(el("feGaussianBlur", { stdDeviation: 5 }));
+    defs.appendChild(halo);
+
+    var g = el("g", { "class": "nodes" });
+
+    // Sources first, so a dependent never hides a light.
+    (data.sources || []).forEach(function (s) {
+      var p = layout.sources[s.id];
+      if (!p) { return; }
+      var sg = el("g", { "class": "source" });
+      sg.appendChild(el("circle", { cx: p.x, cy: p.y, r: 16, fill: "var(--lit-glow)", opacity: 0.5, filter: "url(#halo)" }));
+      sg.appendChild(el("circle", { cx: p.x, cy: p.y, r: 10, fill: "var(--lit)" }));
+      g.appendChild(sg);
+    });
+
+    (data.nodes || []).forEach(function (n) {
+      var p = layout.nodes[n.id];
+      if (!p) { return; }
+      g.appendChild(nodeGroup(n, p));
+    });
+    svg.appendChild(g);
+  }
+
+  function nodeGroup(n, p) {
+    var g = el("g", {
+      "class": "node", "data-node": n.id,
+      role: "button", tabindex: -1, "aria-label": nodeLabel(n)
+    });
+
+    var r = radiusFor(n);
+
+    // A generous transparent target so the node is easy to hit.
+    g.appendChild(el("circle", { cx: p.x, cy: p.y, r: r + 8, "class": "hit" }));
+
+    if (n.state === "lit") {
+      g.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: r + 6, fill: "var(--lit-glow)", opacity: 0.6, filter: "url(#halo)"
+      }));
+      g.appendChild(el("circle", { cx: p.x, cy: p.y, r: r, fill: "var(--lit)" }));
+
+    } else if (n.state === "penumbra") {
+      appendPenumbra(g, n, p, r);
+
+    } else if (n.state === "umbra") {
+      g.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: r, fill: "url(#hatch)",
+        stroke: "var(--umbra-edge)", "stroke-width": 1
+      }));
+
+    } else {
+      g.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: r, fill: "none",
+        stroke: "var(--unknown)", "stroke-width": 1, "stroke-dasharray": "3 3"
+      }));
+    }
+
+    // A test carries a second ring, coloured by its outcome.
+    if (n.is_test) {
+      var ringColour = "var(--umbra-edge)";
+      if (n.result === "pass") { ringColour = "var(--pass)"; }
+      if (n.result === "fail") { ringColour = "var(--fail)"; }
+      g.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: 10.5, fill: "none", stroke: ringColour, "stroke-width": 1
+      }));
+    }
+
+    // A cracked probe gets two fixed strokes, so every crack looks the same.
+    if (n.result === "fail") {
+      g.appendChild(el("polyline", {
+        points: crackPoints(p, r), fill: "none",
+        stroke: "var(--fail)", "stroke-width": 1.5
+      }));
+    }
+
+    // Modifiers read from the call site.
+    if (hasMod(n, "far field")) {
+      var t = tickAway(p, n);
+      g.appendChild(el("line", {
+        x1: t.x1, y1: t.y1, x2: t.x2, y2: t.y2,
+        stroke: "var(--umbra-edge)", "stroke-width": 1
+      }));
+    }
+    if (n.beacon) {
+      g.appendChild(el("polygon", {
+        points: (p.x - 4) + "," + (p.y - r - 6) + " " + (p.x + 4) + "," + (p.y - r - 6) +
+          " " + p.x + "," + (p.y - r - 12),
+        fill: "var(--lit)"
+      }));
+    }
+
+    g.appendChild(el("circle", {
+      cx: p.x, cy: p.y, r: r + 5, fill: "none", stroke: "var(--focus)",
+      "stroke-width": 2, "stroke-dasharray": "3 3", "class": "ring-focus"
+    }));
+    return g;
+  }
+
+  // The penumbra half disc: the lit half faces the source, so the map shows
+  // which way the light came from. The tier is drawn on the disc so it
+  // survives greyscale.
+  function appendPenumbra(g, n, p, r) {
+    var angle = Math.atan2(p.toward.y - p.y, p.toward.x - p.x) * 180 / Math.PI;
+
+    var whole = el("circle", { cx: p.x, cy: p.y, r: r, fill: "var(--penumbra)" });
+    if (n.tier === "echo") {
+      // Nothing was read at all, so the whole disc is dim with an outline.
+      whole.setAttribute("opacity", 0.5);
+      whole.setAttribute("stroke", "var(--penumbra)");
+      whole.setAttribute("stroke-width", 1);
+      whole.setAttribute("opacity", 0.5);
+      g.appendChild(whole);
+      return;
+    }
+    g.appendChild(whole);
+
+    var sweep = n.tier === "glimpse" ? 90 : 180;
+    var lit = el("path", {
+      d: halfDisc(p, r, angle, sweep), fill: "var(--lit)",
+      transform: ""
+    });
+    g.appendChild(lit);
+
+    if (n.tier === "quoted") {
+      g.appendChild(el("path", {
+        d: halfDisc(p, r - 2, angle, sweep), fill: "none",
+        stroke: "var(--penumbra)", "stroke-width": 1
+      }));
+    }
+    if (n.tier === "afterimage") {
+      g.appendChild(el("circle", {
+        cx: p.x, cy: p.y, r: r + 3, fill: "none",
+        stroke: "var(--penumbra)", "stroke-width": 1, "stroke-dasharray": "1 2"
+      }));
+    }
+  }
+
+  // halfDisc draws a wedge of the given sweep centred on the angle facing the
+  // source.
+  function halfDisc(p, r, angleDeg, sweepDeg) {
+    var a0 = (angleDeg - sweepDeg / 2) * Math.PI / 180;
+    var a1 = (angleDeg + sweepDeg / 2) * Math.PI / 180;
+    var x0 = p.x + r * Math.cos(a0), y0 = p.y + r * Math.sin(a0);
+    var x1 = p.x + r * Math.cos(a1), y1 = p.y + r * Math.sin(a1);
+    var large = sweepDeg > 180 ? 1 : 0;
+    return "M " + p.x + " " + p.y + " L " + x0 + " " + y0 +
+      " A " + r + " " + r + " 0 " + large + " 1 " + x1 + " " + y1 + " Z";
+  }
+
+  function crackPoints(p, r) {
+    return [
+      (p.x - r * 0.7) + "," + (p.y - r * 0.2),
+      (p.x - r * 0.1) + "," + (p.y + r * 0.3),
+      (p.x + r * 0.3) + "," + (p.y - r * 0.4),
+      (p.x + r * 0.8) + "," + (p.y + r * 0.1)
+    ].join(" ");
+  }
+
+  function tickAway(p, n) {
+    var dx = p.x - p.toward.x, dy = p.y - p.toward.y;
+    var len = Math.hypot(dx, dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    var r = radiusFor(n);
+    return {
+      x1: p.x + ux * (r + 2), y1: p.y + uy * (r + 2),
+      x2: p.x + ux * (r + 8), y2: p.y + uy * (r + 8)
+    };
+  }
+
+  function radiusFor(n) {
+    if (n.kind === "class" || n.kind === "type") { return 9; }
+    return 7;
+  }
+
+  function nodeLabel(n) {
+    var parts = [n.name];
+    if (n.is_test) { parts.push("test"); }
+    parts.push(n.state);
+    parts.push("depth " + n.depth);
+    if (n.result === "fail") { parts.push("failed"); }
+    return parts.join(", ");
+  }
+
+  // 7. Labels, placed outward from the ring by the anchor layout.go chose.
+  function drawLabels(svg, data) {
+    var layout = data.layout;
+    var g = el("g", { "class": "labels" });
+
+    var sources = data.sources || [];
+    var multi = sources.length > 1;
+    sources.forEach(function (s) {
+      var p = layout.sources[s.id];
+      if (!p) { return; }
+
+      // One source sits alone at the centre and gets the full 22px label.
+      // Several sit on the inner ring, so their labels are pushed outward
+      // along their own angle and set smaller, or they pile on each other.
+      var dx = p.x - layout.centre.x, dy = p.y - layout.centre.y;
+      var len = Math.hypot(dx, dy);
+      var lx = p.x, ly = p.y + 34, anchor = "middle";
+      if (multi && len > 1) {
+        var ux = dx / len, uy = dy / len;
+        lx = p.x + ux * 46;
+        ly = p.y + uy * 46 + 4;
+        anchor = ux > 0.2 ? "start" : (ux < -0.2 ? "end" : "middle");
+      }
+
+      var name = el("text", {
+        x: lx, y: ly, "text-anchor": anchor,
+        "class": "src-label" + (multi ? " src-small" : "")
+      });
+      name.textContent = s.name;
+      g.appendChild(name);
+
+      var kind = el("text", {
+        x: lx, y: ly + (multi ? 13 : 16), "text-anchor": anchor, "class": "src-kind"
+      });
+      kind.textContent = s.change + " changed";
+      g.appendChild(kind);
+    });
+
+    (data.nodes || []).forEach(function (n) {
+      var p = layout.nodes[n.id];
+      if (!p) { return; }
+      var t = el("text", {
+        "class": "label " + (n.state === "lit" ? "lit" : "dim"),
+        "data-label": n.id
+      });
+      var r = radiusFor(n) + 6;
+      if (p.anchor === "right") {
+        t.setAttribute("x", p.x + r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "start");
+      } else if (p.anchor === "left") {
+        t.setAttribute("x", p.x - r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "end");
+      } else if (p.anchor === "above") {
+        t.setAttribute("x", p.x); t.setAttribute("y", p.y - r - 6); t.setAttribute("text-anchor", "middle");
+      } else {
+        t.setAttribute("x", p.x); t.setAttribute("y", p.y + r + 12); t.setAttribute("text-anchor", "middle");
+      }
+      t.textContent = n.name;
+      t.setAttribute("data-score", n.score || 0);
+      g.appendChild(t);
+    });
+    svg.appendChild(g);
+    hideCollidingLabels(g);
+  }
+
+  // Labels never overlap. When two would collide the lower-scored one is
+  // hidden until the reader interacts, so the map stays readable without
+  // pretending the node is not there: its disc is still drawn.
+  function hideCollidingLabels(g) {
+    var labels = Array.prototype.slice.call(g.querySelectorAll(".label"));
+    labels.sort(function (a, b) {
+      return Number(b.getAttribute("data-score")) - Number(a.getAttribute("data-score"));
+    });
+
+    var kept = [];
+    labels.forEach(function (t) {
+      var box;
+      try {
+        box = t.getBBox();
+      } catch (e) {
+        return;
+      }
+      var clash = kept.some(function (b) { return overlaps(box, b); });
+      if (clash) {
+        t.hidden = true;
+        t.setAttribute("data-collided", "1");
+      } else {
+        kept.push(box);
+      }
+    });
+  }
+
+  function overlaps(a, b) {
+    var pad = 2;
+    return !(a.x + a.width + pad < b.x || b.x + b.width + pad < a.x ||
+             a.y + a.height + pad < b.y || b.y + b.height + pad < a.y);
+  }
+
+  function boot() {
+    render(readData());
+  }
+
+  // render draws a whole report. The page calls it once on load; the
+  // landing-page viewer calls it again with a report the reader dropped in.
+  function render(data) {
+    var svg = document.getElementById("map");
+    if (!data || !data.layout || !svg) { return false; }
+    svg.textContent = "";
+
+    drawField(svg, data);
+    var defs = svg.querySelector("defs");
+    drawEdges(svg, data);
+    drawNodes(svg, data, defs);
+    drawLabels(svg, data);
+
+    svg.setAttribute("aria-label", mapLabel(data));
+    wireSelection(svg, data);
+    wireFilters();
+    wireDetail(data);
+    wireReplay(svg, data);
+    wireSpotlight(svg);
+    wireKeyboard(svg, data);
+    return true;
+  }
+
+  // The detail panel. One is open at a time; Escape closes it.
+  var detailState = { data: null, open: null };
+
+  function wireDetail(data) {
+    detailState.data = data;
+    var panel = document.getElementById("detail");
+    if (!panel) { return; }
+    panel.querySelector(".detail-close").addEventListener("click", closeDetail);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { closeDetail(); }
+    });
+  }
+
+  function closeDetail() {
+    var panel = document.getElementById("detail");
+    if (panel) { panel.hidden = true; }
+    detailState.open = null;
+  }
+
+  function openDetail(id) {
+    var data = detailState.data;
+    var panel = document.getElementById("detail");
+    if (!data || !panel) { return; }
+
+    var node = null;
+    (data.nodes || []).forEach(function (n) { if (n.id === id) { node = n; } });
+    if (!node) { return; }
+
+    var body = panel.querySelector(".detail-body");
+    body.textContent = "";
+
+    // 1. Name, kind and span.
+    var h = document.createElement("h3");
+    h.textContent = node.name;
+    body.appendChild(h);
+
+    var meta = document.createElement("p");
+    meta.className = "sub";
+    meta.textContent = (node.kind || "symbol") + "  " + node.file +
+      "  lines " + node.span[0] + " to " + node.span[1];
+    body.appendChild(meta);
+
+    // 2. The state sentence, in plain words, then the call-site facts.
+    var state = document.createElement("p");
+    state.className = "detail-state";
+    var word = document.createElement("b");
+    word.textContent = capitalise(node.state) + (node.tier ? ", " + node.tier : "") + ". ";
+    state.appendChild(word);
+    state.appendChild(document.createTextNode(node.sentence || ""));
+    body.appendChild(state);
+
+    (node.modifiers || []).forEach(function (m) {
+      if (m === "far field" || m === "fault line" || m === "scar") {
+        body.appendChild(para(capitalise(m) + ": " + modifierFact(m, node), "sub"));
+      }
+    });
+    if (node.beacon) {
+      body.appendChild(para("Beacon: the call site at line " + node.call_site + " reads " + node.beacon, "sub"));
+    }
+
+    // 3. The path back to the source, as a chain.
+    if ((node.path || []).length > 1) {
+      body.appendChild(para("Path to the source", "detail-h"));
+      var chain = document.createElement("p");
+      chain.className = "chain";
+      node.path.forEach(function (step, i) {
+        if (i > 0) { chain.appendChild(document.createTextNode("  <-  ")); }
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = nameOf(data, step);
+        b.addEventListener("click", function () { select(step); });
+        chain.appendChild(b);
+      });
+      body.appendChild(chain);
+    }
+
+    // 4. What the session did to this file, if anything.
+    if ((node.exposures || []).length) {
+      body.appendChild(para("Exposures", "detail-h"));
+      var ul = document.createElement("ul");
+      node.exposures.forEach(function (x) {
+        var li = document.createElement("li");
+        li.textContent = "seq " + x.seq + "  " + x.kind +
+          (x.range ? "  lines " + x.range[0] + " to " + x.range[1] : "");
+        ul.appendChild(li);
+      });
+      body.appendChild(ul);
+    } else {
+      body.appendChild(para("No exposure: the session never touched this file.", "sub"));
+    }
+
+    // 5. Probes.
+    if ((node.tests || []).length) {
+      body.appendChild(para("Probes", "detail-h"));
+      var tl = document.createElement("ul");
+      node.tests.forEach(function (t) {
+        var li = document.createElement("li");
+        li.textContent = t.id + "  " + t.outcome;
+        tl.appendChild(li);
+      });
+      body.appendChild(tl);
+    }
+    if (node.failure_excerpt) {
+      var pre = document.createElement("pre");
+      pre.textContent = node.failure_excerpt;
+      body.appendChild(pre);
+    }
+
+    // 6. The factors as a stacked bar, drawn in CSS with no chart library.
+    body.appendChild(para("Why it ranks " + Number(node.score).toFixed(1), "detail-h"));
+    if (node.beacon) {
+      body.appendChild(para("pinned to the top by a beacon", "sub"));
+    }
+    body.appendChild(factorBar(node));
+
+    // 7. Commands a reader can run to check any of this.
+    body.appendChild(para("Reproduce", "detail-h"));
+    var cmds = [
+      "entire graph impact --symbol " + node.name + " --repo .",
+      "entire graph def " + node.name + " --repo ."
+    ];
+    (node.tests || []).forEach(function (t) { cmds.push(t.id); });
+    cmds.forEach(function (c) {
+      var pre = document.createElement("pre");
+      pre.className = "cmd";
+      pre.textContent = c;
+      body.appendChild(pre);
+    });
+
+    if (node.signature) {
+      body.appendChild(para("Declaration", "detail-h"));
+      var sig = document.createElement("pre");
+      sig.textContent = node.signature;
+      body.appendChild(sig);
+    }
+
+    panel.hidden = false;
+    detailState.open = id;
+    panel.querySelector(".detail-close").focus();
+  }
+
+  function modifierFact(m, node) {
+    if (m === "far field") { return node.file + " is a different package from its source."; }
+    if (m === "fault line") { return "the call sits inside error handling at line " + node.call_site + "."; }
+    if (m === "scar") { return "this file has several recent fix commits."; }
+    return "";
+  }
+
+  function factorBar(node) {
+    var wrap = document.createElement("div");
+    wrap.className = "bar";
+    var order = ["relation", "dependents", "state", "farfield", "faultline", "scar", "test"];
+    var total = 0;
+    order.forEach(function (k) {
+      if (node.factors && typeof node.factors[k] === "number") { total += node.factors[k]; }
+    });
+    if (total <= 0) { total = 1; }
+    order.forEach(function (k) {
+      var v = node.factors && node.factors[k];
+      if (typeof v !== "number" || v === 0) { return; }
+      var seg = document.createElement("span");
+      seg.className = "seg seg-" + k;
+      seg.style.width = (100 * v / total) + "%";
+      seg.textContent = k + " " + v;
+      seg.title = k + " " + v;
+      wrap.appendChild(seg);
+    });
+    return wrap;
+  }
+
+  function nameOf(data, id) {
+    var out = id;
+    (data.nodes || []).forEach(function (n) { if (n.id === id) { out = n.name; } });
+    (data.sources || []).forEach(function (s) { if (s.id === id) { out = s.name; } });
+    return out;
+  }
+
+  function para(text, cls) {
+    var p = document.createElement("p");
+    if (cls) { p.className = cls; }
+    p.textContent = text;
+    return p;
+  }
+
+  function capitalise(s) {
+    return String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
+  }
+
+  var select = function () {};
+
+  // ---------------------------------------------------------------------
+  // State reconstruction.
+  //
+  // These rules mirror internal/shadow/classify.go exactly, including the
+  // order of the penumbra tiers. A test feeds the recorded scenarios through
+  // both and compares, so the two cannot drift apart silently.
+  // ---------------------------------------------------------------------
+
+  var TIER_ORDER = ["glance", "glimpse", "quoted", "afterimage", "echo"];
+
+  function tierRank(t) {
+    var i = TIER_ORDER.indexOf(t);
+    return i < 0 ? TIER_ORDER.length : i;
+  }
+
+  // stateAt returns the state and tier of a node considering only the evidence
+  // at or before seq. Pass Infinity for the final state at commit.
+  function stateAt(node, exposures, t0, hasAnyEvidence, seq) {
+    if (!hasAnyEvidence) { return { state: "unknown", tier: "" }; }
+
+    exposures = exposures || [];
+    var span = node.span || [0, 0];
+    var best = "";
+    var consider = function (t) {
+      if (best === "" || tierRank(t) < tierRank(best)) { best = t; }
+    };
+    var saw = false;
+
+    for (var i = 0; i < exposures.length; i++) {
+      var x = exposures[i];
+      if (x.seq > seq) { continue; }
+      saw = true;
+
+      if (x.kind === "edit") { return { state: "lit", tier: "" }; }
+
+      if (x.kind === "read") {
+        var covers = !x.range || (x.range[0] <= span[0] && x.range[1] >= span[1]);
+        var afterCut = !t0 || x.seq >= t0;
+        if (covers && afterCut) { return { state: "lit", tier: "" }; }
+        if (covers) { consider("afterimage"); } else { consider("glance"); }
+      } else if (x.kind === "grep" || x.kind === "glob") {
+        consider("glimpse");
+      } else if (x.kind === "quoted") {
+        consider("quoted");
+      } else if (x.kind === "mention") {
+        consider("echo");
+      }
+    }
+
+    if (!saw || best === "") { return { state: "umbra", tier: "" }; }
+    return { state: "penumbra", tier: best };
+  }
+
+  // Expose the reconstruction for the cross-check test that compares it with
+  // the Go classifier. Nothing on the page uses this.
+  if (typeof globalThis !== "undefined") {
+    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank, render: render };
+  }
+
+  // ---------------------------------------------------------------------
+  // Attention replay.
+  // ---------------------------------------------------------------------
+
+  function wireReplay(svg, data) {
+    var strip = document.getElementById("replay");
+    if (!strip) { return; }
+
+    var timeline = data.timeline || [];
+    if (!timeline.length) {
+      strip.hidden = true;
+      return;
+    }
+    strip.hidden = false;
+
+    var maxSeq = timeline[timeline.length - 1].seq;
+    var hasAny = anyEvidence(data);
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var current = maxSeq;      // the page loads showing the eclipse
+    var playing = false;
+    var speed = 1;
+    var timer = null;
+
+    var track = strip.querySelector(".track");
+    // Rendering a second report into the same page must replace the ticks,
+    // not add another set beside them.
+    track.textContent = "";
+    var headline = strip.querySelector(".now");
+    var counter = strip.querySelector(".counter");
+    var playBtn = strip.querySelector('[data-act="play"]');
+
+    // Ticks: one per event, shaped by kind so the sequence reads as a sequence.
+    timeline.forEach(function (ev, i) {
+      var t = document.createElement("button");
+      t.type = "button";
+      t.className = "tick tick-" + ev.kind + (ev.seq === data.t0 ? " cut" : "");
+      t.style.left = (100 * i / Math.max(1, timeline.length - 1)) + "%";
+      t.title = describe(ev, data);
+      t.setAttribute("aria-label", describe(ev, data));
+      t.addEventListener("click", function () { goTo(ev.seq); });
+      track.appendChild(t);
+    });
+
+    var head = document.createElement("div");
+    head.className = "playhead";
+    track.appendChild(head);
+
+    function render() {
+      applyState(svg, data, current, hasAny, reduced);
+
+      var ev = eventAt(timeline, current);
+      headline.textContent = ev ? describe(ev, data) : "";
+      counter.textContent = "seq " + current + " of " + maxSeq;
+
+      var idx = indexOf(timeline, current);
+      head.style.left = (100 * idx / Math.max(1, timeline.length - 1)) + "%";
+
+      strip.classList.toggle("at-end", current >= maxSeq);
+    }
+
+    function goTo(seq) {
+      current = Math.max(0, Math.min(maxSeq, seq));
+      render();
+    }
+
+    function step(dir) {
+      pause();
+      var idx = indexOf(timeline, current) + dir;
+      idx = Math.max(0, Math.min(timeline.length - 1, idx));
+      goTo(timeline[idx].seq);
+    }
+
+    function play() {
+      if (playing) { return; }
+      // Pressing play at the end starts the sweep again from the beginning.
+      if (current >= maxSeq) { current = 0; }
+      playing = true;
+      playBtn.textContent = "Pause";
+      playBtn.setAttribute("aria-label", "Pause the sweep");
+      tick();
+    }
+
+    function pause() {
+      playing = false;
+      if (timer) { clearTimeout(timer); timer = null; }
+      playBtn.textContent = "Play";
+      playBtn.setAttribute("aria-label", "Play the sweep");
+    }
+
+    function tick() {
+      if (!playing) { return; }
+      var idx = indexOf(timeline, current) + 1;
+      if (idx >= timeline.length) { pause(); goTo(maxSeq); return; }
+      goTo(timeline[idx].seq);
+      // At 1x each event holds for 600 milliseconds; at 4x, 150.
+      timer = setTimeout(tick, 600 / speed);
+    }
+
+    strip.addEventListener("click", function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute("data-act");
+      if (!act) { return; }
+      if (act === "play") { playing ? pause() : play(); }
+      if (act === "back") { step(-1); }
+      if (act === "fwd") { step(1); }
+      if (act === "speed") {
+        speed = speed === 1 ? 4 : 1;
+        e.target.textContent = speed + "x";
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      var tag = (document.activeElement && document.activeElement.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA") { return; }
+      if (e.key === " ") { e.preventDefault(); playing ? pause() : play(); }
+      if (e.key === "[") { step(-1); }
+      if (e.key === "]") { step(1); }
+      if (e.key === "Home") { pause(); goTo(0); }
+      if (e.key === "End") { pause(); goTo(maxSeq); }
+    });
+
+    render();
+  }
+
+  function anyEvidence(data) {
+    var nodes = data.nodes || [];
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].state !== "unknown") { return true; }
+    }
+    return nodes.length === 0;
+  }
+
+  function indexOf(timeline, seq) {
+    var idx = 0;
+    for (var i = 0; i < timeline.length; i++) {
+      if (timeline[i].seq <= seq) { idx = i; }
+    }
+    return idx;
+  }
+
+  function eventAt(timeline, seq) {
+    return timeline[indexOf(timeline, seq)];
+  }
+
+  // One line of plain text naming the current event.
+  function describe(ev, data) {
+    if (ev.seq === data.t0 && ev.kind === "edit") {
+      return "the cut  edit " + ev.path + "  the change begins here";
+    }
+    switch (ev.kind) {
+      case "read":
+        return "read " + ev.path + (ev.range ? "  lines " + ev.range[0] + " to " + ev.range[1] : "  whole file");
+      case "edit":
+        return "edit " + ev.path;
+      case "grep":
+      case "glob":
+        return ev.kind + "  hit " + (ev.paths || []).join(", ");
+      case "quoted":
+        return "content of " + (ev.paths || []).join(", ") + " appeared in a tool result";
+      case "mention":
+        return "mentioned " + ((ev.symbols || []).concat(ev.paths || [])).join(", ");
+      case "command":
+        return ev.cmd || "ran a command";
+    }
+    return ev.kind;
+  }
+
+  // applyState restyles the map for the evidence up to seq. Rendering at a seq
+  // is a pure function of the report and that integer.
+  function applyState(svg, data, seq, hasAny, reduced) {
+    (data.nodes || []).forEach(function (n) {
+      var st = stateAt(n, n.exposures || [], data.t0, hasAny, seq);
+      var g = svg.querySelector('[data-node="' + cssEscape(n.id) + '"]');
+      if (!g) { return; }
+
+      var place = data.layout.nodes[n.id];
+      var shown = Object.assign({}, n, { state: st.state, tier: st.tier });
+      var fresh = nodeGroup(shown, place);
+      fresh.setAttribute("class", g.getAttribute("class"));
+      if (reduced) { fresh.style.transition = "none"; }
+      g.parentNode.replaceChild(fresh, g);
+
+      var edge = svg.querySelector('[data-edge="' + cssEscape(n.id) + '"]');
+      if (edge) { styleEdge(edge, shown); }
+
+      var spec = poolFor(st.state);
+      var pool = svg.querySelector('[data-pool="' + cssEscape(n.id) + '"]');
+      if (pool) {
+        pool.setAttribute("r", spec ? spec.r : 0);
+        pool.setAttribute("fill", spec ? spec.fill : "#000");
+        pool.setAttribute("opacity", spec ? 1 : 0);
+      }
+      var shade = svg.querySelector('[data-shade="' + cssEscape(n.id) + '"]');
+      if (shade) {
+        shade.setAttribute("r", spec ? spec.r : 0);
+        shade.setAttribute("opacity", spec ? (st.state === "penumbra" ? 0.55 : 1) : 0);
+      }
+    });
+    rewireNodes(svg);
+  }
+
+  function rewireNodes(svg) {
+    Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (g) {
+      if (g.getAttribute("data-wired")) { return; }
+      g.setAttribute("data-wired", "1");
+      g.addEventListener("click", function () {
+        select(g.getAttribute("data-node"));
+        openDetail(g.getAttribute("data-node"));
+      });
+    });
+  }
+
+  // Selecting a node highlights its docket row, and hovering a row highlights
+  // the node and its path, so the two halves of the page stay in step.
+  function wireSelection(svg, data) {
+    var rows = document.querySelectorAll("table.docket tbody tr");
+
+    select = function (id) {
+      Array.prototype.forEach.call(rows, function (row) {
+        var on = row.getAttribute("data-id") === id;
+        row.classList.toggle("on", on);
+        if (on) { row.scrollIntoView({ block: "nearest" }); }
+      });
+      Array.prototype.forEach.call(svg.querySelectorAll(".edge"), function (e) {
+        e.setAttribute("stroke-opacity", e.getAttribute("data-edge") === id ? 1 : "");
+      });
+    };
+
+    Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (g) {
+      g.addEventListener("click", function () {
+        select(g.getAttribute("data-node"));
+        openDetail(g.getAttribute("data-node"));
+      });
+      g.addEventListener("focus", function () { select(g.getAttribute("data-node")); });
+    });
+
+    Array.prototype.forEach.call(rows, function (row) {
+      row.addEventListener("mouseenter", function () { select(row.getAttribute("data-id")); });
+      row.addEventListener("click", function () {
+        select(row.getAttribute("data-id"));
+        openDetail(row.getAttribute("data-id"));
+      });
+    });
+  }
+
+  // The filters hide docket rows and drop the matching map labels, so the map
+  // never claims a node does not exist.
+  function wireFilters() {
+    var bar = document.getElementById("filters");
+    if (!bar) { return; }
+    var rows = document.querySelectorAll("table.docket tbody tr");
+
+    function apply(mode) {
+      Array.prototype.forEach.call(rows, function (row) {
+        var state = row.getAttribute("data-state");
+        var show = true;
+        if (mode === "shadowed") { show = state !== "lit"; }
+        if (mode === "probes") { show = row.getAttribute("data-probe") === "1" || state === "umbra"; }
+        if (mode === "cracks") { show = row.getAttribute("data-crack") === "1"; }
+        if (mode === "leaks") { show = row.getAttribute("data-leak") === "1"; }
+        row.hidden = !show;
+
+        var label = document.querySelector('[data-label="' + cssEscape(row.getAttribute("data-id")) + '"]');
+        if (label) { label.hidden = !show; }
+      });
+    }
+
+    Array.prototype.forEach.call(bar.querySelectorAll("button"), function (b) {
+      b.addEventListener("click", function () {
+        Array.prototype.forEach.call(bar.querySelectorAll("button"), function (o) {
+          o.classList.toggle("on", o === b);
+        });
+        apply(b.getAttribute("data-filter"));
+      });
+    });
+    apply("shadowed");
+  }
+
+  // The torch: a soft disc following the pointer that reveals labels hidden by
+  // the collision rule. It is decoration in service of exploration; it changes
+  // no data. Off for touch and for readers who asked for less motion.
+  function wireSpotlight(svg) {
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var fine = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+    if (reduced || !fine) { return; }
+
+    var defs = svg.querySelector("defs");
+    var grad = el("radialGradient", { id: "torch" });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.18 }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
+    defs.appendChild(grad);
+
+    var torch = el("circle", { r: 110, fill: "url(#torch)", "class": "torch", cx: -999, cy: -999 });
+    svg.appendChild(torch);
+
+    svg.addEventListener("pointermove", function (e) {
+      var pt = toViewBox(svg, e.clientX, e.clientY);
+      torch.setAttribute("cx", pt.x);
+      torch.setAttribute("cy", pt.y);
+      revealNear(svg, pt, 110);
+    });
+    svg.addEventListener("pointerleave", function () {
+      torch.setAttribute("cx", -999);
+      torch.setAttribute("cy", -999);
+      revealNear(svg, { x: -9999, y: -9999 }, 0);
+    });
+  }
+
+  function toViewBox(svg, clientX, clientY) {
+    var r = svg.getBoundingClientRect();
+    var vb = svg.viewBox.baseVal;
+    return {
+      x: vb.x + (clientX - r.left) * vb.width / r.width,
+      y: vb.y + (clientY - r.top) * vb.height / r.height
+    };
+  }
+
+  // A label hidden by the collision rule shows while the torch is over it, so
+  // the reader can read what is in shadow without the map being cluttered.
+  function revealNear(svg, pt, radius) {
+    Array.prototype.forEach.call(svg.querySelectorAll('[data-collided="1"]'), function (t) {
+      var x = Number(t.getAttribute("x")), y = Number(t.getAttribute("y"));
+      t.hidden = Math.hypot(x - pt.x, y - pt.y) > radius;
+    });
+  }
+
+  // Keyboard: the map is one tab stop; inside it the arrows move through the
+  // nodes and Enter opens the detail panel. Nothing is reachable by pointer
+  // only.
+  function wireKeyboard(svg, data) {
+    var order = (data.nodes || []).map(function (n) { return n.id; });
+    var at = -1;
+
+    svg.setAttribute("tabindex", "0");
+
+    function focusAt(i) {
+      if (!order.length) { return; }
+      at = (i + order.length) % order.length;
+      var g = svg.querySelector('[data-node="' + cssEscape(order[at]) + '"]');
+      if (!g) { return; }
+      Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (o) {
+        o.setAttribute("tabindex", "-1");
+      });
+      g.setAttribute("tabindex", "0");
+      g.focus();
+      select(order[at]);
+    }
+
+    svg.addEventListener("focus", function () {
+      if (at < 0) { focusAt(0); }
+    });
+
+    svg.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); focusAt(at + 1); }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); focusAt(at - 1); }
+      if (e.key === "Enter" && at >= 0) { e.preventDefault(); openDetail(order[at]); }
+      if (e.key === "l" || e.key === "L") { toggleLabels(svg); }
+    });
+  }
+
+  function toggleLabels(svg) {
+    var g = svg.querySelector(".labels");
+    if (!g) { return; }
+    var on = g.getAttribute("data-all") === "1";
+    g.setAttribute("data-all", on ? "0" : "1");
+    Array.prototype.forEach.call(g.querySelectorAll('[data-collided="1"]'), function (t) {
+      t.hidden = on;
+    });
+  }
+
+  function cssEscape(s) {
+    return String(s).replace(/["\\]/g, "\\$&");
+  }
+
+  function mapLabel(data) {
+    var s = data.summary || {};
+    return "Eclipse map: " + (s.lit || 0) + " lit, " + (s.penumbra || 0) +
+      " penumbra, " + (s.umbra || 0) + " umbra, " + (s.unknown || 0) + " unknown.";
+  }
+
+  // In a browser the page boots itself. Loaded without a document, for the
+  // cross-check test that compares this reconstruction with the Go
+  // classifier, the file only exposes globalThis.__umbra and draws nothing.
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      boot();
+    }
+  }
+})();
 </script>
-<script type="application/json" id="umbra-data">{
-  "umbra_version": "0.1.0",
-  "checkpoint": {
-    "id": "b20f84567474",
-    "commit": "00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "parent": "faf4dc616ae391650ddd4680657d64b79d9d248f",
-    "agent": "Claude Code",
-    "route": "session window",
-    "session_ids": [
-      "8017734d-cdf6-4a18-b2f8-f4b5f637ec35"
-    ]
-  },
-  "inputs": {
-    "adapter": "claude-code",
-    "depth": 2,
-    "test_runner": "pytest -v",
-    "run": "shadow",
-    "audit": true,
-    "history": false,
-    "snippets": false,
-    "relations_used": [
-      "ACCESSES",
-      "ASYNC_CALLS",
-      "CALLS",
-      "DATA_FLOWS",
-      "EXTENDS",
-      "FILE_CHANGES_WITH",
-      "IMPLEMENTS",
-      "IMPORTS",
-      "INHERITS",
-      "OVERRIDES",
-      "PARAM_TYPE",
-      "READS_FIELD",
-      "RETURNS_TYPE",
-      "TESTS",
-      "USES_TYPE",
-      "WRITES_FIELD"
-    ],
-    "relations_ignored": [
-      "CONFIGURES",
-      "CONSTRUCTS",
-      "EMITS",
-      "HANDLES_GRAPHQL",
-      "HANDLES_GRPC",
-      "HANDLES_ROUTE",
-      "HANDLES_TOOL",
-      "HANDLES_TRPC",
-      "HTTP_CALLS",
-      "LISTENS_ON",
-      "RESOURCE_DEPENDS_ON",
-      "SIMILAR_TO"
-    ],
-    "channels": {
-      "callsites": true,
-      "graph": true,
-      "mentions": true,
-      "reads": true
-    }
-  },
-  "session_said": "Now running the focused test the probe calls for.",
-  "session_said_from": "what the agent said after its last edit, because Entire stored no summary",
-  "coverage": {
-    "reads": 2,
-    "edits": 4,
-    "searches": 0,
-    "quoted": 10,
-    "mentions": 11,
-    "shell_commands": 47,
-    "shell_only": false,
-    "line": "2 file reads, 4 edits, 0 searches, 47 shell commands"
-  },
-  "notes": [
-    "commit 0063443 carries no Entire-Checkpoint trailer, so it was paired with checkpoint b20f845 by session time",
-    "the checkpoint was paired with this commit by session time and owns a commit of its own, so the change came from graph commit"
-  ],
-  "sources": [
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order",
-      "name": "handle_order",
-      "file": "umbra/fixtures/app/app/api.py",
-      "span": [
-        14,
-        23
-      ],
-      "change": "body",
-      "weight": 0.6,
-      "dependents": 1
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote",
-      "name": "quote",
-      "file": "umbra/fixtures/app/app/api.py",
-      "span": [
-        26,
-        29
-      ],
-      "change": "body",
-      "weight": 0.6,
-      "dependents": 1
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-      "name": "compute_total",
-      "file": "umbra/fixtures/app/app/service.py",
-      "span": [
-        20,
-        30
-      ],
-      "change": "signature",
-      "weight": 1,
-      "dependents": 7
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:summarize",
-      "name": "summarize",
-      "file": "umbra/fixtures/app/app/service.py",
-      "span": [
-        33,
-        36
-      ],
-      "change": "body",
-      "weight": 0.6,
-      "dependents": 1
-    }
-  ],
-  "nodes": [
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
-      "name": "apply_refund",
-      "file": "umbra/fixtures/app/app/refunds.py",
-      "span": [
-        17,
-        28
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund"
-      ],
-      "state": "penumbra",
-      "tier": "echo",
-      "modifiers": [
-        "echo",
-        "fault line",
-        "beacon"
-      ],
-      "exposures": [
-        {
-          "seq": 76,
-          "kind": "mention"
-        },
-        {
-          "seq": 76,
-          "kind": "mention"
-        }
-      ],
-      "sentence": "the session named umbra/fixtures/app/app/refunds.py in its own words and never opened it",
-      "call_site": 23,
-      "dependents": 4,
-      "score": 10.464,
-      "factors": {
-        "dependents": 3.322,
-        "farfield": 1,
-        "faultline": 1.5,
-        "relation": 3,
-        "state": 0.7,
-        "test": 0
-      },
-      "beacon": "# SAFETY: a pricing failure must not refund the full amount paid.",
-      "tests": [
-        {
-          "id": "tests/test_refunds.py::test_apply_refund_normal",
-          "outcome": "fail"
-        },
-        {
-          "id": "tests/test_refunds.py::test_apply_refund_caps_at_paid",
-          "outcome": "fail"
-        }
-      ],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero",
-      "name": "test_empty_is_zero",
-      "file": "umbra/fixtures/app/tests/test_service.py",
-      "span": [
-        19,
-        20
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
-      "call_site": 20,
-      "dependents": 1,
-      "score": 12,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 3,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "fail"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative",
-      "name": "test_negative",
-      "file": "umbra/fixtures/app/tests/test_service.py",
-      "span": [
-        13,
-        16
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
-      "call_site": 15,
-      "dependents": 1,
-      "score": 12,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 3,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "fail"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding",
-      "name": "test_rounding",
-      "file": "umbra/fixtures/app/tests/test_service.py",
-      "span": [
-        7,
-        10
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
-      "call_site": 9,
-      "dependents": 1,
-      "score": 12,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 3,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "fail"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order",
-      "name": "test_handle_order",
-      "file": "umbra/fixtures/app/tests/test_api.py",
-      "span": [
-        11,
-        16
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order"
-      ],
-      "state": "penumbra",
-      "tier": "echo",
-      "modifiers": [
-        "echo",
-        "test",
-        "far field"
-      ],
-      "exposures": [
-        {
-          "seq": 83,
-          "kind": "mention"
-        },
-        {
-          "seq": 87,
-          "kind": "mention"
-        }
-      ],
-      "sentence": "the session named umbra/fixtures/app/tests/test_api.py in its own words and never opened it",
-      "call_site": 13,
-      "dependents": 1,
-      "score": 9.3,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 3,
-        "state": 0.7,
-        "test": 3
-      },
-      "tests": [],
-      "result": "pass"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line",
-      "name": "test_quote_single_line",
-      "file": "umbra/fixtures/app/tests/test_api.py",
-      "span": [
-        19,
-        20
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line"
-      ],
-      "state": "penumbra",
-      "tier": "echo",
-      "modifiers": [
-        "echo",
-        "test",
-        "far field"
-      ],
-      "exposures": [
-        {
-          "seq": 83,
-          "kind": "mention"
-        },
-        {
-          "seq": 87,
-          "kind": "mention"
-        }
-      ],
-      "sentence": "the session named umbra/fixtures/app/tests/test_api.py in its own words and never opened it",
-      "call_site": 20,
-      "dependents": 1,
-      "score": 9.3,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 3,
-        "state": 0.7,
-        "test": 3
-      },
-      "tests": [],
-      "result": "pass"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places",
-      "name": "test_round_money_places",
-      "file": "umbra/fixtures/app/tests/test_service.py",
-      "span": [
-        23,
-        24
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "data flow",
-      "depth": 2,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "transitive",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
-      "call_site": 0,
-      "dependents": 1,
-      "score": 9,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 2,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "pass"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal",
-      "name": "test_apply_refund_normal",
-      "file": "umbra/fixtures/app/tests/test_refunds.py",
-      "span": [
-        18,
-        20
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "transitive caller",
-      "depth": 2,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "transitive",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_refunds.py",
-      "call_site": 20,
-      "dependents": 2,
-      "score": 8.816,
-      "factors": {
-        "dependents": 2.585,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 1.5,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "fail"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid",
-      "name": "test_apply_refund_caps_at_paid",
-      "file": "umbra/fixtures/app/tests/test_refunds.py",
-      "span": [
-        13,
-        15
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "transitive caller",
-      "depth": 2,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "transitive",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_refunds.py",
-      "call_site": 15,
-      "dependents": 1,
-      "score": 7.5,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 1.5,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "fail"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax",
-      "name": "apply_tax",
-      "file": "umbra/fixtures/app/app/service.py",
-      "span": [
-        15,
-        17
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "data flow",
-      "depth": 2,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax"
-      ],
-      "state": "lit",
-      "modifiers": [
-        "transitive"
-      ],
-      "exposures": [
-        {
-          "seq": 69,
-          "kind": "read"
-        },
-        {
-          "seq": 77,
-          "kind": "edit"
-        }
-      ],
-      "sentence": "the session read or edited umbra/fixtures/app/app/service.py after the change began",
-      "call_site": 0,
-      "dependents": 3,
-      "score": 0,
-      "factors": {
-        "dependents": 3,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 2,
-        "state": 0,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
-      "name": "round_money",
-      "file": "umbra/fixtures/app/app/service.py",
-      "span": [
-        10,
-        12
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
-      ],
-      "relation": "data flow",
-      "depth": 1,
-      "path": [
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
-        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money"
-      ],
-      "state": "lit",
-      "modifiers": [],
-      "exposures": [
-        {
-          "seq": 69,
-          "kind": "read"
-        },
-        {
-          "seq": 77,
-          "kind": "edit"
-        }
-      ],
-      "sentence": "the session read or edited umbra/fixtures/app/app/service.py after the change began",
-      "call_site": 0,
-      "dependents": 5,
-      "score": 0,
-      "factors": {
-        "dependents": 3.585,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 2,
-        "state": 0,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
-    }
-  ],
-  "timeline": [
-    {
-      "seq": 3,
-      "ts": "2026-09-04T17:51:19Z",
-      "kind": "command",
-      "cmd": "pwd \u0026\u0026 echo \"--- ls ---\" \u0026\u0026 ls -la \u0026\u0026 echo \"--- git ---\" \u0026\u0026 git rev-parse --is-inside-work-tree 2\u003e\u00261 | head -5"
-    },
-    {
-      "seq": 5,
-      "ts": "2026-09-04T17:51:22Z",
-      "kind": "command",
-      "cmd": "find . -maxdepth 4 | head -80"
-    },
-    {
-      "seq": 6,
-      "ts": "2026-09-04T17:51:27Z",
-      "kind": "command",
-      "cmd": "echo \"--- entire ---\"; command -v entire || echo \"entire: NOT FOUND\" echo \"--- entire status ---\"; entire status 2\u003e\u00261 | ..."
-    },
-    {
-      "seq": 7,
-      "ts": "2026-09-04T17:51:34Z",
-      "kind": "command",
-      "cmd": "cd \"\u003crepo\u003e/files (1)\" \u0026\u0026 wc -l docs/*.md echo \"=== searching home for HANDOFF/KICKOFF/entire-graph ===\" find \u003chome\u003e -max..."
-    },
-    {
-      "seq": 8,
-      "kind": "mention",
-      "symbols": [
-        "Umbra"
-      ]
-    },
-    {
-      "seq": 9,
-      "ts": "2026-09-04T17:51:41Z",
-      "kind": "command",
-      "cmd": "head -20 \u003chome\u003e/Downloads/HANDOFF.md; echo \"=====KICKOFF=====\"; head -15 \u003chome\u003e/Downloads/KICKOFF_PROMPT.md; echo \"=====..."
-    },
-    {
-      "seq": 10,
-      "kind": "mention",
-      "symbols": [
-        "Umbra"
-      ]
-    },
-    {
-      "seq": 11,
-      "ts": "2026-09-04T17:51:50Z",
-      "kind": "command",
-      "cmd": "cd \"\u003crepo\u003e/files (1)/docs\" \u0026\u0026 for f in PRD.md ARCHITECTURE.md SECURITY_AND_ACCESS.md FRONTEND_SPEC.md; do echo \"===== $f..."
-    },
-    {
-      "seq": 12,
-      "ts": "2026-09-04T17:51:59Z",
-      "kind": "command",
-      "cmd": "ls \u003chome\u003e/.local/bin 2\u003e/dev/null | head -20; echo \"--- npm global ---\"; npm ls -g --depth=0 2\u003e/dev/null | head -20; echo..."
-    },
-    {
-      "seq": 14,
-      "kind": "mention",
-      "symbols": [
-        "Umbra",
-        "command",
-        "enabled"
-      ]
-    },
-    {
-      "seq": 17,
-      "ts": "2026-09-04T17:54:44Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e \u0026\u0026 echo \"--- gh ---\" \u0026\u0026 (command -v gh \u0026\u0026 gh auth status 2\u003e\u00261 | head -10) || echo \"gh: NOT FOUND\" echo \"--- gi..."
-    },
-    {
-      "seq": 19,
-      "ts": "2026-09-04T17:54:57Z",
-      "kind": "command",
-      "cmd": "echo \"--- entireio/entire-graph ---\"; gh repo view entireio/entire-graph 2\u003e\u00261 | head -8 echo \"--- entireio org ---\"; gh ..."
-    },
-    {
-      "seq": 21,
-      "ts": "2026-09-04T17:55:12Z",
-      "kind": "command",
-      "cmd": "git init -q -b main \u0026\u0026 mkdir -p umbra/docs \u0026\u0026 cp \"files (1)/docs/\"*.md umbra/docs/ \u0026\u0026 rm -rf \"files (1)\" \u0026\u0026 ls -R . | he..."
-    },
-    {
-      "seq": 23,
-      "ts": "2026-09-04T17:55:21Z",
-      "kind": "command",
-      "cmd": "cat \u003e README.md \u003c\u003c'EOF' # Umbra Umbra is a plugin for the Entire CLI that finds the code an AI agent's change affects bu..."
-    },
-    {
-      "seq": 24,
-      "ts": "2026-09-04T17:55:26Z",
-      "kind": "command",
-      "cmd": "gh repo create Umbra --private --source=. --remote=origin --push --description \"Finds the code an AI agent's change affe..."
-    },
-    {
-      "seq": 26,
-      "ts": "2026-09-04T17:55:37Z",
-      "kind": "command",
-      "cmd": "echo \"--- cli releases ---\"; gh release list --repo entireio/cli --limit 5 2\u003e\u00261 | head echo \"--- latest assets ---\"; gh ..."
-    },
-    {
-      "seq": 29,
-      "ts": "2026-09-04T17:55:49Z",
-      "kind": "command",
-      "cmd": "cd /tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad 2\u003e/dev/null || cd /tmp gh..."
-    },
-    {
-      "seq": 31,
-      "ts": "2026-09-04T17:56:03Z",
-      "kind": "command",
-      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad mkdir -p \"$SP/dl\" ..."
-    },
-    {
-      "seq": 32,
-      "ts": "2026-09-04T17:56:24Z",
-      "kind": "command",
-      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad install -m755 \"$SP..."
-    },
-    {
-      "seq": 34,
-      "kind": "mention",
-      "symbols": [
-        "enabled"
-      ]
-    },
-    {
-      "seq": 35,
-      "ts": "2026-09-04T17:56:30Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\" echo \"--- top-level commands ---\"; entire --help 2\u003e\u00261 | sed -n '1,60p'"
-    },
-    {
-      "seq": 36,
-      "ts": "2026-09-04T17:56:34Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire auth status 2\u003e\u00261 | head -15"
-    },
-    {
-      "seq": 37,
-      "ts": "2026-09-04T17:56:41Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire enable --help 2\u003e\u00261 | head -40"
-    },
-    {
-      "seq": 39,
-      "ts": "2026-09-04T17:56:50Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire enable --agent claude-code --telemetry=false 2\u003e\u00261 | tail -30 echo..."
-    },
-    {
-      "seq": 40,
-      "ts": "2026-09-04T17:56:52Z",
-      "kind": "quoted",
-      "paths": [
-        ".entire/settings.json"
-      ]
-    },
-    {
-      "seq": 42,
-      "ts": "2026-09-04T17:56:57Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- capabilities ---\"; entire graph capabilities --json 2\u003e\u00261 | hea..."
-    },
-    {
-      "seq": 44,
-      "ts": "2026-09-04T17:57:14Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e/umbra/docs \u0026\u0026 cat PRD.md"
-    },
-    {
-      "seq": 45,
-      "ts": "2026-09-04T17:57:16Z",
-      "kind": "command",
-      "cmd": "cat ARCHITECTURE.md"
-    },
-    {
-      "seq": 46,
-      "ts": "2026-09-04T17:57:18Z",
-      "kind": "command",
-      "cmd": "cat SECURITY_AND_ACCESS.md"
-    },
-    {
-      "seq": 47,
-      "ts": "2026-09-04T17:57:21Z",
-      "kind": "command",
-      "cmd": "cat FRONTEND_SPEC.md"
-    },
-    {
-      "seq": 48,
-      "ts": "2026-09-04T17:57:25Z",
-      "kind": "command",
-      "cmd": "grep -n '^#\\{1,3\\} ' FRONTEND_SPEC.md"
-    },
-    {
-      "seq": 49,
-      "ts": "2026-09-04T17:57:29Z",
-      "kind": "command",
-      "cmd": "sed -n '15,51p;303,347p' FRONTEND_SPEC.md"
-    },
-    {
-      "seq": 51,
-      "ts": "2026-09-04T17:57:32Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e; entire graph agent-guide 2\u003e\u00261 | head -80"
-    },
-    {
-      "seq": 53,
-      "ts": "2026-09-04T17:57:58Z",
-      "kind": "command",
-      "cmd": "set -e cd \u003crepo\u003e mkdir -p umbra/fixtures/app/app umbra/fixtures/app/tests cat \u003e umbra/fixtures/app/app/__init__.py \u003c\u003c'PY..."
-    },
-    {
-      "seq": 54,
-      "ts": "2026-09-04T17:58:13Z",
-      "kind": "command",
-      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e app/service.py \u003c\u003c'PY' \"\"\"Order totals and the rounding rules that go with them..."
-    },
-    {
-      "seq": 55,
-      "ts": "2026-09-04T17:58:34Z",
-      "kind": "command",
-      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e tests/__init__.py \u003c\u003c'PY' PY cat \u003e tests/test_service.py \u003c\u003c'PY' \"\"\"Totals and r..."
-    },
-    {
-      "seq": 57,
-      "kind": "mention",
-      "symbols": [
-        "pytest"
-      ]
-    },
-    {
-      "seq": 58,
-      "ts": "2026-09-04T17:58:42Z",
-      "kind": "command",
-      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e pytest.ini \u003c\u003c'INI' [pytest] testpaths = tests python_files = test_*.py python_..."
-    },
-    {
-      "seq": 59,
-      "ts": "2026-09-04T17:58:54Z",
-      "kind": "command",
-      "cmd": "./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -20"
-    },
-    {
-      "seq": 61,
-      "ts": "2026-09-04T17:59:09Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: fixture app for the probe A small Python ord..."
-    },
-    {
-      "seq": 62,
-      "ts": "2026-09-04T17:59:15Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- checkpoint list ---\"; entire checkpoint list --json 2\u003e\u00261 | hea..."
-    },
-    {
-      "seq": 63,
-      "kind": "mention",
-      "symbols": [
-        "checkpoints",
-        "hooks"
-      ]
-    },
-    {
-      "seq": 64,
-      "ts": "2026-09-04T17:59:28Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e echo \"--- .entire ---\"; ls -la .entire/ 2\u003e/dev/null; echo; cat .entire/settings.json 2\u003e/dev/null | head -40 ec..."
-    },
-    {
-      "seq": 65,
-      "ts": "2026-09-04T17:59:34Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e; ls .git/hooks/ | grep -v sample; echo \"--- post-commit ---\"; cat .git/hooks/post-commit 2\u003e/dev/null | head -2..."
-    },
-    {
-      "seq": 66,
-      "ts": "2026-09-04T17:59:42Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- last commit body ---\"; git log -1 --format=%B echo \"--- prepar..."
-    },
-    {
-      "seq": 67,
-      "ts": "2026-09-04T17:59:47Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import --help 2\u003e\u00261 | head -30"
-    },
-    {
-      "seq": 68,
-      "kind": "mention",
-      "symbols": [
-        "hooks"
-      ]
-    },
-    {
-      "seq": 69,
-      "ts": "2026-09-04T17:59:56Z",
-      "kind": "read",
-      "path": "umbra/fixtures/app/app/service.py"
-    },
-    {
-      "seq": 70,
-      "kind": "mention",
-      "symbols": [
-        "compute_total"
-      ]
-    },
-    {
-      "seq": 71,
-      "ts": "2026-09-04T18:00:03Z",
-      "kind": "read",
-      "path": "umbra/fixtures/app/app/api.py",
-      "range": [
-        1,
-        12
-      ]
-    },
-    {
-      "seq": 73,
-      "ts": "2026-09-04T18:00:24Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" --include=*.py ."
-    },
-    {
-      "seq": 74,
-      "ts": "2026-09-04T18:00:26Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" app tests"
-    },
-    {
-      "seq": 76,
-      "kind": "mention",
-      "paths": [
-        "umbra/fixtures/app/app/refunds.py"
-      ],
-      "symbols": [
-        "apply_refund"
-      ]
-    },
-    {
-      "seq": 77,
-      "ts": "2026-09-04T18:01:05Z",
-      "kind": "edit",
-      "path": "umbra/fixtures/app/app/service.py"
-    },
-    {
-      "seq": 78,
-      "ts": "2026-09-04T18:01:07Z",
-      "kind": "edit",
-      "path": "umbra/fixtures/app/app/api.py"
-    },
-    {
-      "seq": 79,
-      "ts": "2026-09-04T18:01:11Z",
-      "kind": "edit",
-      "path": "umbra/fixtures/app/app/api.py"
-    },
-    {
-      "seq": 80,
-      "ts": "2026-09-04T18:01:13Z",
-      "kind": "edit",
-      "path": "umbra/fixtures/app/app/api.py"
-    },
-    {
-      "seq": 82,
-      "ts": "2026-09-04T18:01:16Z",
-      "kind": "command",
-      "cmd": "./.venv/bin/python -m pytest tests/test_api.py 2\u003e\u00261 | tail -8"
-    },
-    {
-      "seq": 83,
-      "kind": "mention",
-      "paths": [
-        "umbra/fixtures/app/tests/test_api.py"
-      ]
-    },
-    {
-      "seq": 84,
-      "ts": "2026-09-04T18:01:25Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"make the tax rate explicit on compute_total compute..."
-    },
-    {
-      "seq": 85,
-      "ts": "2026-09-04T18:01:30Z",
-      "kind": "command",
-      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 ./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -12"
-    },
-    {
-      "seq": 87,
-      "kind": "mention",
-      "paths": [
-        "umbra/fixtures/app/tests/test_api.py"
-      ]
-    },
-    {
-      "seq": 88,
-      "ts": "2026-09-04T18:01:38Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --help 2\u003e\u00261 | head -30"
-    },
-    {
-      "seq": 89,
-      "ts": "2026-09-04T18:01:42Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --dry-run 2\u003e\u00261 | head -20"
-    },
-    {
-      "seq": 90,
-      "ts": "2026-09-04T18:01:47Z",
-      "kind": "command",
-      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code 2\u003e\u00261 | head -20 echo \"=== checkpoint list ===\"..."
-    }
-  ],
-  "t0": 77,
-  "execution": {
-    "selected": [
-      "tests/test_service.py::test_empty_is_zero",
-      "tests/test_service.py::test_negative",
-      "tests/test_service.py::test_rounding",
-      "tests/test_api.py::test_handle_order",
-      "tests/test_api.py::test_quote_single_line",
-      "tests/test_service.py::test_round_money_places",
-      "tests/test_refunds.py::test_apply_refund_normal",
-      "tests/test_refunds.py::test_apply_refund_caps_at_paid"
-    ],
-    "new_failures": [
-      "tests/test_refunds.py::test_apply_refund_caps_at_paid",
-      "tests/test_refunds.py::test_apply_refund_normal",
-      "tests/test_service.py::test_empty_is_zero",
-      "tests/test_service.py::test_negative",
-      "tests/test_service.py::test_rounding"
-    ],
-    "fixed": [],
-    "sweep": true,
-    "leaks": [],
-    "verdict": "REGRESSION in 5 tests: tests/test_refunds.py::test_apply_refund_caps_at_paid, tests/test_refunds.py::test_apply_refund_normal, tests/test_service.py::test_empty_is_zero, tests/test_service.py::test_negative, tests/test_service.py::test_rounding"
-  },
-  "summary": {
-    "lit": 2,
-    "penumbra": 3,
-    "umbra": 6,
-    "unknown": 0,
-    "illumination": 0.18181818181818182
-  },
-  "layout": {
-    "view_box": [
-      0,
-      0,
-      1200,
-      800
-    ],
-    "centre": {
-      "x": 600,
-      "y": 400
-    },
-    "rings": [
-      {
-        "depth": 1,
-        "radius": 170,
-        "dashed": false,
-        "label": "1 hop"
-      },
-      {
-        "depth": 2,
-        "radius": 280,
-        "dashed": false,
-        "label": "2 hops"
-      }
-    ],
-    "sources": {
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order": {
-        "x": 600,
-        "y": 344
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote": {
-        "x": 656,
-        "y": 400
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total": {
-        "x": 600,
-        "y": 456
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:summarize": {
-        "x": 544,
-        "y": 400
-      }
-    },
-    "nodes": {
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund": {
-        "x": 617.77,
-        "y": 569.07,
-        "angle": 174,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "below",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax": {
-        "x": 389.48,
-        "y": 215.38,
-        "angle": 311.25,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money": {
-        "x": 515,
-        "y": 252.78,
-        "angle": 330,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order": {
-        "x": 473.67,
-        "y": 513.75,
-        "angle": 228,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 344
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line": {
-        "x": 430.93,
-        "y": 382.23,
-        "angle": 276,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "left",
-        "toward": {
-          "x": 656,
-          "y": 400
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid": {
-        "x": 800.56,
-        "y": 595.38,
-        "angle": 134.25,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal": {
-        "x": 420.96,
-        "y": 615.28,
-        "angle": 219.75,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero": {
-        "x": 747.22,
-        "y": 485,
-        "angle": 120,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative": {
-        "x": 761.68,
-        "y": 347.47,
-        "angle": 72,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places": {
-        "x": 790.06,
-        "y": 194.39,
-        "angle": 42.75,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      },
-      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding": {
-        "x": 669.15,
-        "y": 244.7,
-        "angle": 24,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 456
-        }
-      }
-    },
-    "sources_collapsed": false
-  },
-  "limitations": [
-    "graph edges are incomplete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined",
-    "read evidence is file and line-range based; a mention in the agent's text is attention, not reading, and is the weakest tier",
-    "fault lines and beacons are matched by a regex window around the call site, not by a parser",
-    "ranking weights are hand set and printed; they are a heuristic, not a measurement",
-    "relations not traversed: CONFIGURES, CONSTRUCTS, EMITS, HANDLES_GRAPHQL, HANDLES_GRPC, HANDLES_ROUTE, HANDLES_TOOL, HANDLES_TRPC, HTTP_CALLS, LISTENS_ON, RESOURCE_DEPENDS_ON, SIMILAR_TO"
-  ],
-  "commands_run": [
-    "entire checkpoint list --json",
-    "git -C \u003crepo\u003e rev-parse --verify 0063443^{commit}",
-    "git -C \u003crepo\u003e rev-list --parents -n 1 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e log -1 --format=%B 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e log -1 --format=%cI 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base faf4dc616ae391650ddd4680657d64b79d9d248f",
-    "entire graph capabilities --json",
-    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format ndjson",
-    "entire graph commit 00634433c2bc2ac6d1da8e76f45847e7f6702a36 --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --json",
-    "entire graph impact --symbol handle_order --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 14",
-    "entire graph impact --symbol quote --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 26",
-    "entire graph impact --symbol compute_total --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 20",
-    "entire graph impact --symbol summarize --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 33",
-    "entire checkpoint explain b20f84567474 --raw-transcript",
-    "entire checkpoint explain b20f84567474 --short",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json"
-  ]
-}
-</script>
-<script src="umbra.js"></script>
-<script src="site.js"></script>
 </body>
 </html>

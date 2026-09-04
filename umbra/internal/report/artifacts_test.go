@@ -20,6 +20,7 @@ func committedReports(t *testing.T) map[string]map[string]any {
 	for _, rel := range []string{
 		filepath.Join("..", "..", "site", "self", "umbra.json"),
 		filepath.Join("..", "..", "site", "sample", "umbra.json"),
+		filepath.Join("..", "..", "site", "imported", "umbra.json"),
 	} {
 		blob, err := os.ReadFile(rel)
 		if err != nil {
@@ -101,6 +102,9 @@ func TestCommittedArtifactsCarryNothingPrivate(t *testing.T) {
 		filepath.Join("..", "..", "site", "self", "umbra.packet.md"),
 		filepath.Join("..", "..", "site", "sample", "umbra.json"),
 		filepath.Join("..", "..", "site", "index.html"),
+		filepath.Join("..", "..", "site", "imported", "umbra.json"),
+		filepath.Join("..", "..", "site", "imported", "umbra.html"),
+		filepath.Join("..", "..", "site", "imported", "umbra.packet.md"),
 		filepath.Join("..", "..", "fixtures", "recorded", "minimal", "recording.json"),
 	}
 	banned := []struct {
