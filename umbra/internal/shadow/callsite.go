@@ -3,6 +3,7 @@ package shadow
 import (
 	"bufio"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -114,16 +115,40 @@ func cap200(s string) string {
 	return s[:200] + "..."
 }
 
-// FarField reports whether a node sits in a different top-level package or
-// directory than its source.
+// FarField reports whether a node sits in a different package or directory
+// than its source.
+//
+// Comparing only the first path segment is wrong for a project nested inside a
+// repository: `umbra/fixtures/app/app/service.py` and
+// `umbra/fixtures/app/tests/test_service.py` both start with `umbra`, yet they
+// are plainly in different packages. The comparison is therefore made after
+// the longest shared directory prefix is removed, which is what "a different
+// top-level package or directory" means once the project root is not the
+// repository root.
+//
+// A directory that contains the other is not far field, so a subpackage of the
+// source's own package stays near.
 func FarField(nodeFile, sourceFile string) bool {
-	return topLevel(nodeFile) != topLevel(sourceFile)
+	a := dirSegments(nodeFile)
+	b := dirSegments(sourceFile)
+
+	n := 0
+	for n < len(a) && n < len(b) && a[n] == b[n] {
+		n++
+	}
+	restA, restB := a[n:], b[n:]
+
+	// Identical directories, or one nested inside the other.
+	if len(restA) == 0 || len(restB) == 0 {
+		return false
+	}
+	return true
 }
 
-func topLevel(p string) string {
-	p = strings.TrimPrefix(filepath.ToSlash(p), "./")
-	if i := strings.Index(p, "/"); i >= 0 {
-		return p[:i]
+func dirSegments(p string) []string {
+	d := path.Dir(strings.TrimPrefix(filepath.ToSlash(p), "./"))
+	if d == "." || d == "/" || d == "" {
+		return nil
 	}
-	return "."
+	return strings.Split(strings.Trim(d, "/"), "/")
 }

@@ -1,0 +1,1 @@
+A test four hops away changes state and was not selected, so the sweep reports it as a leak.

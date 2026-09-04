@@ -1,0 +1,1 @@
+The session read every caller in full after the change began, so nothing is in shadow.

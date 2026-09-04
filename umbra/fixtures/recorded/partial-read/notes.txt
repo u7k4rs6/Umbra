@@ -1,0 +1,1 @@
+A read whose offset and limit stop before the caller's span, which is the glance tier.
