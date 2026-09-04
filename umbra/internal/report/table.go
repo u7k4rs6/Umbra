@@ -69,6 +69,9 @@ func Table(w io.Writer, a *Analysis, o TableOptions) error {
 		if a.SessionSaidFrom != "" {
 			fmt.Fprintf(b, "              %s\n", dim(o, "from "+a.SessionSaidFrom))
 		}
+	} else {
+		fmt.Fprintf(b, "session said  %s\n", dim(o,
+			"nothing: Entire stored no summary and the session left no edit to tie its words to this change"))
 	}
 	fmt.Fprintf(b, "coverage  %s\n", CoverageLine(a))
 	if note := CoverageNote(a); note != "" {

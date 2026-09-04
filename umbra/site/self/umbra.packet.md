@@ -56,13 +56,11 @@ Checkpoint `01M1PY8KZ28HS7TG95ZVKQSZ2W`, commit `13adcdd`, parent `31fa246`, age
 
 ## 2. What was examined
 
-The session's own account, the last thing the agent said, because Entire stored no summary:
+How the session worked: 3 file reads, 5 edits, 0 searches, 285 shell commands.
 
-> Let me verify no network requests at all, then commit phase 9.
+> This session worked almost entirely through the shell: 8 file tool events against 285 shell commands. Umbra builds the examined set from file tool events, so a mostly umbra report is the expected outcome here and says little about the change.
 
-That sentence is displayed, never checked. This packet reports what the session did.
-
-Tool activity in the session: 3 read, 5 edit, 20 quoted, 131 mention, 234 command.
+Tool activity in the session: 3 read, 5 edit, 1 quoted, 154 mention, 285 command.
 
 ## 3. Ranked shadow
 

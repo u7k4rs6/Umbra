@@ -18,6 +18,13 @@ import (
 // Anything that does not look like a path with a file extension is ignored.
 // Candidates are filtered against the real file list later, so a false
 // positive here cannot invent evidence for a file that does not exist.
+// emailRE rejects a candidate that is an address rather than a path. The path
+// character class has to allow "@" for paths that contain one, and an address
+// then matches the bare-path shape exactly: it has dots and a trailing
+// extension. One reached a committed report through a tool result before this
+// existed.
+var emailRE = regexp.MustCompile(`^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$`)
+
 var (
 	hitRE  = regexp.MustCompile(`(?m)^\s*([A-Za-z0-9_./@+-]+\.[A-Za-z0-9_+-]+):\d+[:-]`)
 	bareRE = regexp.MustCompile(`(?m)^\s*([A-Za-z0-9_./@+-]+\.[A-Za-z0-9_+-]+)\s*$`)
@@ -46,6 +53,9 @@ func extractPaths(text, root string) []string {
 		}
 		// A single dot segment or a bare extension is noise.
 		if !strings.Contains(filepath.Base(p), ".") {
+			return
+		}
+		if emailRE.MatchString(p) {
 			return
 		}
 		seen[p] = true

@@ -133,7 +133,7 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 
 	examined := shadow.BuildExamined(session, sourceFiles)
 	a.Cut, a.HasCut = examined.Cut, examined.HasCut
-	a.Timeline = buildTimeline(session, scrub)
+	a.Timeline = buildTimeline(session, scrub, field)
 
 	if !examined.Any {
 		a.Notes = append(a.Notes, "the transcript carries no tool activity, so the examined set is unavailable and every node is unknown")
@@ -271,13 +271,42 @@ func sessionSaid(ctx context.Context, run runner.Runner, id string, s *transcrip
 			return scrub.Sentence(sent), "what the agent said after its last edit, because Entire stored no summary"
 		}
 	}
-	if last := s.LastSentence(0); last != "" {
-		return scrub.Sentence(last), "the last thing the agent said, because Entire stored no summary"
-	}
+	// No stored summary and no edit to bound the search. Taking the last
+	// sentence of the whole transcript would put an arbitrary line of the
+	// session's conversation into a report that people share, and in a long
+	// session that line has nothing to do with the commit. Omit it: the
+	// header already says the summary is absent, and the coverage line says
+	// when a session left no file tool events to bound it by.
 	return "", ""
 }
 
-func buildTimeline(s *transcript.Session, scrub *report.Scrubber) []report.TimelineEvent {
+// buildTimeline reduces the session to what a report may carry.
+//
+// Paths are filtered against the repository's real file list. A tool result is
+// mined for path-shaped text, and not everything path-shaped is a file: a
+// domain and an email address both match the shape, and one of each reached a
+// committed report before this filter existed. A path that is not a file in
+// this repository can say nothing about the change, so it is dropped.
+func buildTimeline(s *transcript.Session, scrub *report.Scrubber, field *graph.Field) []report.TimelineEvent {
+	known := map[string]bool{}
+	if field != nil {
+		for _, f := range field.Files {
+			known[f] = true
+		}
+	}
+	keep := func(paths []string) []string {
+		if len(known) == 0 {
+			return paths
+		}
+		var out []string
+		for _, p := range paths {
+			if known[p] {
+				out = append(out, p)
+			}
+		}
+		return out
+	}
+
 	var out []report.TimelineEvent
 	for _, ev := range s.Events {
 		switch ev.Kind {
@@ -289,8 +318,13 @@ func buildTimeline(s *transcript.Session, scrub *report.Scrubber) []report.Timel
 			Kind:    ev.Kind.String(),
 			Path:    ev.Path,
 			Range:   ev.Range,
-			Paths:   ev.Paths,
+			Paths:   keep(ev.Paths),
 			Symbols: ev.Symbols,
+		}
+		// An event whose only content was paths outside the repository has
+		// nothing left to say.
+		if len(ev.Paths) > 0 && len(te.Paths) == 0 && te.Path == "" && len(te.Symbols) == 0 && te.Cmd == "" {
+			continue
 		}
 		if !ev.TS.IsZero() {
 			te.TS = ev.TS.UTC().Format("2006-01-02T15:04:05Z")

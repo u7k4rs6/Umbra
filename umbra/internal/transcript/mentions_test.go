@@ -182,3 +182,23 @@ func TestExtractPathsIgnoresProse(t *testing.T) {
 		t.Fatalf("expected no paths, got %v", got)
 	}
 }
+
+// An address and a domain both match the bare-path shape: dots and a trailing
+// extension. One of each reached a committed report before this was rejected.
+func TestExtractPathsRejectsEmailAddresses(t *testing.T) {
+	got := extractPaths("account someone@example.com\ngithub.com\napp/service.py\n", "/repo")
+	for _, p := range got {
+		if p == "someone@example.com" {
+			t.Fatalf("an email address is not a path: %v", got)
+		}
+	}
+	found := false
+	for _, p := range got {
+		if p == "app/service.py" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("a real path should still be recovered: %v", got)
+	}
+}
