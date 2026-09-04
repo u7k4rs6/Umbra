@@ -1,0 +1,29 @@
+Index: cache-miss (685ms) | Query: 0ms | Total: 686ms
+Impact: compute_total (app/service.py:20) def=20 span=20-30 [function]
+Blast radius: 11 callers (7 direct, 4 transitive), 1 callee, 2 type consumers, 4 data flows, 1 co-change file, 0 siblings.
+Callers (7 direct, 4 transitive; who breaks if behavior changes):
+- handle_order (app/api.py:16, def :14)
+- quote (app/api.py:29, def :26)
+- apply_refund (app/refunds.py:23, def :17) [+1 more call site]
+- summarize (app/service.py:35, def :33)
+- test_rounding (tests/test_service.py:9, def :7)
+- test_negative (tests/test_service.py:15, def :13)
+- test_empty_is_zero (tests/test_service.py:20, def :19)
+- test_handle_order (tests/test_api.py:13, def :11) [via handle_order]
+- test_quote_single_line (tests/test_api.py:20, def :19) [via quote]
+- test_apply_refund_caps_at_paid (tests/test_refunds.py:15, def :13) [via apply_refund]
+- test_apply_refund_normal (tests/test_refunds.py:20, def :18) [via apply_refund]
+Callees (1; what it depends on):
+- round_money (app/service.py:10)
+Type consumers (0 in, 2 out; USES_TYPE/PARAM_TYPE/RETURNS_TYPE):
+- -> LineItem (app/models.py:8) [PARAM_TYPE]
+- -> LineItem (app/models.py:8) [USES_TYPE]
+Data flows (3 in, 1 out):
+- <- handle_order (app/api.py:14)
+- -> quote (app/api.py:26)
+- <- round_money (app/service.py:10)
+- <- summarize (app/service.py:33)
+Co-change coupling (1; files that historically change with app/service.py):
+- app/api.py [files changed together in 2 recent commits]
+Same-container siblings (0):
+- none

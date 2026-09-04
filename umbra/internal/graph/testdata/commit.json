@@ -1,0 +1,56 @@
+{
+  "base": "faf4dc616ae391650ddd4680657d64b79d9d248f",
+  "head": "0063443",
+  "files": [
+    {
+      "path": "app/api.py",
+      "status": "M",
+      "language": "Python",
+      "changes": [
+        {
+          "type": "body_changed",
+          "kind": "function",
+          "name": "handle_order",
+          "before_start_line": 14,
+          "after_start_line": 14,
+          "dependents_count": 1
+        },
+        {
+          "type": "body_changed",
+          "kind": "function",
+          "name": "quote",
+          "before_start_line": 26,
+          "after_start_line": 26,
+          "dependents_count": 1
+        }
+      ]
+    },
+    {
+      "path": "app/service.py",
+      "status": "M",
+      "language": "Python",
+      "changes": [
+        {
+          "type": "signature_changed",
+          "kind": "function",
+          "name": "compute_total",
+          "old_signature": "def compute_total(items: Iterable[LineItem]) -\u003e float",
+          "new_signature": "def compute_total(items: Iterable[LineItem], tax_rate: float) -\u003e float",
+          "before_start_line": 20,
+          "after_start_line": 20,
+          "dependents_count": 7
+        },
+        {
+          "type": "body_changed",
+          "kind": "function",
+          "name": "summarize",
+          "before_start_line": 32,
+          "after_start_line": 33,
+          "dependents_count": 1
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.1",
+  "producer_version": "v0.4.1-nightly.202609030616.ddcebd05"
+}
