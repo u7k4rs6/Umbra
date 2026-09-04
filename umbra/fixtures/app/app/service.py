@@ -8,7 +8,13 @@ TAX_RATE = 0.08
 
 
 def round_money(value: float) -> float:
-    """Round to two places the way the ledger expects."""
+    """Round to two places the way the ledger expects.
+
+    Negative amounts round away from zero, so a refund never comes out a
+    fraction of a cent short of what was charged.
+    """
+    if value < 0:
+        return -round(-value + 1e-9, 2)
     return round(value + 1e-9, 2)
 
 
