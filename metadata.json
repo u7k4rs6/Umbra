@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1Q6XYNWCEBR90AYZEQS9N9T",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "Concepts/ChatGPT Image Sep 5, 2026, 03_23_15 AM.png",
+    "Concepts/ChatGPT Image Sep 5, 2026, 03_23_18 AM.png",
+    "Concepts/ChatGPT Image Sep 5, 2026, 03_24_36 AM.png",
+    "umbra/cmd/entire-umbra/analyze.go",
+    "umbra/cmd/entire-umbra/record.go",
+    "umbra/internal/report/artifacts_test.go",
+    "umbra/internal/report/assets/umbra.js",
+    "umbra/site/imported/README.md",
+    "umbra/site/imported/umbra.html",
+    "umbra/site/imported/umbra.json",
+    "umbra/site/imported/umbra.packet.md",
+    "umbra/site/index.html",
+    "umbra/site/site.js",
+    "umbra/site/umbra.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 19522,
+    "cache_read_tokens": 13649639,
+    "output_tokens": 14151,
+    "api_call_count": 16
+  }
+}
