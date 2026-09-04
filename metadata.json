@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1Q76VQCE80K25DV38RHM5EE",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "lightfield-01.png",
+    "umbra/docs/renders/README.md",
+    "umbra/docs/renders/lightfield-dark-cut.png",
+    "umbra/docs/renders/lightfield-dark-end.png",
+    "umbra/docs/renders/lightfield-dark-seq0.png",
+    "umbra/docs/renders/lightfield-first-pass.png",
+    "umbra/docs/renders/lightfield-light-cut.png",
+    "umbra/docs/renders/lightfield-light-end.png",
+    "umbra/docs/renders/lightfield-light-seq0.png",
+    "umbra/internal/report/assets/umbra.css",
+    "umbra/internal/report/assets/umbra.js",
+    "umbra/site/umbra.css",
+    "umbra/site/umbra.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 22145,
+    "cache_read_tokens": 9610280,
+    "output_tokens": 12935,
+    "api_call_count": 11
+  }
+}

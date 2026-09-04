@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1Q76VQCE80K25DV38RHM5EE",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-04T22:04:16.536473957Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "lightfield-01.png",
+    "umbra/docs/renders/README.md",
+    "umbra/docs/renders/lightfield-dark-cut.png",
+    "umbra/docs/renders/lightfield-dark-end.png",
+    "umbra/docs/renders/lightfield-dark-seq0.png",
+    "umbra/docs/renders/lightfield-first-pass.png",
+    "umbra/docs/renders/lightfield-light-cut.png",
+    "umbra/docs/renders/lightfield-light-end.png",
+    "umbra/docs/renders/lightfield-light-seq0.png",
+    "umbra/internal/report/assets/umbra.css",
+    "umbra/internal/report/assets/umbra.js",
+    "umbra/site/umbra.css",
+    "umbra/site/umbra.js"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "a71a0ec69bc0",
+  "checkpoint_transcript_start": 2826,
+  "transcript_lines_at_start": 2826,
+  "compact_transcript_start": 503,
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 22145,
+    "cache_read_tokens": 9610280,
+    "output_tokens": 12935,
+    "api_call_count": 11
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-04T22:04:15.994788479Z",
+    "agent_lines": 178,
+    "agent_removed": 38,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 178,
+    "total_lines_changed": 216,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
