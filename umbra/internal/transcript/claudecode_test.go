@@ -284,3 +284,84 @@ func TestReadOutsideTheRepositoryProducesNoEvent(t *testing.T) {
 		}
 	}
 }
+
+// Coverage answers the question a reader of a mostly-umbra report will ask:
+// did the agent examine nothing, or did it work in a way Umbra cannot see?
+func TestCoverageCountsToolEvents(t *testing.T) {
+	c := load(t, "classic.jsonl").Coverage()
+	if c.Reads != 2 {
+		t.Errorf("reads = %d, want 2", c.Reads)
+	}
+	if c.Edits != 2 {
+		t.Errorf("edits = %d, want 2", c.Edits)
+	}
+	if c.Commands != 2 {
+		t.Errorf("shell commands = %d, want 2", c.Commands)
+	}
+	if !c.Any() {
+		t.Error("this transcript plainly has tool events")
+	}
+	// Two reads and two edits against two commands is an ordinary session.
+	if c.Thin() {
+		t.Error("a session with as many file events as commands is not shell only")
+	}
+}
+
+func TestCoverageOnATranscriptWithNoToolEvents(t *testing.T) {
+	c := load(t, "no-reads.jsonl").Coverage()
+	if c.Reads != 0 || c.Edits != 0 || c.Commands != 0 || c.Searches != 0 {
+		t.Fatalf("expected no tool events at all, got %+v", c)
+	}
+	if c.Any() {
+		t.Error("Any should be false when nothing happened")
+	}
+	if c.Thin() {
+		t.Error("nothing at all is not the same as shell only")
+	}
+}
+
+// A session that works through the shell leaves no file tool events, so its
+// report is thin for a reason that has nothing to do with the change.
+func TestCoverageThinNeedsRealShellActivity(t *testing.T) {
+	cases := []struct {
+		name string
+		c    Coverage
+		want bool
+	}{
+		{"shell only", Coverage{Reads: 1, Edits: 0, Commands: 40}, true},
+		{"exactly at the threshold", Coverage{Reads: 1, Edits: 0, Commands: 10}, true},
+		{"just inside", Coverage{Reads: 2, Edits: 0, Commands: 10}, false},
+		{"a few commands is ordinary", Coverage{Reads: 0, Edits: 0, Commands: 4}, false},
+		{"balanced session", Coverage{Reads: 8, Edits: 4, Commands: 12}, false},
+		{"no commands at all", Coverage{Reads: 0, Edits: 0, Commands: 0}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.c.Thin(); got != tc.want {
+				t.Fatalf("Thin() = %v, want %v for %+v", got, tc.want, tc.c)
+			}
+		})
+	}
+}
+
+// Counting events must never be mistaken for widening the examined set: a
+// command contributes to the count and to nothing else.
+func TestCoverageDoesNotAffectExposure(t *testing.T) {
+	blob := []byte(`{"type":"assistant","cwd":"/repo","timestamp":"2026-09-05T10:00:00.000Z","message":{"content":[{"type":"tool_use","id":"a","name":"Bash","input":{"command":"sed -i s/x/y/ app/service.py"}}]}}` + "\n")
+	s, err := ClaudeCode{RepoRoot: "/repo"}.Parse(blob)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	if got := s.Coverage().Commands; got != 1 {
+		t.Fatalf("commands = %d, want 1", got)
+	}
+	// The path named inside the command must not become evidence about it.
+	for _, e := range s.Events {
+		if e.Path != "" || len(e.Paths) > 0 {
+			t.Fatalf("a command must contribute no path evidence, got %+v", e)
+		}
+	}
+	if s.HasExposure() {
+		t.Fatal("a shell command alone is not exposure")
+	}
+}

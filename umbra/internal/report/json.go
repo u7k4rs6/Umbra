@@ -18,6 +18,7 @@ type jsonReport struct {
 	Inputs          jsonInputs      `json:"inputs"`
 	SessionSaid     string          `json:"session_said,omitempty"`
 	SessionSaidFrom string          `json:"session_said_from,omitempty"`
+	Coverage        jsonCoverage    `json:"coverage"`
 	Notes           []string        `json:"notes,omitempty"`
 	Sources         []jsonSource    `json:"sources"`
 	Nodes           []jsonNode      `json:"nodes"`
@@ -28,6 +29,20 @@ type jsonReport struct {
 	Layout          *Layout         `json:"layout,omitempty"`
 	Limitations     []string        `json:"limitations"`
 	CommandsRun     []string        `json:"commands_run"`
+}
+
+// jsonCoverage says how the session worked, so a consumer can tell a thin
+// report from a real finding without re-reading the timeline.
+type jsonCoverage struct {
+	Reads    int    `json:"reads"`
+	Edits    int    `json:"edits"`
+	Searches int    `json:"searches"`
+	Quoted   int    `json:"quoted"`
+	Mentions int    `json:"mentions"`
+	Commands int    `json:"shell_commands"`
+	Thin     bool   `json:"shell_only"`
+	Line     string `json:"line"`
+	Note     string `json:"note,omitempty"`
 }
 
 type jsonCheckpoint struct {
@@ -128,13 +143,19 @@ func BuildJSON(a *Analysis) jsonReport {
 		},
 		SessionSaid:     a.SessionSaid,
 		SessionSaidFrom: a.SessionSaidFrom,
-		Notes:           a.Notes,
-		Timeline:        a.Timeline,
-		T0:              a.Cut,
-		Execution:       a.Execution,
-		Layout:          a.Layout,
-		Limitations:     nonNilStrings(a.Limitations),
-		CommandsRun:     nonNilStrings(a.Commands),
+		Coverage: jsonCoverage{
+			Reads: a.Coverage.Reads, Edits: a.Coverage.Edits,
+			Searches: a.Coverage.Searches, Quoted: a.Coverage.Quoted,
+			Mentions: a.Coverage.Mentions, Commands: a.Coverage.Commands,
+			Thin: a.Coverage.Thin(), Line: CoverageLine(a), Note: CoverageNote(a),
+		},
+		Notes:       a.Notes,
+		Timeline:    a.Timeline,
+		T0:          a.Cut,
+		Execution:   a.Execution,
+		Layout:      a.Layout,
+		Limitations: nonNilStrings(a.Limitations),
+		CommandsRun: nonNilStrings(a.Commands),
 	}
 
 	for _, s := range a.Sources {

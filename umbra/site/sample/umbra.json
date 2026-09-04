@@ -57,6 +57,16 @@
   },
   "session_said": "Checked the callers. All tests pass.",
   "session_said_from": "the checkpoint summary Entire stored",
+  "coverage": {
+    "reads": 2,
+    "edits": 1,
+    "searches": 1,
+    "quoted": 0,
+    "mentions": 0,
+    "shell_commands": 0,
+    "shell_only": false,
+    "line": "2 file reads, 1 edit, 1 search, 0 shell commands"
+  },
   "notes": [
     "this is the seeded fixture from the repository, recorded so the page has a real report to draw"
   ],

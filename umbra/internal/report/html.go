@@ -28,6 +28,8 @@ type htmlData struct {
 	LitHidden int
 
 	EclipseGlyph     template.HTML
+	CoverageLine     string
+	CoverageNote     string
 	IlluminationText string
 	ProbeText        string
 	SweepText        string
@@ -68,6 +70,8 @@ func HTML(w io.Writer, a *Analysis) error {
 		Rows:             BuildDocket(a),
 		LitHidden:        a.Summary.Lit,
 		EclipseGlyph:     eclipseGlyph(a),
+		CoverageLine:     CoverageLine(a),
+		CoverageNote:     CoverageNote(a),
 		IlluminationText: illuminationText(a),
 		ProbeText:        probeText(a),
 		SweepText:        sweepText(a),

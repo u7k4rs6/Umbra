@@ -29,6 +29,9 @@
     <span class="fact">{{.SweepText}}</span>
   </div>
 
+  <p class="coverage">How the session worked: {{.CoverageLine}}.</p>
+  {{if .CoverageNote}}<p class="notice coverage-note">{{.CoverageNote}}</p>{{end}}
+
   {{range .A.Notes}}<p class="notice">{{.}}</p>{{end}}
 </header>
 

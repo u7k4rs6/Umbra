@@ -461,3 +461,6 @@ button.tick.cut {
   table.docket tr, .chip { break-inside: avoid; page-break-inside: avoid; }
   .wrap { display: block; }
 }
+
+.coverage { color: var(--ink-2); font-size: 13px; margin: 4px 0; }
+.coverage-note { max-width: 72ch; }

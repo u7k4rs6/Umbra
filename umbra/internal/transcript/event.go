@@ -107,6 +107,75 @@ func (s *Session) HasExposure() bool {
 	return false
 }
 
+// Coverage counts the session's tool events by kind.
+//
+// It exists to answer one question a reader of a mostly-umbra report will ask:
+// did the agent really examine nothing, or did it work in a way this tool
+// cannot see? Umbra's examined set is built from file tool events. A session
+// that reads and edits through shell commands leaves none, so its report is
+// thin for a reason that has nothing to do with the change.
+//
+// This counts events. It does not look inside a command, and nothing here
+// widens the examined set.
+type Coverage struct {
+	Reads    int
+	Edits    int
+	Searches int
+	Quoted   int
+	Mentions int
+	Commands int
+}
+
+// FileEvents is the evidence the classifier can actually use to light a node.
+func (c Coverage) FileEvents() int { return c.Reads + c.Edits }
+
+// Tools is every tool event counted, including the commands.
+func (c Coverage) Tools() int {
+	return c.Reads + c.Edits + c.Searches + c.Quoted + c.Commands
+}
+
+// Any reports whether the transcript carried any tool event at all.
+func (c Coverage) Any() bool { return c.Tools() > 0 || c.Mentions > 0 }
+
+// Thin reports whether the session did nearly all of its work through the
+// shell, so a mostly-umbra report is the expected outcome rather than a
+// finding about the change.
+//
+// The test is deliberately blunt: there has to be real shell activity, and the
+// file tool events have to be a small fraction of it. A session with a handful
+// of commands and a handful of reads is ordinary and is not flagged.
+func (c Coverage) Thin() bool {
+	if c.Commands < 5 {
+		return false
+	}
+	return c.FileEvents()*10 <= c.Commands
+}
+
+// Coverage counts the events this session carried.
+func (s *Session) Coverage() Coverage {
+	var c Coverage
+	if s == nil {
+		return c
+	}
+	for _, e := range s.Events {
+		switch e.Kind {
+		case Read:
+			c.Reads++
+		case Edit:
+			c.Edits++
+		case Grep, Glob:
+			c.Searches++
+		case ResultFile:
+			c.Quoted++
+		case Mention:
+			c.Mentions++
+		case Command:
+			c.Commands++
+		}
+	}
+	return c
+}
+
 // Files lists every path the session touched through a tool, sorted.
 func (s *Session) Files() []string {
 	seen := map[string]bool{}

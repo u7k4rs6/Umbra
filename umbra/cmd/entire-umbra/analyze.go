@@ -129,6 +129,7 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	session.ResolveMentions(shadow.Vocabulary(field))
 	a.Channels["reads"] = session.HasExposure()
 	a.Channels["mentions"] = true
+	a.Coverage = session.Coverage()
 
 	examined := shadow.BuildExamined(session, sourceFiles)
 	a.Cut, a.HasCut = examined.Cut, examined.HasCut

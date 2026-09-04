@@ -224,6 +224,7 @@ func sampleAnalysis(root string) (*report.Analysis, error) {
 	}
 	a.Summary = shadow.Summarize(nodes)
 	a.Timeline = timelineOf(session)
+	a.Coverage = session.Coverage()
 
 	// The probes that reach the shadow, with the outcomes the fixture really
 	// produces when the signature changes.
