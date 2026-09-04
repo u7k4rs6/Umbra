@@ -561,6 +561,58 @@ skips cleanly rather than failing.
 - **Resolved in phase 13.** The `leak` scenario now uses the real four-hop
   chain through `app/report.py` that ARCHITECTURE.md describes.
 
+## Phase 14: the two prepared scripts
+
+Both are written and neither has been run. `scripts/graft.sh --dry-run` and
+`scripts/checkpoint-refs-audit.sh` were exercised; the graft was never run for
+real and the audit only reads.
+
+**`scripts/graft.sh`** forks `entireio/entire-graph`, branches from its default
+branch, copies `umbra/` in unchanged, enables Entire, and makes two commits:
+the four planning documents first, then everything else, so the design is in
+the history before the code that implements it. It pushes nothing.
+
+Writing it turned up a documentation problem. The instruction was to enable
+Entire "with the India mirror as documented", and **there is no way to do that
+from this CLI**. `entire enable`, `entire login` and `entire configure` were
+all checked against 0.10.5 and none accepts a region flag; no region appears
+anywhere in `entire --help`. The only mention of a mirror in `docs/` is one
+line in SECURITY_AND_ACCESS.md saying it follows the fork's collaborator
+permissions. The India region comes from a handoff belonging to a different
+project, which was read in the first minutes of this build while establishing
+that it was not Umbra's. The script therefore enables Entire the way the CLI
+actually supports, says in a comment that the mirror follows the account you
+are logged in as rather than the checkout, and prints who that is so it can be
+checked.
+
+The disclosure the fork's README would carry, three lines:
+
+> Umbra was developed in a standalone repository, `u7k4rs6/Umbra`, with its own
+> Entire checkpoint trail covering every phase of the build.
+> That repository is the development record; this fork is the delivery.
+> The checkpoint trail here begins at the graft, not at the first line of code.
+
+**`scripts/checkpoint-refs-audit.sh`** reads the checkpoint refs on a remote
+and reports, per ref, the bytes it holds and how many lines carry an absolute
+home path or an email address. It deletes nothing and pushes nothing. Its
+output today: **30 refs, 288,677,347 bytes, 48,408 lines with a home path, 420
+with an email address.** The largest single ref is about 11.8 MB. The two
+smallest are the ones worth noticing: `120ebb04a45d` at 27 KB with 15 path
+lines and no addresses, which is the minimal session recorded in phase 12, and
+it shows what a checkpoint looks like when the session that made it was short.
+
+Three bugs were found by running it rather than by reading it, and the last one
+is the reason a script like this should never be trusted unread:
+
+1. `grep` exits non-zero when it matches nothing, which under `pipefail` ended
+   the run at the first clean transcript.
+2. Holding a 10 MB archive in a shell variable produced zero for every ref.
+3. `git ls-tree` is scoped to the working directory. Run from `umbra/` it
+   listed nothing, and the script reported thirty refs of zero bytes carrying
+   no paths and no addresses. That is a confident, precise, completely wrong
+   all-clear, on exactly the question the script exists to answer. It needs
+   `--full-tree`.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that
