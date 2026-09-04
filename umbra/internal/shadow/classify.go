@@ -20,12 +20,25 @@ import (
 // The symbol name is passed separately so a mention of the name, with no event
 // on its file, can reach the echo tier.
 func Classify(e *Examined, file, symbolName string, span [2]int) (State, Tier) {
+	return ClassifyAt(e, file, symbolName, span, AllSeq)
+}
+
+// AllSeq means every exposure counts, which is the state at commit.
+const AllSeq = int(^uint(0) >> 1)
+
+// ClassifyAt is Classify considering only the evidence at or before seq.
+//
+// The report's attention replay shows the state at each step of the session,
+// and its JavaScript reconstructs that. This is the same question asked of the
+// Go classifier, so the two can be compared at a playhead position rather than
+// only at the end.
+func ClassifyAt(e *Examined, file, symbolName string, span [2]int, seq int) (State, Tier) {
 	if e == nil || !e.Any {
 		return Unknown, TierNone
 	}
 
-	exposures := e.ByFile[file]
-	mentions := e.BySymbol[symbolName]
+	exposures := upTo(e.ByFile[file], seq)
+	mentions := upTo(e.BySymbol[symbolName], seq)
 	if len(exposures) == 0 && len(mentions) == 0 {
 		return Umbra, TierNone
 	}
@@ -76,6 +89,20 @@ func Classify(e *Examined, file, symbolName string, span [2]int) (State, Tier) {
 		return Umbra, TierNone
 	}
 	return Penumbra, best
+}
+
+// upTo keeps the exposures at or before a sequence number.
+func upTo(list []Exposure, seq int) []Exposure {
+	if seq == AllSeq {
+		return list
+	}
+	var out []Exposure
+	for _, x := range list {
+		if x.Seq <= seq {
+			out = append(out, x)
+		}
+	}
+	return out
 }
 
 // StateSentence is the plain sentence the detail panel and the packet show as
