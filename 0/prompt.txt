@@ -1,0 +1,55 @@
+what to do then, how do i use thi feature?
+
+---
+
+Phase 14 of the Umbra build. Read umbra/NOTES.md and umbra/docs/FRONTEND_SPEC.md first, then do the work below in order, committing after each numbered part with the message format `umbra: phase 14.N <summary> (tests: <count>)`. Rules unchanged: stdlib only, no em dashes in any file, `go test ./...` green at every commit, render checks done with the headless browser, not by reading the code. Two items at the end are decisions for a human; prepare them, do not execute them.
+
+## 14.1 Honesty of the landing page
+
+The sample map on site/index.html is the authored `classic` scenario (checkpoint `sample000class`, commit 000…001, sessionId `scenario-session`) and its "Session said" sentence was written by us, yet the caption says "This is a real report from the fixture app" and "The agent said it checked the callers." That has to go.
+
+- Regenerate site/sample/umbra.json from a real run. Preferred: the hand-reviewed recording in fixtures/recorded/minimal (real session, real checkpoint, scrubbed), rendered through gen-site. If the minimal run has no cracked probe, use the real `0063443` run of the fixture app instead, and keep its real session-said fallback and origin note exactly as the header prints them.
+- Rewrite the caption to say what the map is: a real session on the seeded fixture app, which checkpoint, and that the sentence above it is the agent's own account as stored by Entire. If any part of the sample is scripted, say "scripted session over the real fixture graph" in the caption and in the sample's header notice. Never call a scripted transcript real.
+- Add a test in internal/report/site_test.go that fails if site/sample/umbra.json has a checkpoint id starting with `sample`, a session id `scenario-session`, or a commit of all zeros.
+
+## 14.2 The unseeded example
+
+Import one of the builder's real past Claude Code sessions from another project with `entire import` (pick one that edited a function with callers), run `entire umbra` on it with `--run none` if that project has no runner on this machine, and add its report as a second map on the landing page under the heading "Not seeded", with the sentence: "A real session from another project, imported into Entire. Nothing here was arranged." Scrub the report with the existing scrubber, run the artifacts tests against it, and commit it under site/imported/. If the imported session is all umbra because the agent worked through the shell, keep it anyway and let the "How the session worked" line explain it; do not go hunting for a prettier session.
+
+## 14.3 Light field, both schemes
+
+In internal/report/assets/umbra.css and umbra.js:
+
+- Replace the two-stop radial gradient with at least six stops on an ease-out curve so the glow reaches zero opacity by 85 percent of its radius. No visible rim in either scheme, with one source or with many. When several sources share the field, scale the radius, not only the opacity share.
+- Day scheme: glow opacity at most half the night value; pools painted in an ink tone (derive from --ink at about 0.18 opacity), not grey. Banding must be gone; check with a screenshot at 200 percent zoom.
+- Pools follow the sweep: when a node crosses into lit its pool fades out over the same 240 milliseconds; a penumbra tier shrinks it to the penumbra radius; scrubbing backwards restores it. The mask blobs must be keyed by node id and updated in applyState, not only drawn once.
+- Screenshot night and day at seq 0, at the cut, and at the end, and commit the six images under docs/renders/ (move lightfield-01.png there too; nothing image-shaped stays at the repository root).
+
+## 14.4 Labels
+
+In internal/report/layout.go and umbra.js:
+
+- Node labels to 14 viewBox units and the file sublabel to 12. Re-run the collision pass after the size change; the lower-scored label hides until interaction, as the spec says.
+- Ring labels ("1 hop", "2 hops") move to the ring's top only if no node label occupies that arc; otherwise slide them along the ring to the first free 20 degree arc. Add a layout test that no ring label box intersects a visible node label box in any of the eight scenarios.
+- Source label: the change-kind sublabel sits 18 units below the name, and no node may be placed within a 140 by 44 unit box around the centre; push offenders outward along their angle until clear. Layout determinism test must still pass.
+
+## 14.5 Accessibility during the sweep
+
+Update each node's aria-label in applyState so it names the state at the current seq, and add "as of seq N" when the playhead is not at the end. Extend jsmirror_test.go's fixture so the announced state matches the Go classifier at three playhead positions per scenario.
+
+## 14.6 Two bugs
+
+- Change kind prints "added changed" in the packet, the map's source sublabel and the table. Print the kind alone: added, removed, renamed, signature changed, body changed. Fix in one place in internal/graph/sources.go or the formatter that renders it, and add a table test.
+- Struct fields become sources (jsNode.ID with 46 dependents in the self report). In LoadSources, fold field entities into their parent type and count them once, or drop them when the parent is already a source. Regenerate site/self/ and confirm its packet's "What changed" table is readable.
+
+## 14.7 README
+
+Add to Limitations: umbra.js is about 1200 lines against the design target of 700, and why. Add a "Development record" paragraph that names the standalone repository as where the build happened, links the phase table in NOTES.md, and states plainly which sample maps are seeded, which are real, and which (if any) are scripted.
+
+## Prepare, do not execute: two human decisions
+
+A. Graft into a fork. Write scripts/graft.sh that: forks entireio/entire-graph (gh fork, no clone), adds it as a remote, creates a branch from its default branch, copies umbra/ in unchanged (the layout was preserved for this), enables Entire in that checkout with the India mirror as documented, commits umbra/docs/ first and the rest second, and prints the `entire status` output. Do not run it. Write, in NOTES.md, a three-line disclosure the fork's README would carry: the code was developed in a standalone repository with its own checkpoint trail, which is linked, and the fork's trail begins at the graft.
+
+B. Publishing. Write scripts/checkpoint-refs-audit.sh that lists every ref under refs/entire/checkpoints/ on origin with its size and the count of absolute home paths and email addresses in its transcripts, so the owner can choose between deleting the refs, accepting them, or rebuilding history in the fork. Do not delete or push anything.
+
+Stop after 14.7 and report: the six render screenshots, the two new landing maps, the test count, and the outputs of the two scripts run in dry-run mode.
