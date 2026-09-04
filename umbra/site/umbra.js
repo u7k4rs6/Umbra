@@ -58,10 +58,10 @@
       rings.appendChild(c);
 
       if (r.label) {
+        var at = r.label_at || { x: layout.centre.x, y: layout.centre.y - r.radius - 12 };
         var t = el("text", {
-          x: layout.centre.x, y: layout.centre.y - r.radius - 6,
-          "text-anchor": "middle", fill: "var(--ink-2)", "font-size": 10.5,
-          "font-family": "var(--ui)"
+          x: at.x, y: at.y, "text-anchor": "middle",
+          fill: "var(--ink-2)", "class": "ring-label"
         });
         t.textContent = r.label;
         rings.appendChild(t);
@@ -150,6 +150,9 @@
   // edge where the circle ends. These fall on an ease-out curve and reach zero
   // opacity at GLOW_ZERO_AT of the radius, so the circle has no rim: by the
   // time the geometry ends there has been nothing to see for a while.
+  // The change kind sits this far below the source name.
+  var SOURCE_KIND_OFFSET = 18;
+
   var GLOW_STOPS = 10;
   var GLOW_ZERO_AT = 85;
 
@@ -490,68 +493,31 @@
       g.appendChild(name);
 
       var kind = el("text", {
-        x: lx, y: ly + (multi ? 13 : 16), "text-anchor": anchor, "class": "src-kind"
+        x: lx, y: ly + SOURCE_KIND_OFFSET, "text-anchor": anchor, "class": "src-kind"
       });
       kind.textContent = s.change + " changed";
       g.appendChild(kind);
     });
 
+    // Positions and visibility both come from the layout. The collision pass
+    // runs in Go, where it is deterministic and can be tested against every
+    // scenario, rather than here against whatever the browser measures.
     (data.nodes || []).forEach(function (n) {
       var p = layout.nodes[n.id];
-      if (!p) { return; }
+      if (!p || !p.label) { return; }
       var t = el("text", {
         "class": "label " + (n.state === "lit" ? "lit" : "dim"),
-        "data-label": n.id
+        "data-label": n.id,
+        x: p.label.x, y: p.label.y, "text-anchor": p.label.anchor
       });
-      var r = radiusFor(n) + 6;
-      if (p.anchor === "right") {
-        t.setAttribute("x", p.x + r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "start");
-      } else if (p.anchor === "left") {
-        t.setAttribute("x", p.x - r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "end");
-      } else if (p.anchor === "above") {
-        t.setAttribute("x", p.x); t.setAttribute("y", p.y - r - 6); t.setAttribute("text-anchor", "middle");
-      } else {
-        t.setAttribute("x", p.x); t.setAttribute("y", p.y + r + 12); t.setAttribute("text-anchor", "middle");
-      }
       t.textContent = n.name;
-      t.setAttribute("data-score", n.score || 0);
+      if (!p.label.visible) {
+        t.hidden = true;
+        t.setAttribute("data-collided", "1");
+      }
       g.appendChild(t);
     });
     svg.appendChild(g);
-    hideCollidingLabels(g);
-  }
-
-  // Labels never overlap. When two would collide the lower-scored one is
-  // hidden until the reader interacts, so the map stays readable without
-  // pretending the node is not there: its disc is still drawn.
-  function hideCollidingLabels(g) {
-    var labels = Array.prototype.slice.call(g.querySelectorAll(".label"));
-    labels.sort(function (a, b) {
-      return Number(b.getAttribute("data-score")) - Number(a.getAttribute("data-score"));
-    });
-
-    var kept = [];
-    labels.forEach(function (t) {
-      var box;
-      try {
-        box = t.getBBox();
-      } catch (e) {
-        return;
-      }
-      var clash = kept.some(function (b) { return overlaps(box, b); });
-      if (clash) {
-        t.hidden = true;
-        t.setAttribute("data-collided", "1");
-      } else {
-        kept.push(box);
-      }
-    });
-  }
-
-  function overlaps(a, b) {
-    var pad = 2;
-    return !(a.x + a.width + pad < b.x || b.x + b.width + pad < a.x ||
-             a.y + a.height + pad < b.y || b.y + b.height + pad < a.y);
   }
 
   function boot() {
