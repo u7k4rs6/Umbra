@@ -3,6 +3,7 @@ package graph
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -51,11 +52,14 @@ func TestLoadSnapshotReadsSymbols(t *testing.T) {
 	if s.Kind != "function" {
 		t.Fatalf("kind = %q", s.Kind)
 	}
-	if s.Span[0] != 20 {
-		t.Fatalf("span = %v, want it to start at 20", s.Span)
+	// The span is asserted structurally rather than against fixed line
+	// numbers: the fixture is a real file and symbols move when it is edited,
+	// which is not what this test is about.
+	if s.Span[0] <= 0 || s.Span[1] <= s.Span[0] {
+		t.Fatalf("span = %v, want a real range with a positive start", s.Span)
 	}
-	if s.Span[1] <= s.Span[0] {
-		t.Fatalf("span = %v, want a real range", s.Span)
+	if !strings.Contains(s.Signature, "def compute_total(") {
+		t.Fatalf("signature = %q", s.Signature)
 	}
 	if s.IsTest {
 		t.Fatal("compute_total is not a test")

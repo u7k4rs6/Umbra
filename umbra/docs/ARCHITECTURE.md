@@ -221,7 +221,7 @@ type Runner interface {
 }
 ```
 
-`umbra record <ref> --out fixtures/recorded/<scenario>/` runs a real analysis and stores every Runner call. The replaying fake serves by name and args. Scenarios from `fixtures/app` (Python: `app/service.py`, `app/api.py`, `app/refunds.py`, `app/models.py`, tests `test_api.py`, `test_service.py`, `test_refunds.py`, `test_models.py`):
+`umbra record <ref> --out fixtures/recorded/<scenario>/` runs a real analysis and stores every Runner call. The replaying fake serves by name and args. Scenarios from `fixtures/app` (Python: `app/service.py`, `app/api.py`, `app/refunds.py`, `app/models.py`, `app/report.py`, tests `test_api.py`, `test_service.py`, `test_refunds.py`, `test_models.py`, `test_report.py`):
 
 1. `everything-lit`: the session read every caller after the change; all lit; nothing to run beyond the shadow set, which is empty.
 2. `classic`: signature change on `compute_total`, callers in `api.py` (read), `refunds.py` (grep hit only), `test_service.py` (never opened); two shadowed tests fail.

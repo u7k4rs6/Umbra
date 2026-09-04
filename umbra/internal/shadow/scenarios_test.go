@@ -216,35 +216,92 @@ func TestScenarioEcho(t *testing.T) {
 }
 
 // 7. A test beyond the searched depth that the selection missed.
+//
+// This runs against the real chain in the captured snapshot, not a graph built
+// for the test: tests/test_report.py::test_receipt_total calls render_lines,
+// which calls line_text, which calls line_total, which calls compute_total.
+// That is four hops, so a search capped at two never sees the test, the sweep
+// finds it changing state, and the forensics have to say why.
 func TestScenarioLeak(t *testing.T) {
 	r := runScenario(t, "leak", "")
+
+	const leaked = "tests/test_report.py::test_receipt_total"
 
 	selected, _ := SelectTests(r.nodes, r.field, r.relMap, r.srcIDs, "shadow", "")
 	sel := map[string]bool{}
 	for _, id := range IDs(selected) {
 		sel[id] = true
 	}
+	if len(selected) == 0 {
+		t.Fatal("the leak scenario should still select the tests it can see")
+	}
+	// The whole point: the four-hop test is out of reach of the selection.
+	if sel[leaked] {
+		t.Fatalf("%s is four hops away and must not be selected at depth 2", leaked)
+	}
 
-	// A test that the sweep found changing state but selection never chose.
-	leaks := Forensics([]string{"tests/test_models.py::test_line_item_subtotal"}, ForensicsInput{
+	leaks := Forensics([]string{leaked}, ForensicsInput{
 		Field: r.field, RelMap: r.relMap, SourceIDs: r.srcIDs,
 		Selected: sel, MaxDepth: 2, CoChangeFiles: map[string]bool{"app/api.py": true},
 	})
 	if len(leaks) != 1 {
 		t.Fatalf("leaks = %v, want one", leaks)
 	}
-	if leaks[0].Reason == "" {
-		t.Fatal("every leak must carry a reason")
+	// The reason names the depth and the first hop, from the real chain.
+	want := "path exists at depth 4 via render_lines"
+	if leaks[0].Reason != want {
+		t.Fatalf("reason = %q, want %q", leaks[0].Reason, want)
 	}
-	// A test that was selected is never a leak.
-	if len(selected) == 0 {
-		t.Fatal("the leak scenario should still select the tests it can see")
+	if leaks[0].Test != leaked {
+		t.Fatalf("leak names %q", leaks[0].Test)
 	}
+
+	// A test that was selected is never a leak, however it changed.
 	notLeak := Forensics([]string{IDs(selected)[0]}, ForensicsInput{
 		Field: r.field, RelMap: r.relMap, SourceIDs: r.srcIDs, Selected: sel, MaxDepth: 2,
 	})
 	if len(notLeak) != 0 {
 		t.Fatalf("a selected test is not a leak, got %v", notLeak)
+	}
+}
+
+// The chain the leak scenario depends on, asserted on its own so a change to
+// the fixture that shortens it fails here with a clear reason rather than
+// somewhere downstream.
+func TestLeakChainIsFourHops(t *testing.T) {
+	field, relMap := scenarioField(t)
+
+	id := func(file, name string) string {
+		t.Helper()
+		for _, s := range field.ByFile[file] {
+			if field.Symbols[s].Name == name {
+				return s
+			}
+		}
+		t.Fatalf("the fixture has no %s in %s", name, file)
+		return ""
+	}
+	src := id("app/service.py", "compute_total")
+
+	cases := []struct {
+		file, name string
+		depth      int
+		via        string
+	}{
+		{"app/report.py", "line_total", 1, "compute_total"},
+		{"app/report.py", "line_text", 2, "line_total"},
+		{"app/report.py", "render_lines", 3, "line_text"},
+		{"tests/test_report.py", "test_receipt_total", 4, "render_lines"},
+	}
+	for _, c := range cases {
+		depth, via, ok := field.PathTo(id(c.file, c.name), map[string]bool{src: true}, relMap, 8)
+		if !ok {
+			t.Errorf("%s does not reach compute_total at all", c.name)
+			continue
+		}
+		if depth != c.depth || via != c.via {
+			t.Errorf("%s: depth %d via %s, want depth %d via %s", c.name, depth, via, c.depth, c.via)
+		}
 	}
 }
 

@@ -230,8 +230,8 @@ entire umbra 0063443 --test "pytest -v"</pre>
       "name": "compute_total",
       "file": "app/service.py",
       "span": [
-        20,
-        30
+        26,
+        38
       ],
       "change": "signature",
       "weight": 1,
@@ -402,6 +402,42 @@ entire umbra 0063443 --test "pytest -v"</pre>
       },
       "tests": [],
       "result": "fail"
+    },
+    {
+      "id": "gh/example/repo:Python:app/report.py:function:line_total",
+      "name": "line_total",
+      "file": "app/report.py",
+      "span": [
+        9,
+        11
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/report.py:function:line_total"
+      ],
+      "state": "umbra",
+      "modifiers": [],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned app/report.py",
+      "call_site": 9,
+      "dependents": 4,
+      "score": 9.966,
+      "factors": {
+        "dependents": 3.322,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
     },
     {
       "id": "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places",
@@ -609,6 +645,45 @@ entire umbra 0063443 --test "pytest -v"</pre>
       "result": "notrun"
     },
     {
+      "id": "gh/example/repo:Python:app/report.py:function:line_text",
+      "name": "line_text",
+      "file": "app/report.py",
+      "span": [
+        14,
+        16
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/report.py:function:line_total",
+        "gh/example/repo:Python:app/report.py:function:line_text"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "transitive"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned app/report.py",
+      "call_site": 9,
+      "dependents": 2,
+      "score": 3.877,
+      "factors": {
+        "dependents": 2.585,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
       "id": "gh/example/repo:Python:app/api.py:function:handle_order",
       "name": "handle_order",
       "file": "app/api.py",
@@ -703,8 +778,8 @@ entire umbra 0063443 --test "pytest -v"</pre>
       "name": "apply_tax",
       "file": "app/service.py",
       "span": [
-        15,
-        17
+        21,
+        23
       ],
       "is_test": false,
       "sources": [
@@ -752,7 +827,7 @@ entire umbra 0063443 --test "pytest -v"</pre>
       "file": "app/service.py",
       "span": [
         10,
-        12
+        18
       ],
       "is_test": false,
       "sources": [
@@ -796,8 +871,8 @@ entire umbra 0063443 --test "pytest -v"</pre>
       "name": "summarize",
       "file": "app/service.py",
       "span": [
-        33,
-        36
+        41,
+        44
       ],
       "is_test": false,
       "sources": [
@@ -822,7 +897,7 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       ],
       "sentence": "the session read or edited app/service.py after the change began",
-      "call_site": 33,
+      "call_site": 41,
       "dependents": 3,
       "score": 0,
       "factors": {
@@ -891,9 +966,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
   "summary": {
     "lit": 5,
     "penumbra": 1,
-    "umbra": 8,
+    "umbra": 10,
     "unknown": 0,
-    "illumination": 0.35714285714285715
+    "illumination": 0.3125
   },
   "layout": {
     "view_box": [
@@ -928,9 +1003,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
     },
     "nodes": {
       "gh/example/repo:Python:app/api.py:function:handle_order": {
-        "x": 539.08,
-        "y": 558.71,
-        "angle": 201,
+        "x": 491.49,
+        "y": 530.86,
+        "angle": 219.66666666666666,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
@@ -940,9 +1015,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:app/api.py:function:quote": {
-        "x": 448.53,
-        "y": 477.18,
-        "angle": 243,
+        "x": 434.81,
+        "y": 440.17,
+        "angle": 256.3333333333333,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
@@ -952,9 +1027,33 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:app/refunds.py:function:apply_refund": {
-        "x": 677.18,
-        "y": 551.47,
-        "angle": 153,
+        "x": 608.9,
+        "y": 569.77,
+        "angle": 177,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "below",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/report.py:function:line_text": {
+        "x": 322.26,
+        "y": 364.49,
+        "angle": 277.2857142857143,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/report.py:function:line_total": {
+        "x": 721.6,
+        "y": 518.8,
+        "angle": 134.33333333333334,
         "ring": 170,
         "depth": 1,
         "anchor": "right",
@@ -964,9 +1063,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:app/service.py:function:apply_tax": {
-        "x": 443.43,
-        "y": 167.87,
-        "angle": 326,
+        "x": 461.82,
+        "y": 156.47,
+        "angle": 330.42857142857144,
         "ring": 280,
         "depth": 2,
         "anchor": "left",
@@ -976,9 +1075,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:app/service.py:function:round_money": {
-        "x": 441.29,
-        "y": 339.08,
-        "angle": 291,
+        "x": 451.31,
+        "y": 317.58,
+        "angle": 298.99999999999994,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
@@ -988,9 +1087,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:app/service.py:function:summarize": {
-        "x": 522.82,
-        "y": 248.53,
-        "angle": 333,
+        "x": 529.95,
+        "y": 245.1,
+        "angle": 335.66666666666663,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
@@ -1000,21 +1099,21 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_api.py:function:test_handle_order": {
-        "x": 468.55,
-        "y": 647.23,
-        "angle": 208,
+        "x": 614.65,
+        "y": 679.62,
+        "angle": 177.00000000000003,
         "ring": 280,
         "depth": 2,
-        "anchor": "left",
+        "anchor": "below",
         "toward": {
           "x": 600,
           "y": 400
         }
       },
       "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line": {
-        "x": 321.53,
-        "y": 429.27,
-        "angle": 264,
+        "x": 404.99,
+        "y": 600.93,
+        "angle": 224.14285714285717,
         "ring": 280,
         "depth": 2,
         "anchor": "left",
@@ -1024,9 +1123,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid": {
-        "x": 880,
-        "y": 400,
-        "angle": 90,
+        "x": 872.51,
+        "y": 335.65,
+        "angle": 76.71428571428572,
         "ring": 280,
         "depth": 2,
         "anchor": "right",
@@ -1036,9 +1135,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal": {
-        "x": 756.57,
-        "y": 632.13,
-        "angle": 146,
+        "x": 832.52,
+        "y": 555.99,
+        "angle": 123.85714285714286,
         "ring": 280,
         "depth": 2,
         "anchor": "right",
@@ -1048,9 +1147,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero": {
-        "x": 764.21,
-        "y": 444,
-        "angle": 105,
+        "x": 769.93,
+        "y": 404.94,
+        "angle": 91.66666666666666,
         "ring": 170,
         "depth": 1,
         "anchor": "right",
@@ -1060,9 +1159,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_service.py:function:test_negative": {
-        "x": 751.47,
-        "y": 322.82,
-        "angle": 63,
+        "x": 739.26,
+        "y": 302.49,
+        "angle": 55,
         "ring": 170,
         "depth": 1,
         "anchor": "right",
@@ -1072,9 +1171,9 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places": {
-        "x": 731.45,
-        "y": 152.77,
-        "angle": 28,
+        "x": 711.97,
+        "y": 143.36,
+        "angle": 23.571428571428573,
         "ring": 280,
         "depth": 2,
         "anchor": "right",
@@ -1084,12 +1183,12 @@ entire umbra 0063443 --test "pytest -v"</pre>
         }
       },
       "gh/example/repo:Python:tests/test_service.py:function:test_rounding": {
-        "x": 660.92,
-        "y": 241.29,
-        "angle": 21,
+        "x": 653.47,
+        "y": 238.63,
+        "angle": 18.333333333333332,
         "ring": 170,
         "depth": 1,
-        "anchor": "right",
+        "anchor": "above",
         "toward": {
           "x": 600,
           "y": 400

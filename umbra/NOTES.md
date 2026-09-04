@@ -7,7 +7,7 @@ answered questions at the bottom of `docs/ARCHITECTURE.md` carry the detail.
 
 ## Where the build stands
 
-All twelve phases are done and committed. `go test ./...` is green at every
+All thirteen phases are done and committed. `go test ./...` is green at every
 commit, and a fresh clone was checked to build and test green after phase 11
 found that it would not have.
 
@@ -30,6 +30,7 @@ scrub pass, and it is what settles the one blocker that pass found: see
 | 10 | Landing page, drop-in viewer, README | 243 |
 | 11 | Semantic-diff review, the self report, scrubber fixes | 249 |
 | 12 | Coverage line, runner check, minimal record, scrub pass | 274 |
+| 13 | Exit-code tests end to end, the real four-hop leak chain | 282 |
 
 Nothing in the code pretends to do what it does not: the table prints
 `probes not run` when tests were skipped, `sweep skipped` when the audit was
@@ -182,10 +183,11 @@ fixture is disclosed as seeded in PRD.md.
 
 ## Deviations from the letter of the plan, and why
 
-- `fixtures/app` has four modules and four pytest files as the kickoff
-  specifies. The `leak` scenario in ARCHITECTURE.md needs a call chain four
-  hops long through `render_lines` in `app/report.py`, which does not exist
-  yet; it is added in phase 7 when that scenario is recorded.
+- `fixtures/app` had four modules and four pytest files as the kickoff
+  specifies. Phase 13 added a fifth of each, `app/report.py` and
+  `tests/test_report.py`, because the `leak` scenario in ARCHITECTURE.md needs
+  a chain four hops long through `render_lines` and the kickoff's inventory did
+  not contain one. See the phase 13 section below.
 - Before editing `docs/ARCHITECTURE.md`, which is a file this build did not
   create, `entire graph impact --symbol Open-questions --repo .` was run as the
   rules require. It answered `IMPACT DEGENERATE: Open-questions has no callers,
@@ -434,6 +436,66 @@ are the synthetic values from the scrubber's own tests.
 This is written up as a go/no-go item rather than acted on, because publishing
 a repository is the owner's decision, not the build's.
 
+### Phase 13: the real four-hop leak chain
+
+**Path taken: the preferred one. The fixture gained the chain, and
+ARCHITECTURE.md was left describing what it always described.**
+
+The design's `leak` scenario is a test four hops from the changed symbol,
+reported as `path exists at depth 4 via render_lines`. The fixture had no such
+chain, so the forensics had been tested at depth four against a graph built
+inside the test. That proved the code path and proved nothing about the
+fixture.
+
+`app/report.py` now holds `render_lines`, which calls `line_text`, which calls
+`line_total`, which calls `compute_total`. `tests/test_report.py` reaches
+`render_lines`. The hop count was measured before anything was asserted, using
+the same path search the forensics use, against the re-captured snapshot:
+
+```
+line_total           depth 1 via compute_total
+line_text            depth 2 via line_total
+render_lines         depth 3 via line_text
+test_receipt_total   depth 4 via render_lines
+```
+
+`entire graph impact` cannot show this on its own: it caps at `--depth 2`, so
+it reports `line_total` and `line_text` and stops. The measurement had to come
+from the field.
+
+Confirmed end to end rather than only in the scenario test. A throwaway commit
+adding a fourth parameter to `compute_total`, with `app/report.py` left
+unchanged, produces:
+
+```
+probes  8 selected  0 cracked
+        1 further test(s) failed that no probe covered; they are listed as leaks below
+sweep   full suite  1 leak
+        tests/test_report.py::test_receipt_total  path exists at depth 4 via render_lines
+```
+
+That is the string in the JSON example in ARCHITECTURE.md section 7, produced
+by a real run rather than written into a fixture.
+
+**What it perturbed, which was little.** The scenarios read a captured snapshot
+rather than the live fixture, so re-capturing it was the only way the new chain
+could reach them. Exactly one scenario broke: `everything-lit` asserts nothing
+is in shadow, and the two new symbols in `app/report.py` were unread. Its
+transcript gained a read of that module and of the new test file, which is what
+the scenario means. No other scenario's assertions moved. One unit test
+asserted `compute_total` starts at line 20; the fixture had grown by then, so
+that assertion is now structural rather than a line number, which is what it
+was really testing.
+
+**A reporting bug the new scenario exposed.** With a leak that actually fails,
+the terminal read `probes 8 selected 1 cracked` and then named a test that was
+not among the eight. The sweep's failures were being folded into the same list
+as the probes' failures. A test the sweep turns up is a leak by definition, so
+cracked now counts only probes that were selected and failed, and a failure no
+probe covered is called out separately and listed as a leak with its reason.
+`--fail-on failure` still fires on any new failure, which is correct: a new
+failure is a new failure whoever found it.
+
 ### Where the build deviates from the letter of the plan
 
 - **The README is at the repository root, not a one-line pointer.** That rule
@@ -452,10 +514,8 @@ a repository is the owner's decision, not the build's.
 - **`umbra.js` is about 1200 lines and `umbra.css` about 450**, against targets
   of 700 and 400. The targets were not treated as hard limits. The excess is the
   replay's state reconstruction and the day-scheme and print blocks.
-- **The `leak` scenario does not use a four-hop chain through `app/report.py`.**
-  The kickoff specifies four app modules and four test files, and the fixture has
-  exactly those. The leak forensics are tested at depth four with a synthetic
-  chain in `sweep_test.go` instead, which exercises the same code path.
+- **Resolved in phase 13.** The `leak` scenario now uses the real four-hop
+  chain through `app/report.py` that ARCHITECTURE.md describes.
 
 ## Before this repository is ever made public
 
