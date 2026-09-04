@@ -140,7 +140,7 @@ func (e jsonError) Error() string { return string(e) }
 
 // The documented text form of a caller line:
 //
-//	- handle_order (umbra/fixtures/app/app/api.py:16, def :14)
+//   - handle_order (umbra/fixtures/app/app/api.py:16, def :14)
 //
 // where 16 is the call site and 14 the definition.
 var (

@@ -14,9 +14,9 @@ import (
 // in order, with its output. Replaying one lets a test exercise the whole
 // pipeline with no Entire, no git and no agent.
 type Recording struct {
-	Scenario string   `json:"scenario"`
-	Entries  []Entry  `json:"entries"`
-	Notes    string   `json:"notes,omitempty"`
+	Scenario string  `json:"scenario"`
+	Entries  []Entry `json:"entries"`
+	Notes    string  `json:"notes,omitempty"`
 }
 
 // Entry pairs one call with what it produced.

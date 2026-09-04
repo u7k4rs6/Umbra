@@ -58,9 +58,15 @@ func (l Listing) Time() time.Time {
 	return t
 }
 
+// Checkpoint ids are not hexadecimal. ARCHITECTURE.md described a 12 hex
+// trailer, but the installed CLI writes a 26 character ULID, for example
+// "Entire-Checkpoint: 01M1PTJGEYNGRB6R0H85Z29FKM", alongside 12 hex ids for
+// imported history and 40 hex ids for carry-forward entries. Matching only hex
+// silently missed every real trailer, so the pattern accepts any alphanumeric
+// id and the length range covers all three shapes.
 var (
-	trailerRE = regexp.MustCompile(`(?m)^Entire-Checkpoint:\s*([0-9a-fA-F]{6,40})\s*$`)
-	hexRE     = regexp.MustCompile(`^[0-9a-fA-F]{6,40}$`)
+	trailerRE = regexp.MustCompile(`(?m)^Entire-Checkpoint:\s*([0-9A-Za-z]{6,40})\s*$`)
+	idRE      = regexp.MustCompile(`^[0-9A-Za-z]{6,40}$`)
 )
 
 // ParseTrailer returns the checkpoint id carried by a commit message, or the
@@ -70,13 +76,15 @@ func ParseTrailer(message string) string {
 	if m == nil {
 		return ""
 	}
-	return strings.ToLower(m[1])
+	// Ids are compared case insensitively but returned as written, because a
+	// ULID is uppercase and git log must be grepped for the exact text.
+	return m[1]
 }
 
 // LooksLikeCheckpointID reports whether ref has the shape of a checkpoint id.
 // A short hex string is ambiguous with an abbreviated commit sha, so the
 // resolver tries both and prefers whichever git and Entire agree on.
-func LooksLikeCheckpointID(ref string) bool { return hexRE.MatchString(ref) }
+func LooksLikeCheckpointID(ref string) bool { return idRE.MatchString(ref) }
 
 // Resolver holds the dependencies resolution needs.
 type Resolver struct {
@@ -311,7 +319,7 @@ func (r *Resolver) commitTime(ctx context.Context, sha string) (time.Time, error
 
 // matchListing finds a checkpoint by exact id or unique prefix.
 func matchListing(listings []Listing, ref string) (Listing, bool) {
-	ref = strings.ToLower(ref)
+	lower := strings.ToLower(ref)
 	for _, l := range listings {
 		if strings.EqualFold(l.CheckpointID, ref) {
 			return l, true
@@ -319,7 +327,7 @@ func matchListing(listings []Listing, ref string) (Listing, bool) {
 	}
 	var hits []Listing
 	for _, l := range listings {
-		if strings.HasPrefix(strings.ToLower(l.CheckpointID), ref) {
+		if strings.HasPrefix(strings.ToLower(l.CheckpointID), lower) {
 			hits = append(hits, l)
 		}
 	}

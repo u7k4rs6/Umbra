@@ -157,6 +157,21 @@ func (s *Session) LastSentence(seq int) string {
 	return ""
 }
 
+// SentenceAfter returns the first complete sentence of agent prose at or after
+// seq. In a session that ends in a commit this is the agent's summing-up about
+// the change it just made, which is what the "session said" line wants.
+func (s *Session) SentenceAfter(seq int) string {
+	for _, t := range s.texts {
+		if t.seq < seq {
+			continue
+		}
+		if sent := lastSentenceOf(t.text); sent != "" {
+			return sent
+		}
+	}
+	return ""
+}
+
 // Texts returns the agent prose in order, for mention matching. It is not
 // output; callers must not place it in a report.
 func (s *Session) Texts() []string {
