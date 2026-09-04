@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/u7k4rs6/Umbra/umbra/internal/runner"
 )
@@ -69,10 +70,23 @@ func AddWorktrees(ctx context.Context, run runner.Runner, repo, dataDir string, 
 }
 
 func (p *Pair) add(ctx context.Context, path, sha string) error {
+	// The worktree path is keyed by commit under a shared data directory, so
+	// two checkouts of the same repository, or a run that died before its
+	// cleanup, can leave one behind. Reusing it blindly is how a worktree
+	// belonging to a deleted checkout poisons every later run: git can no
+	// longer read its metadata and Graph refuses to run there. Reuse it only
+	// when it is a healthy worktree sitting at the commit we want.
 	if _, err := os.Stat(filepath.Join(path, ".git")); err == nil {
-		// Already checked out from an earlier run at the same commit.
-		p.made = append(p.made, path)
-		return nil
+		if p.checkoutIsAt(ctx, path, sha) {
+			p.made = append(p.made, path)
+			return nil
+		}
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
+		// Drop the stale administrative entry so git will accept the path
+		// again, whether or not it belonged to this repository.
+		_, _, _, _ = p.run.Run(ctx, "git", []string{"-C", p.repo, "worktree", "prune"}, nil)
 	}
 	args := []string{"-C", p.repo, "worktree", "add", "--detach", path, sha}
 	_, stderr, exit, err := p.run.Run(ctx, "git", args, nil)
@@ -88,6 +102,16 @@ func (p *Pair) add(ctx context.Context, path, sha string) error {
 	}
 	p.made = append(p.made, path)
 	return nil
+}
+
+// checkoutIsAt reports whether path is a working checkout of this repository
+// sitting at sha.
+func (p *Pair) checkoutIsAt(ctx context.Context, path, sha string) bool {
+	stdout, _, exit, err := p.run.Run(ctx, "git", []string{"-C", path, "rev-parse", "HEAD"}, nil)
+	if err != nil || exit != 0 {
+		return false
+	}
+	return strings.TrimSpace(string(stdout)) == sha
 }
 
 // Remove tears the worktrees down unless the user asked to keep them.
