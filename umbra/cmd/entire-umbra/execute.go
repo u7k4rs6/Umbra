@@ -55,7 +55,7 @@ func execute(ctx context.Context, o *Options, run runner.Runner, pair *checkpoin
 	if err != nil {
 		return fmt.Errorf("running the selected tests: %w", err)
 	}
-	a.Commands = append(a.Commands, cmds...)
+	a.Commands = append(a.Commands, scrubAll(st, cmds)...)
 
 	a.Execution.NewFailures = v.NewlyFailing
 	a.Execution.Fixed = v.NewlyPassing
@@ -92,7 +92,7 @@ func sweep(ctx context.Context, o *Options, run runner.Runner, pair *checkpoint.
 	if err != nil {
 		return fmt.Errorf("running the full sweep: %w", err)
 	}
-	a.Commands = append(a.Commands, cmds...)
+	a.Commands = append(a.Commands, scrubAll(st, cmds)...)
 	a.Execution.Sweep = true
 	a.Execution.SweepCut = v.TimedOut
 
@@ -174,6 +174,24 @@ func onPath(id string, path []string) bool {
 		}
 	}
 	return false
+}
+
+// scrubAll puts the verify commands through the same scrubber as every other
+// recorded command.
+//
+// They used to be appended raw, so a report carried the absolute path of the
+// worktree the tests ran in. Every other command in the list was scrubbed,
+// which is why it went unnoticed until a real report was committed and the
+// artifacts test read it.
+func scrubAll(st *pipelineState, cmds []string) []string {
+	if st == nil || st.Scrub == nil {
+		return cmds
+	}
+	out := make([]string, 0, len(cmds))
+	for _, c := range cmds {
+		out = append(out, st.Scrub.Clean(c))
+	}
+	return out
 }
 
 // testRepo returns the directory the runner should run in. The fixture app

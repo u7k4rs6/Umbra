@@ -26,6 +26,9 @@ type pipelineState struct {
 	// TestRoot is the repository-relative directory the test runner runs in.
 	// A repository whose tests live at the root has an empty TestRoot.
 	TestRoot string
+	// Scrub is the same scrubber the rest of the pipeline uses. Execution
+	// records commands too, and they have to go through it.
+	Scrub *report.Scrubber
 }
 
 // pipeline runs the seven steps from ARCHITECTURE.md and returns the analysis.
@@ -180,7 +183,11 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	a.Limitations = limitations(a, caps, examined)
 	if ex, ok := run.(*runner.Exec); ok {
 		for _, c := range ex.Calls() {
-			a.Commands = append(a.Commands, scrub.Command(c.String()))
+			// Scrubbed but not capped. SECURITY_AND_ACCESS.md caps a command
+			// in the timeline at 120 characters, because that is a record of
+			// what happened; this list is the commands a reader runs to check
+			// a line, and a truncated command cannot be run.
+			a.Commands = append(a.Commands, scrub.Clean(c.String()))
 		}
 	}
 
@@ -188,6 +195,7 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 		Field: field, RelMap: relMap, SourceIDs: sourceIDs,
 		CoChangeFiles: map[string]bool{},
 		TestRoot:      testRoot(o, head, a.Nodes),
+		Scrub:         scrub,
 	}
 	for _, imp := range impacts {
 		for _, f := range imp.CoChange {
