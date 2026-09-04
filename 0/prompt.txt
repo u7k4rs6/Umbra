@@ -1,0 +1,41 @@
+You are in the Umbra repo (twelve phases complete, 274 tests green, working tree
+clean). Read umbra/NOTES.md and the "Build order" and leak-forensics sections of
+umbra/docs/ARCHITECTURE.md before touching anything. Two bounded tasks. Do not
+redesign anything, do not reopen settled decisions, do not touch the frontend.
+
+Rules as before: no em dashes in any file, code comments included. go test ./...
+green at every commit. Commit each task separately, message format
+"umbra: phase 13 <summary> (tests: <count>)". Push when both are done.
+
+1. End-to-end test for --fail-on.
+   Nothing currently drives the binary and checks its exit code; only the logic
+   is unit tested. Build the binary in the test (or use the existing test harness
+   if one already shells out) and run it against recorded scenarios:
+   - a scenario with cracked probes plus --fail-on set so it must exit 2
+   - the same scenario without --fail-on, which must exit 0
+   - a clean scenario with --fail-on set, which must also exit 0
+   Assert the exit code and that the stdout table is still printed in the failing
+   case. Exercise the real argv path including a flag placed after the ref, since
+   that ordering broke once before. No network, no live agent.
+
+2. Make the leak scenario the four-hop chain the design describes.
+   ARCHITECTURE.md describes a leak through render_lines in app/report.py, which
+   the fixture does not have. Preferred fix: add app/report.py with render_lines
+   to umbra/fixtures/app so a genuine four-hop chain exists from the changed
+   symbol, wire it into the existing modules the way the design assumes, add or
+   extend the pytest file that reaches it, then re-record the leak scenario
+   against the real chain and keep the forensics assertions on the recorded
+   output rather than the synthetic one.
+   Before adding it, run entire graph impact on the symbols you will touch in the
+   fixture and check the hop count actually comes out at four; if it does not,
+   adjust the fixture, not the assertion.
+   If this turns out to be more than a small addition, or it perturbs other
+   recorded scenarios in ways that need them all re-recorded, stop, do not force
+   it, and instead correct ARCHITECTURE.md to describe the chain that exists.
+   Either way, write in NOTES.md which path you took and why, and remove the
+   "leak scenario is not a true four-hop chain" item from the optional list once
+   it is resolved.
+
+Report back with: the exit codes observed in task 1, the measured hop count in
+task 2, which path you took, the new test count, and anything in the docs that
+turned out wrong.
