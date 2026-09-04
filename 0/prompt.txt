@@ -1,0 +1,54 @@
+You are in the Umbra repo (all eleven phases complete, 249 tests green). Read
+umbra/NOTES.md and umbra/README.md before touching anything. Do not redesign
+anything and do not reopen settled decisions. Five bounded tasks, commit each
+separately, message format "umbra: phase 12 <summary> (tests: <count>)".
+
+No em dashes in any file, code comments included. go test ./... must be green at
+every commit. Touch nothing outside umbra/ except the one-line README pointer.
+
+1. README: promote the .gitignore finding to its own section under the Graph
+   semantic-diff verification part. Not a bullet in a list. Include: the exact
+   .gitignore line, why an unanchored pattern matched cmd/entire-umbra/, that
+   the command package was untracked for nine phases, that local tests stayed
+   green because the files were on disk, that a fresh clone would not have built,
+   the exact `entire graph diff --base <first commit> --head HEAD` invocation
+   that surfaced it, and the fresh-clone build-and-test verification that closed
+   it. This is the strongest evidence that Graph drove a decision, so write it
+   as a short narrative, not a changelog entry.
+
+2. Header coverage line. In the report header (terminal, JSON, HTML, packet),
+   add a line stating how many of the session's tool events were file reads
+   versus shell commands, with the raw counts. When reads are zero or near zero,
+   the line must say plainly that the examined set is thin because the agent
+   worked through the shell, and that a mostly-umbra report is expected in that
+   case. Do this inside the transcript adapter and renderer boundaries only. Do
+   NOT parse file paths out of Bash inputs and do NOT widen the examined set.
+   Add a test that the line appears with correct counts in the no-reads scenario
+   and in the classic scenario.
+
+3. Runner check. Grep the README reproduce commands, the demo script, and every
+   recorded scenario for `pytest -q`. Anywhere the demo or the documented
+   reproduce path uses it, switch to a runner that prints per-test names so
+   verify does not degrade to exit-code-only, and confirm the five cracked
+   probes still come back named. Keep the -q degradation itself documented as a
+   limitation; just do not ship it in the demo path. Re-record any scenario
+   whose output changes and note it in NOTES.md.
+
+4. Fresh minimal record. Run a two-minute session against umbra/fixtures/app
+   that reads one file fully, reads one with an offset and limit, greps once,
+   edits one function, runs one test file. Record it as an umbra record, hand
+   review it against SECURITY_AND_ACCESS.md before committing, and commit it in
+   place of the 900 KB self-session record. Note in NOTES.md that the large one
+   was deliberately not committed and why.
+
+5. Pre-public scrub pass, last, as its own commit. Re-run the scrubber over
+   every committed artifact including umbra/site/self/ and all recordings. Read
+   one checkpoint transcript end to end by eye for anything that must not be
+   public: absolute home paths, machine names, tokens, out-of-repo paths, email
+   addresses. Confirm the checkpoint remote with `entire status`. Verify the two
+   scrubber fixes hold (out-of-repo paths out of the timeline, git SHAs still
+   present in the reproduce list). Then print a short go/no-go list of anything
+   you would not publish as is, and stop.
+
+After the scrub pass, tell me what to flip. I will make the repo public myself
+and enable Pages; do not attempt either.
