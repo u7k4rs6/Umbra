@@ -1,0 +1,82 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1SDRRE16N5NPK1Q2N8CY8KV",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T18:37:25.867089169Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/docs/renders/site-build.png",
+    "umbra/docs/renders/site-how.png",
+    "umbra/docs/renders/site-index.png",
+    "umbra/docs/renders/site-install.png",
+    "umbra/docs/renders/site-limits.png",
+    "umbra/docs/renders/site-map.png",
+    "umbra/docs/renders/site-no-javascript.png",
+    "umbra/docs/renders/site-print-day.png",
+    "umbra/site/build.html",
+    "umbra/site/how.html",
+    "umbra/site/index.html",
+    "umbra/site/install.html",
+    "umbra/site/landing.css",
+    "umbra/site/limits.html",
+    "umbra/site/map.html"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "1409b51e3edc",
+  "checkpoint_transcript_start": 4920,
+  "transcript_lines_at_start": 4920,
+  "compact_transcript_start": 855,
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 18398,
+    "cache_read_tokens": 6011571,
+    "output_tokens": 13200,
+    "api_call_count": 10
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T18:37:23.911783381Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 17,
+    "total_committed": 0,
+    "total_lines_changed": 17,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 326,
+      "user_lines_removed": 17,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "umbra/NOTES.md": 71,
+        "umbra/site/build.html": 9,
+        "umbra/site/how.html": 10,
+        "umbra/site/index.html": 9,
+        "umbra/site/install.html": 8,
+        "umbra/site/landing.css": 202,
+        "umbra/site/limits.html": 9,
+        "umbra/site/map.html": 8
+      },
+      "user_removed_per_file": {
+        "umbra/site/build.html": 3,
+        "umbra/site/how.html": 4,
+        "umbra/site/index.html": 3,
+        "umbra/site/install.html": 2,
+        "umbra/site/limits.html": 3,
+        "umbra/site/map.html": 2
+      }
+    }
+  ]
+}
