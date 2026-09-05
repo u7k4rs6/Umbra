@@ -1,0 +1,54 @@
+You are in the Umbra repo (phase 16 complete, 316 tests green, clean tree). Read
+umbra/NOTES.md before anything. Three tasks. No new features. No redesign.
+
+Rules as before: no em dashes in anything you write, code comments included.
+go test ./... green at every commit. Commit each task separately, format
+"umbra: phase 17 <summary> (tests: <count>)".
+
+1. Two visual checks, screenshots only, no guessing from the CSS.
+   a. Ground colour. Render the hero twice at the same viewport and playhead:
+      once on the current pure black, once on the spec's #10141C. Save both to
+      umbra/docs/renders/ as ground-black.png and ground-nearblack.png. Look at
+      the corona's outer falloff in each. Report which one holds the corona
+      better and why, in one paragraph. Do not change the colour yet; tell me
+      first.
+   b. Focus visibility. Tab through the landing page and capture a screenshot at
+      three focus positions: a nav link, the install copy button, and the
+      day/night divider. Save as focus-nav.png, focus-copy.png, focus-divider.png.
+      Judge whether the ring is findable now that --focus is inside the warm
+      ramp. If it is not, fix it, and prefer restoring a distinct focus hue over
+      thickening the ring; note the deviation in NOTES.md.
+
+2. Publication readiness, without publishing anything.
+   Produce umbra/PUBLISH.md, a checklist someone can execute in one sitting when
+   the repo goes public. It must contain, with exact commands:
+   - the current state of the checkpoint refs from checkpoint-refs-audit.sh
+   - the three ways to handle them already recorded in NOTES.md, each written out
+     as the actual command sequence, with what is lost and what is kept for each
+   - which one you recommend and why, in three sentences
+   - the Pages setup for whichever repo ends up public, including the split-repo
+     option where only site/ is published from a second public repository
+   - the pre-publish scrub gate: which tests must be green, which script must be
+     run, and what a clean result looks like
+   Do NOT execute any of it. Do not push to a new remote, do not rewrite refs,
+   do not change repository visibility. This is a document.
+
+3. Submission pass on the README.
+   Verify against the repo rather than trusting what is written:
+   - the reproduce-the-demo commands run as written from a fresh clone, and none
+     of them uses pytest -q
+   - the five documented corrections are all present, including the graph
+     checkpoint commit-ownership one and the stale-worktree one
+   - the .gitignore finding has its own section under the semantic-diff
+     verification, not a bullet
+   - limitations include: the examined set comes from tool activity so shell
+     driven agents leave little trace; the stale worktree failure mode and where
+     to delete; the Box.Overlaps class of problem, meaning checks are only
+     trusted once observed failing
+   - AI disclosure and prior-work sections match what actually happened across
+     all sixteen phases
+   Fix what is stale. Report anything the README claimed that the repo does not
+   support.
+
+Report back with: your verdict on the two screenshots, the recommendation from
+PUBLISH.md in three sentences, and anything the README overclaimed.
