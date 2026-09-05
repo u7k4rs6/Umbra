@@ -1,0 +1,9 @@
+i want to see it live, is it anywhere on local host?
+
+---
+
+https://designcode.io/  check out this website. I want this UI. It's dynamic, interactive, and looks cool. Change it acc to yourself. You have literal 6 hrs to do that on autopilot. The problem is, it has generic fonts and colour scheme. You have to fix it too
+
+---
+
+try using plawright always. It's better if you visually check and build stuff
