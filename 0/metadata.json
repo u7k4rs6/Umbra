@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1RK0RKCCT6A2XJYC6NHH9BW",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T10:49:54.258876531Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/internal/graph/verify_test.go",
+    "umbra/internal/report/execution_test.go",
+    "umbra/internal/report/gen-site/main_test.go",
+    "umbra/internal/report/layout_labels_test.go",
+    "umbra/internal/report/leaks_test.go",
+    "umbra/scripts/audit_test.go"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "5ee239d10bab",
+  "checkpoint_transcript_start": 3491,
+  "transcript_lines_at_start": 3491,
+  "compact_transcript_start": 614,
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 29724,
+    "cache_read_tokens": 3395630,
+    "output_tokens": 21943,
+    "api_call_count": 21
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T10:49:53.606807272Z",
+    "agent_lines": 622,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 622,
+    "total_lines_changed": 622,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
