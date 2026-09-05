@@ -1,0 +1,61 @@
+You are in the Umbra repo (phase 14 complete, 298 tests green, clean tree). Read
+umbra/NOTES.md, umbra/docs/SECURITY_AND_ACCESS.md, and every call site of the
+scrubber before changing anything. Two tasks. No redesign, no frontend changes,
+no reopening settled decisions.
+
+Rules as before: no em dashes anywhere including code comments. go test ./...
+green at every commit. Commit each task separately, format
+"umbra: phase 15 <summary> (tests: <count>)".
+
+1. Make the scrubber the only exit.
+   Five scrubbing bugs so far have all been the same shape: an output path that
+   writes without going through the scrubber. Fix it structurally, not case by
+   case.
+   - Inventory first. List every place a report, record, timeline, JSON, HTML,
+     packet or site artifact is written, and mark which ones currently scrub and
+     which do not. Put the list in NOTES.md before you change code.
+   - Route all of them through one choke point. No caller should be able to
+     serialize an artifact without the scrubber having run. Prefer making the
+     raw writers unexported, or wrapping the payload in a type that only the
+     scrubbing path can turn into bytes, so a future path cannot bypass it by
+     omission. Do not add a flag that turns scrubbing off.
+   - Kill the duplicated configuration. `umbra record` set scrub.Names while the
+     analysis path did not. Names, paths and any other scrub inputs must be
+     derived in one place and shared, not set per caller.
+   - Add an output-wide test that walks every generated artifact and fails on any
+     absolute home path, email address, author name or out-of-repo path,
+     whichever code path produced it. Run it against the existing corpus,
+     including site/sample, site/self, the imported LockStep session and all
+     recordings.
+   - Re-scrub committed artifacts if the new choke point catches anything the old
+     paths let through, and say in NOTES.md what changed.
+
+2. Known-positive tests for every check.
+   Four verifications in this project have returned confident passes that were
+   wrong: the .gitignore case where local tests were green but a clone would not
+   build, the cracked-probe count that named a test outside the selection, the
+   commit check that counted ok lines instead of looking for FAIL, and the
+   refs audit that reported thirty refs of zero bytes because git ls-tree was
+   scoped to umbra/ instead of --full-tree.
+   For each of the following, add a test that proves the check can fail:
+   - the scrubber: plant a known home path, a known email and a known author name
+     in a fixture artifact and assert the checker reports them
+   - scripts/checkpoint-refs-audit.sh: plant a ref containing a known email and
+     assert non-zero byte counts and a non-zero address count; also assert it
+     returns the same numbers when run from umbra/ and from the repository root
+   - the cracked-probe count: assert a failure outside the selection is reported
+     as a leak and never counted as cracked
+   - the test-status parser: feed it a runner output containing FAIL and assert
+     it reports red, and feed it output with the word ok inside a passing line
+     and assert it does not miscount
+   Name these so it is obvious what they are, for example TestAuditCatchesPlanted
+   Email. Any check that has never been observed to fail is not yet trusted, so
+   if you find another check with no known-positive, add one and say so.
+
+Also fix scripts/checkpoint-refs-audit.sh itself: --full-tree, the grep exit code
+under pipefail, and the archive buffering. Re-run it and report the corrected
+numbers.
+
+Report back with: the inventory from task 1, what the output-wide test caught on
+the existing corpus, the corrected audit numbers, the new test count, and any
+check you found without a known-positive.

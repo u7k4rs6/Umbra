@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1RJ18BWS4P8N1AZ81KSNAB9",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/cmd/entire-umbra/analyze.go",
+    "umbra/cmd/entire-umbra/main.go",
+    "umbra/cmd/entire-umbra/options.go",
+    "umbra/cmd/entire-umbra/output.go",
+    "umbra/cmd/entire-umbra/record.go",
+    "umbra/cmd/entire-umbra/scrub.go",
+    "umbra/internal/report/artifacts_all_test.go",
+    "umbra/internal/report/artifacts_test.go",
+    "umbra/internal/report/gen-site/main.go",
+    "umbra/internal/report/html.go",
+    "umbra/internal/report/html_test.go",
+    "umbra/internal/report/json.go",
+    "umbra/internal/report/json_test.go",
+    "umbra/internal/report/leaks.go",
+    "umbra/internal/report/packet.go",
+    "umbra/internal/report/packet_test.go",
+    "umbra/internal/report/seal.go",
+    "umbra/internal/report/table.go",
+    "umbra/internal/report/table_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 86,
+    "cache_creation_tokens": 126143,
+    "cache_read_tokens": 5262961,
+    "output_tokens": 33553,
+    "api_call_count": 43
+  }
+}
