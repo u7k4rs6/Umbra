@@ -1,0 +1,78 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1SDD8PADD1K73B3WJVNAYKM",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T18:31:09.305894753Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "umbra/internal/report/gen-site/main.go",
+    "umbra/internal/report/site_pages_test.go",
+    "umbra/site/build.html",
+    "umbra/site/how.html",
+    "umbra/site/index.html",
+    "umbra/site/install.html",
+    "umbra/site/landing.css",
+    "umbra/site/limits.html",
+    "umbra/site/map.html",
+    "umbra/site/motion.js",
+    "umbra/site/site.js"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "b1747cf77bcc",
+  "checkpoint_transcript_start": 4638,
+  "transcript_lines_at_start": 4638,
+  "compact_transcript_start": 813,
+  "token_usage": {
+    "input_tokens": 110,
+    "cache_creation_tokens": 90130,
+    "cache_read_tokens": 21717270,
+    "output_tokens": 68022,
+    "api_call_count": 40
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T18:31:07.338694954Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 751,
+    "total_committed": 0,
+    "total_lines_changed": 751,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 19557,
+      "user_lines_removed": 751,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "umbra/internal/report/gen-site/main.go": 54,
+        "umbra/internal/report/site_pages_test.go": 131,
+        "umbra/site/build.html": 142,
+        "umbra/site/how.html": 175,
+        "umbra/site/index.html": 153,
+        "umbra/site/install.html": 119,
+        "umbra/site/landing.css": 632,
+        "umbra/site/limits.html": 119,
+        "umbra/site/map.html": 18006,
+        "umbra/site/motion.js": 6,
+        "umbra/site/site.js": 20
+      },
+      "user_removed_per_file": {
+        "umbra/internal/report/gen-site/main.go": 14,
+        "umbra/site/index.html": 205,
+        "umbra/site/landing.css": 528,
+        "umbra/site/motion.js": 4
+      }
+    }
+  ]
+}
