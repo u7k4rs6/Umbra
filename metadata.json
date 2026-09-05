@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1RT1RC60VQNX0PCYDMJ8JE5",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/docs/renders/README.md",
+    "umbra/docs/renders/corona-alone-night.png",
+    "umbra/docs/renders/landing-day-04-sweep.png",
+    "umbra/docs/renders/landing-mid-900.png",
+    "umbra/docs/renders/landing-narrow-360.png",
+    "umbra/docs/renders/landing-night-01-claim.png",
+    "umbra/docs/renders/landing-night-02-field.png",
+    "umbra/docs/renders/landing-night-03-cut.png",
+    "umbra/docs/renders/landing-night-04-sweep.png",
+    "umbra/docs/renders/landing-night-greyscale.png",
+    "umbra/docs/renders/landing-night-legend-umbra-only.png",
+    "umbra/docs/renders/landing-night-no-javascript.png",
+    "umbra/docs/renders/landing-night-reduced-motion.png",
+    "umbra/docs/renders/landing-print-day.png",
+    "umbra/docs/renders/landing-split-night-day.png",
+    "umbra/site/corona.js",
+    "umbra/site/index.html",
+    "umbra/site/landing.css",
+    "umbra/site/site.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 156,
+    "cache_creation_tokens": 323473,
+    "cache_read_tokens": 21627825,
+    "output_tokens": 90162,
+    "api_call_count": 78
+  }
+}

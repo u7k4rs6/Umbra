@@ -1,0 +1,68 @@
+You are in the Umbra repo. Read umbra/docs/FRONTEND_SPEC.md in full, then the
+current umbra/site. This task restyles the landing page toward a specific visual
+direction. Frontend only. Do not touch Go code, the report renderer, the report
+HTML, or the drop-in viewer.
+
+Reference direction (described, not supplied): pure black canvas, a photoreal
+total-eclipse hero with an orange corona and one bright limb flare, a large
+serif display headline, all other type monospace uppercase with wide letter
+spacing, numeric section markers like 01 / 04, a three-orb legend reading LIT
+PENUMBRA UMBRA, and a day/night split revealed by a draggable divider.
+
+Non-negotiable constraints, unchanged: vanilla JS and CSS only, no libraries, no
+external network requests, static, works from file:// and from Pages. No em
+dashes anywhere. Nothing moves before first paint. Respect prefers-reduced-
+motion. The report and viewer keep the motion-only-on-user-action rule; the
+landing page may use scroll and hover motion as already noted in NOTES.md.
+
+1. The corona is a renderer, not an image. Do not add any raster asset. Build it
+   in inline SVG: fractalNoise feTurbulence with a FIXED seed, feDisplacementMap
+   over layered radial gradients, an occluding disc via mask, and one bright limb
+   point with an anisotropic flare made from a rotated linear gradient plus blur.
+   It must be deterministic, so the same JSON always produces the same corona.
+   Filters over large areas are expensive and the machine has about 11 GB of RAM:
+   render the corona into one fixed-size layer, never animate filter primitives,
+   and animate opacity or transform only.
+
+2. The hero is the live sample map wearing the eclipse. The occluding disc is the
+   changed symbol; dependents sit in the corona at the layout positions already
+   stored in umbra.json. The JS still never computes layout. Filaments in the
+   corona should read denser when more sources are lit, driven by the data, not
+   hardcoded. Beside it: the headline, the session-said quote, the contradiction
+   in one line, and the install command with a copy button.
+
+3. Type. Monospace uppercase with wide letter spacing for every label, nav item,
+   legend and section marker. One serif display face for the headline only.
+   <FONT DECISION GOES HERE: either "use a system serif stack, no font files" or
+   "use the subsetted woff2 committed at site/assets/, and record the spec
+   deviation in NOTES.md". Do exactly one of these; do not fetch a font.>
+
+4. Colour. Pure black ground, one warm orange accent ramp, warm off-white ink,
+   no third hue anywhere. The day scheme is a real inversion, not a filter, and
+   must keep shadow pools darker than their surroundings.
+
+5. The three-orb legend renders LIT, PENUMBRA and UMBRA using the same corona
+   primitive at three intensities, and the orbs are functional: clicking one
+   filters the map. Each coined word sits next to its plain meaning, per the
+   Vocabulary section of FRONTEND_SPEC.
+
+6. Bottom rail with four numbered beats driving the scroll narrative:
+   01 CLAIM, 02 FIELD, 03 CUT, 04 SWEEP. Use the project's own vocabulary, not
+   generic words. The map state changes with the beat.
+
+7. Day and night split: a draggable vertical divider that wipes between the two
+   schemes over the hero, keyboard operable with arrow keys, and settling to
+   whichever scheme the user leaves it nearest.
+
+Write all copy yourself from the README and PRD. Do not invent marketing claims,
+do not add pricing, testimonials, logos or user counts.
+
+Work in this order, screenshotting in headless Chrome and self-critiquing against
+the screenshot before moving on: corona alone, corona plus occluding disc and
+flare, hero with nodes, type and layout at three widths, legend, scroll beats,
+day/night divider, reduced motion, keyboard and screen reader paths, print.
+Save renders to umbra/docs/renders/ with names that say scheme and state.
+
+Re-run the full FRONTEND_SPEC QA checklist, record results in NOTES.md, and note
+any point where this direction conflicts with the spec and how you resolved it.
+Commit as "umbra: phase 16 eclipse hero (tests: <count>)".

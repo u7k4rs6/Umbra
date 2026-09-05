@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1RT1RC60VQNX0PCYDMJ8JE5",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T12:52:48.389760564Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/NOTES.md",
+    "umbra/docs/renders/README.md",
+    "umbra/docs/renders/corona-alone-night.png",
+    "umbra/docs/renders/landing-day-04-sweep.png",
+    "umbra/docs/renders/landing-mid-900.png",
+    "umbra/docs/renders/landing-narrow-360.png",
+    "umbra/docs/renders/landing-night-01-claim.png",
+    "umbra/docs/renders/landing-night-02-field.png",
+    "umbra/docs/renders/landing-night-03-cut.png",
+    "umbra/docs/renders/landing-night-04-sweep.png",
+    "umbra/docs/renders/landing-night-greyscale.png",
+    "umbra/docs/renders/landing-night-legend-umbra-only.png",
+    "umbra/docs/renders/landing-night-no-javascript.png",
+    "umbra/docs/renders/landing-night-reduced-motion.png",
+    "umbra/docs/renders/landing-print-day.png",
+    "umbra/docs/renders/landing-split-night-day.png",
+    "umbra/site/corona.js",
+    "umbra/site/index.html",
+    "umbra/site/landing.css",
+    "umbra/site/site.js"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "0af5bd3a6ed4",
+  "checkpoint_transcript_start": 3603,
+  "transcript_lines_at_start": 3603,
+  "compact_transcript_start": 637,
+  "token_usage": {
+    "input_tokens": 156,
+    "cache_creation_tokens": 323473,
+    "cache_read_tokens": 21627825,
+    "output_tokens": 90162,
+    "api_call_count": 78
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T12:52:46.93918782Z",
+    "agent_lines": 1543,
+    "agent_removed": 125,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1543,
+    "total_lines_changed": 1668,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
