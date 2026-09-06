@@ -1,0 +1,950 @@
+{
+  "umbra_version": "0.1.0",
+  "checkpoint": {
+    "id": "sample000class",
+    "commit": "0000000000000000000000000000000000000001",
+    "parent": "0000000000000000000000000000000000000000",
+    "agent": "claude-code",
+    "route": "checkpoint id",
+    "session_ids": []
+  },
+  "inputs": {
+    "adapter": "claude-code",
+    "depth": 2,
+    "test_runner": "pytest -v",
+    "run": "shadow",
+    "audit": true,
+    "history": false,
+    "snippets": false,
+    "relations_used": [
+      "ACCESSES",
+      "ASYNC_CALLS",
+      "CALLS",
+      "DATA_FLOWS",
+      "EXTENDS",
+      "FILE_CHANGES_WITH",
+      "IMPLEMENTS",
+      "IMPORTS",
+      "INHERITS",
+      "OVERRIDES",
+      "PARAM_TYPE",
+      "READS_FIELD",
+      "RETURNS_TYPE",
+      "TESTS",
+      "USES_TYPE",
+      "WRITES_FIELD"
+    ],
+    "relations_ignored": [
+      "CONFIGURES",
+      "CONSTRUCTS",
+      "EMITS",
+      "HANDLES_GRAPHQL",
+      "HANDLES_GRPC",
+      "HANDLES_ROUTE",
+      "HANDLES_TOOL",
+      "HANDLES_TRPC",
+      "HTTP_CALLS",
+      "LISTENS_ON",
+      "RESOURCE_DEPENDS_ON",
+      "SIMILAR_TO"
+    ],
+    "channels": {
+      "callsites": true,
+      "graph": true,
+      "mentions": true,
+      "reads": true
+    }
+  },
+  "session_said": "Checked the callers. All tests pass.",
+  "session_said_from": "the checkpoint summary Entire stored",
+  "notes": [
+    "this is the seeded fixture from the repository, recorded so the page has a real report to draw"
+  ],
+  "sources": [
+    {
+      "id": "gh/example/repo:Python:app/service.py:function:compute_total",
+      "name": "compute_total",
+      "file": "app/service.py",
+      "span": [
+        20,
+        30
+      ],
+      "change": "signature",
+      "weight": 1,
+      "dependents": 7
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gh/example/repo:Python:app/refunds.py:function:apply_refund",
+      "name": "apply_refund",
+      "file": "app/refunds.py",
+      "span": [
+        17,
+        28
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/refunds.py:function:apply_refund"
+      ],
+      "state": "penumbra",
+      "tier": "glimpse",
+      "modifiers": [
+        "glimpse",
+        "fault line",
+        "beacon"
+      ],
+      "exposures": [
+        {
+          "seq": 4,
+          "kind": "grep"
+        }
+      ],
+      "sentence": "the session saw app/refunds.py in a search result and never opened it",
+      "call_site": 23,
+      "dependents": 4,
+      "score": 7.474,
+      "factors": {
+        "dependents": 3.322,
+        "farfield": 1,
+        "faultline": 1.5,
+        "relation": 3,
+        "state": 0.5,
+        "test": 0
+      },
+      "beacon": "# SAFETY: a pricing failure must not refund the full amount paid.",
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero",
+      "name": "test_empty_is_zero",
+      "file": "tests/test_service.py",
+      "span": [
+        19,
+        20
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "call_site": 19,
+      "dependents": 1,
+      "score": 12,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "fail"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_service.py:function:test_negative",
+      "name": "test_negative",
+      "file": "tests/test_service.py",
+      "span": [
+        13,
+        16
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:tests/test_service.py:function:test_negative"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "call_site": 13,
+      "dependents": 1,
+      "score": 12,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "fail"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_service.py:function:test_rounding",
+      "name": "test_rounding",
+      "file": "tests/test_service.py",
+      "span": [
+        7,
+        10
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:tests/test_service.py:function:test_rounding"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "call_site": 9,
+      "dependents": 1,
+      "score": 12,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 3,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "fail"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places",
+      "name": "test_round_money_places",
+      "file": "tests/test_service.py",
+      "span": [
+        23,
+        24
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "data flow",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/service.py:function:round_money",
+        "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "call_site": 0,
+      "dependents": 1,
+      "score": 9,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 2,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal",
+      "name": "test_apply_refund_normal",
+      "file": "tests/test_refunds.py",
+      "span": [
+        18,
+        20
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/refunds.py:function:apply_refund",
+        "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_refunds.py",
+      "call_site": 17,
+      "dependents": 2,
+      "score": 8.816,
+      "factors": {
+        "dependents": 2.585,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_api.py:function:test_handle_order",
+      "name": "test_handle_order",
+      "file": "tests/test_api.py",
+      "span": [
+        11,
+        16
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/api.py:function:handle_order",
+        "gh/example/repo:Python:tests/test_api.py:function:test_handle_order"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_api.py",
+      "call_site": 14,
+      "dependents": 1,
+      "score": 7.5,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line",
+      "name": "test_quote_single_line",
+      "file": "tests/test_api.py",
+      "span": [
+        19,
+        20
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/api.py:function:quote",
+        "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_api.py",
+      "call_site": 26,
+      "dependents": 1,
+      "score": 7.5,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid",
+      "name": "test_apply_refund_caps_at_paid",
+      "file": "tests/test_refunds.py",
+      "span": [
+        13,
+        15
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "transitive caller",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/refunds.py:function:apply_refund",
+        "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid"
+      ],
+      "state": "umbra",
+      "modifiers": [
+        "test",
+        "transitive",
+        "far field"
+      ],
+      "exposures": [],
+      "sentence": "nothing in the session touched or mentioned tests/test_refunds.py",
+      "call_site": 17,
+      "dependents": 1,
+      "score": 7.5,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 1.5,
+        "state": 1,
+        "test": 3
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:app/api.py:function:handle_order",
+      "name": "handle_order",
+      "file": "app/api.py",
+      "span": [
+        14,
+        23
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/api.py:function:handle_order"
+      ],
+      "state": "lit",
+      "modifiers": [],
+      "exposures": [
+        {
+          "seq": 4,
+          "kind": "grep"
+        },
+        {
+          "seq": 5,
+          "kind": "read"
+        }
+      ],
+      "sentence": "the session read or edited app/api.py after the change began",
+      "call_site": 16,
+      "dependents": 3,
+      "score": 0,
+      "factors": {
+        "dependents": 3,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 0,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:app/api.py:function:quote",
+      "name": "quote",
+      "file": "app/api.py",
+      "span": [
+        26,
+        29
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/api.py:function:quote"
+      ],
+      "state": "lit",
+      "modifiers": [],
+      "exposures": [
+        {
+          "seq": 4,
+          "kind": "grep"
+        },
+        {
+          "seq": 5,
+          "kind": "read"
+        }
+      ],
+      "sentence": "the session read or edited app/api.py after the change began",
+      "call_site": 29,
+      "dependents": 3,
+      "score": 0,
+      "factors": {
+        "dependents": 3,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 0,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:app/service.py:function:apply_tax",
+      "name": "apply_tax",
+      "file": "app/service.py",
+      "span": [
+        15,
+        17
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "data flow",
+      "depth": 2,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/service.py:function:round_money",
+        "gh/example/repo:Python:app/service.py:function:apply_tax"
+      ],
+      "state": "lit",
+      "modifiers": [
+        "transitive"
+      ],
+      "exposures": [
+        {
+          "seq": 2,
+          "kind": "read"
+        },
+        {
+          "seq": 3,
+          "kind": "edit"
+        }
+      ],
+      "sentence": "the session read or edited app/service.py after the change began",
+      "call_site": 0,
+      "dependents": 3,
+      "score": 0,
+      "factors": {
+        "dependents": 3,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 2,
+        "state": 0,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:app/service.py:function:round_money",
+      "name": "round_money",
+      "file": "app/service.py",
+      "span": [
+        10,
+        12
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "data flow",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/service.py:function:round_money"
+      ],
+      "state": "lit",
+      "modifiers": [],
+      "exposures": [
+        {
+          "seq": 2,
+          "kind": "read"
+        },
+        {
+          "seq": 3,
+          "kind": "edit"
+        }
+      ],
+      "sentence": "the session read or edited app/service.py after the change began",
+      "call_site": 0,
+      "dependents": 5,
+      "score": 0,
+      "factors": {
+        "dependents": 3.585,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 2,
+        "state": 0,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    },
+    {
+      "id": "gh/example/repo:Python:app/service.py:function:summarize",
+      "name": "summarize",
+      "file": "app/service.py",
+      "span": [
+        33,
+        36
+      ],
+      "is_test": false,
+      "sources": [
+        "gh/example/repo:Python:app/service.py:function:compute_total"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/example/repo:Python:app/service.py:function:compute_total",
+        "gh/example/repo:Python:app/service.py:function:summarize"
+      ],
+      "state": "lit",
+      "modifiers": [],
+      "exposures": [
+        {
+          "seq": 2,
+          "kind": "read"
+        },
+        {
+          "seq": 3,
+          "kind": "edit"
+        }
+      ],
+      "sentence": "the session read or edited app/service.py after the change began",
+      "call_site": 33,
+      "dependents": 3,
+      "score": 0,
+      "factors": {
+        "dependents": 3,
+        "farfield": 1,
+        "faultline": 1,
+        "relation": 3,
+        "state": 0,
+        "test": 0
+      },
+      "tests": [],
+      "result": "notrun"
+    }
+  ],
+  "timeline": [
+    {
+      "seq": 2,
+      "ts": "2026-09-05T10:02:00Z",
+      "kind": "read",
+      "path": "app/service.py"
+    },
+    {
+      "seq": 3,
+      "ts": "2026-09-05T10:04:00Z",
+      "kind": "edit",
+      "path": "app/service.py"
+    },
+    {
+      "seq": 4,
+      "ts": "2026-09-05T10:06:00Z",
+      "kind": "grep",
+      "paths": [
+        "app/api.py",
+        "app/refunds.py"
+      ]
+    },
+    {
+      "seq": 5,
+      "ts": "2026-09-05T10:08:00Z",
+      "kind": "read",
+      "path": "app/api.py"
+    }
+  ],
+  "t0": 3,
+  "execution": {
+    "selected": [
+      "tests/test_api.py::test_handle_order",
+      "tests/test_api.py::test_quote_single_line",
+      "tests/test_refunds.py::test_apply_refund_caps_at_paid",
+      "tests/test_refunds.py::test_apply_refund_normal",
+      "tests/test_service.py::test_empty_is_zero",
+      "tests/test_service.py::test_negative",
+      "tests/test_service.py::test_round_money_places",
+      "tests/test_service.py::test_rounding"
+    ],
+    "new_failures": [
+      "tests/test_service.py::test_empty_is_zero",
+      "tests/test_service.py::test_negative",
+      "tests/test_service.py::test_rounding"
+    ],
+    "fixed": [],
+    "sweep": true,
+    "leaks": [],
+    "verdict": "REGRESSION in 3 tests"
+  },
+  "summary": {
+    "lit": 5,
+    "penumbra": 1,
+    "umbra": 8,
+    "unknown": 0,
+    "illumination": 0.35714285714285715
+  },
+  "layout": {
+    "view_box": [
+      0,
+      0,
+      1200,
+      800
+    ],
+    "centre": {
+      "x": 600,
+      "y": 400
+    },
+    "rings": [
+      {
+        "depth": 1,
+        "radius": 170,
+        "dashed": false,
+        "label": "1 hop"
+      },
+      {
+        "depth": 2,
+        "radius": 280,
+        "dashed": false,
+        "label": "2 hops"
+      }
+    ],
+    "sources": {
+      "gh/example/repo:Python:app/service.py:function:compute_total": {
+        "x": 600,
+        "y": 400
+      }
+    },
+    "nodes": {
+      "gh/example/repo:Python:app/api.py:function:handle_order": {
+        "x": 539.08,
+        "y": 558.71,
+        "angle": 201,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/api.py:function:quote": {
+        "x": 448.53,
+        "y": 477.18,
+        "angle": 243,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/refunds.py:function:apply_refund": {
+        "x": 677.18,
+        "y": 551.47,
+        "angle": 153,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/service.py:function:apply_tax": {
+        "x": 443.43,
+        "y": 167.87,
+        "angle": 326,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/service.py:function:round_money": {
+        "x": 441.29,
+        "y": 339.08,
+        "angle": 291,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:app/service.py:function:summarize": {
+        "x": 522.82,
+        "y": 248.53,
+        "angle": 333,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_api.py:function:test_handle_order": {
+        "x": 468.55,
+        "y": 647.23,
+        "angle": 208,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line": {
+        "x": 321.53,
+        "y": 429.27,
+        "angle": 264,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "left",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid": {
+        "x": 880,
+        "y": 400,
+        "angle": 90,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal": {
+        "x": 756.57,
+        "y": 632.13,
+        "angle": 146,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero": {
+        "x": 764.21,
+        "y": 444,
+        "angle": 105,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_service.py:function:test_negative": {
+        "x": 751.47,
+        "y": 322.82,
+        "angle": 63,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places": {
+        "x": 731.45,
+        "y": 152.77,
+        "angle": 28,
+        "ring": 280,
+        "depth": 2,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      "gh/example/repo:Python:tests/test_service.py:function:test_rounding": {
+        "x": 660.92,
+        "y": 241.29,
+        "angle": 21,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "right",
+        "toward": {
+          "x": 600,
+          "y": 400
+        }
+      }
+    },
+    "sources_collapsed": false
+  },
+  "limitations": [
+    "graph edges are incomplete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined",
+    "read evidence is file and line-range based; a mention in the agent's text is attention, not reading, and is the weakest tier",
+    "fault lines and beacons are matched by a regex window around the call site, not by a parser",
+    "ranking weights are hand set and printed; they are a heuristic, not a measurement",
+    "the fixture is seeded to produce lit, penumbra and umbra nodes and failing shadowed tests"
+  ],
+  "commands_run": [
+    "entire graph snapshot --repo . --format ndjson",
+    "entire graph commit HEAD --repo . --json",
+    "entire graph impact --symbol compute_total --repo . --format json",
+    "entire checkpoint explain \u003cid\u003e --raw-transcript"
+  ]
+}
