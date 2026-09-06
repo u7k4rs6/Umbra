@@ -78,8 +78,13 @@ func ParseSummary(text string) string {
 	}
 	joined := strings.TrimSpace(strings.Join(body, " "))
 
-	// Entire renders the absent case in italics. Treat it as absent.
-	if joined == "" || strings.HasPrefix(joined, "*No summary") {
+	// Entire renders every absent case in italics, and there is more than one
+	// wording: "*No summary. Imported history is read-only...*" for imported
+	// checkpoints, and "*Not generated yet. Run 'entire checkpoint explain
+	// --generate <id>'...*" for a checkpoint the git hook wrote. Treating any
+	// fully italicised block as absent covers both and any future wording,
+	// because a real summary is prose, not a placeholder.
+	if joined == "" || (strings.HasPrefix(joined, "*") && strings.HasSuffix(joined, "*")) {
 		return ""
 	}
 	return joined
