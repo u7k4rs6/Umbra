@@ -2,6 +2,7 @@ package checkpoint
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -107,5 +108,99 @@ func TestAddWorktreesFailsLoudlyOnGitError(t *testing.T) {
 	res := &Resolution{Commit: "nope", Parent: "alsonope"}
 	if _, err := AddWorktrees(context.Background(), f, "/repo", t.TempDir(), res, false); err == nil {
 		t.Fatal("expected an error when git worktree add fails")
+	}
+}
+
+// The worktree path is keyed by commit under a shared data directory, so a run
+// that died before its cleanup, or another checkout of the same repository,
+// can leave one behind. Reusing a stale one is how a worktree belonging to a
+// deleted checkout poisons every later run.
+func TestAddWorktreesReusesAHealthyCheckout(t *testing.T) {
+	data := t.TempDir()
+	head := filepath.Join(data, "wt", "abc123", "head")
+	if err := os.MkdirAll(head, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(head, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	f := runner.NewFake()
+	f.Set("git", []string{"-C", head, "rev-parse", "HEAD"}, runner.Result{Stdout: "abc123\n"})
+
+	res := &Resolution{Commit: "abc123"}
+	if _, err := AddWorktrees(context.Background(), f, "/repo", data, res, false); err != nil {
+		t.Fatalf("AddWorktrees: %v", err)
+	}
+	for _, c := range f.Calls {
+		if len(c.Args) > 2 && c.Args[2] == "worktree" && c.Args[3] == "add" {
+			t.Fatal("a healthy checkout at the right commit should be reused, not recreated")
+		}
+	}
+}
+
+func TestAddWorktreesReplacesAStaleCheckout(t *testing.T) {
+	data := t.TempDir()
+	head := filepath.Join(data, "wt", "abc123", "head")
+	if err := os.MkdirAll(head, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(head, ".git"), []byte("gitdir: /gone\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	f := runner.NewFake()
+	// The leftover cannot be read: it belonged to a checkout that is gone.
+	f.Set("git", []string{"-C", head, "rev-parse", "HEAD"}, runner.Result{Exit: 128, Stderr: "not a git repository"})
+
+	res := &Resolution{Commit: "abc123"}
+	if _, err := AddWorktrees(context.Background(), f, "/repo", data, res, false); err != nil {
+		t.Fatalf("AddWorktrees: %v", err)
+	}
+	var pruned, added bool
+	for _, c := range f.Calls {
+		if len(c.Args) > 3 && c.Args[2] == "worktree" && c.Args[3] == "prune" {
+			pruned = true
+		}
+		if len(c.Args) > 3 && c.Args[2] == "worktree" && c.Args[3] == "add" {
+			added = true
+		}
+	}
+	if !pruned {
+		t.Error("the stale administrative entry should be pruned")
+	}
+	if !added {
+		t.Error("a stale checkout should be replaced with a fresh one")
+	}
+	if _, err := os.Stat(filepath.Join(head, ".git")); err == nil {
+		t.Error("the stale directory should have been removed")
+	}
+}
+
+// A checkout at the wrong commit is as useless as an unreadable one.
+func TestAddWorktreesReplacesACheckoutAtTheWrongCommit(t *testing.T) {
+	data := t.TempDir()
+	head := filepath.Join(data, "wt", "abc123", "head")
+	if err := os.MkdirAll(head, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(head, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	f := runner.NewFake()
+	f.Set("git", []string{"-C", head, "rev-parse", "HEAD"}, runner.Result{Stdout: "deadbeef\n"})
+
+	res := &Resolution{Commit: "abc123"}
+	if _, err := AddWorktrees(context.Background(), f, "/repo", data, res, false); err != nil {
+		t.Fatalf("AddWorktrees: %v", err)
+	}
+	added := false
+	for _, c := range f.Calls {
+		if len(c.Args) > 3 && c.Args[2] == "worktree" && c.Args[3] == "add" {
+			added = true
+		}
+	}
+	if !added {
+		t.Error("a checkout at another commit should be replaced")
 	}
 }

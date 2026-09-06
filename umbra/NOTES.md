@@ -30,7 +30,7 @@ scrub pass, and it is what settles the one blocker that pass found: see
 | 10 | Landing page, drop-in viewer, README | 243 |
 | 11 | Semantic-diff review, the self report, scrubber fixes | 249 |
 | 12 | Coverage line, runner check, minimal record, scrub pass | 274 |
-| 13 | Exit-code tests end to end, the real four-hop leak chain | 282 |
+| 13 | Exit-code tests end to end, the real four-hop leak chain | 286 |
 
 Nothing in the code pretends to do what it does not: the table prints
 `probes not run` when tests were skipped, `sweep skipped` when the audit was
@@ -495,6 +495,50 @@ cracked now counts only probes that were selected and failed, and a failure no
 probe covered is called out separately and listed as a leak with its reason.
 `--fail-on failure` still fires on any new failure, which is correct: a new
 failure is a new failure whoever found it.
+
+### Phase 13: what the end to end tests found by failing in a clone
+
+The exit-code tests passed here and failed the moment they ran in a fresh
+clone. That is the phase 11 lesson again, and this time it surfaced two product
+bugs and one piece of fragility in the test itself.
+
+**1. `graph checkpoint` was answering about the wrong commit.** `LoadSources`
+tries `graph checkpoint <id>` first, because ARCHITECTURE.md calls it the
+documented bridge between Graph and Checkpoints. But it returns the changes of
+the commit *that checkpoint belongs to*. When a reference is paired with a
+checkpoint by session window, that is a guess about which session produced the
+commit and says nothing about which commit the checkpoint owns. In this working
+copy the pairing happens to choose an imported checkpoint, which has no commit,
+so the fallback runs and the report is correct. In a clone it chose a
+hook-written checkpoint that does own a commit, and the report described that
+commit's changes under the header of the one the reader asked for: the header
+said `0063443` while the sources were the transcript package from phase 3. The
+bridge is now used only when the reference resolved through the trailer or
+through the checkpoint id, where the two are the same piece of work.
+
+**2. A stale worktree poisoned every later run.** Worktrees are keyed by commit
+under a shared data directory, so two checkouts of one repository, or a run
+that died before its cleanup, collide on the same path. The code reused
+anything with a `.git` in it. A worktree left behind by a checkout that had
+since been deleted made git unable to read its metadata and Graph refuse to run
+there, for every subsequent run against that commit from any checkout. A
+leftover is now reused only when it is a healthy checkout sitting at the wanted
+commit, and otherwise removed and pruned first.
+
+**3. The tests were asserting on states that are not repository state.** They
+checked that a given commit has umbra nodes. Node states come from the examined
+set, which comes from whichever checkpoint the reference pairs with, and the
+set of checkpoints present differs between a working copy and a clone: imported
+history is local and is not pushed. The same commit reports six umbra nodes
+here and none in a clone, both correct. The tests now run the binary once,
+read the summary from its JSON, and derive a condition that must fire from what
+the report actually says. They also skip when the toolchain cannot analyse the
+checkout at all, which happens where Graph refuses to run git, the same
+restriction phase 12 hit when recording from a temporary directory.
+
+Verified in three places before the commit: this working copy, a clone under
+`$HOME`, and a clone under the restricted scratch directory, where the suite
+skips cleanly rather than failing.
 
 ### Where the build deviates from the letter of the plan
 
