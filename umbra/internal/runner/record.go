@@ -210,3 +210,7 @@ func (f *Fake) Run(ctx context.Context, name string, args []string, stdin []byte
 	}
 	return []byte(res.Stdout), []byte(res.Stderr), res.Exit, err
 }
+
+// readFile is a small indirection so tests can read a recording's bytes
+// without importing the operating system package themselves.
+func readFile(path string) ([]byte, error) { return os.ReadFile(path) }

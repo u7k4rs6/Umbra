@@ -23,16 +23,26 @@ No test here starts a process, reaches the network or needs an agent.
 
 `entire umbra record <ref> --out <dir>` performs a real analysis and stores
 every Runner call with its output, so a replay can drive the whole pipeline
-including the graph and verify calls. Those recordings are not committed here.
+including the graph and verify calls.
 
-A full recording embeds the checkpoint transcript, which for this repository is
-the session that built Umbra: about 900 KB of conversation. `umbra record`
-applies the scrub, so absolute paths, the user name and token shapes are gone,
-but SECURITY_AND_ACCESS.md requires a fixture recording to be hand reviewed
-before it is committed, and prose of that length cannot honestly be reviewed
-line by line. The scenario transcripts above are authored instead: they are
-small, they were written to exercise one rule each, and they contain no real
-conversation.
+`minimal/recording.json` is one, from a short real session: one full read, one
+partial read, one search, one edit, one test file. It is 135 KB and was hand
+reviewed against SECURITY_AND_ACCESS.md before commit. See `minimal/notes.txt`.
+
+**The recording of the session that built Umbra is deliberately not committed.**
+A full recording embeds the checkpoint transcript, and for this repository that
+is the whole build session: about 900 KB of conversation. `umbra record`
+applies the scrub, so absolute paths, the user and host name, the author name,
+the email address and token shapes are all gone. But SECURITY_AND_ACCESS.md
+requires a fixture recording to be **hand reviewed** before it is committed,
+and prose of that length cannot honestly be reviewed line by line. Saying it
+was reviewed would be the kind of claim this project exists to catch. The
+minimal recording is twelve transcript records and was actually read end to
+end, which is what the rule asks for.
+
+Recording the same short session inside the Umbra repository produces 3.8 MB,
+of which 3.4 MB is a single snapshot of the entire codebase. It was therefore
+recorded against a repository holding only the fixture app.
 
 To regenerate one locally:
 

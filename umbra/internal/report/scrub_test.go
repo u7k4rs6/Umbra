@@ -125,3 +125,33 @@ func TestScrubKeepsLongPaths(t *testing.T) {
 		t.Fatalf("a long path must survive the scrub, got %q", got)
 	}
 }
+
+// An email address is personal data and Umbra never needs one. It reaches a
+// report through the author line that `checkpoint explain --short` prints.
+func TestScrubRemovesEmailAddresses(t *testing.T) {
+	s := &Scrubber{}
+	got := s.Clean("author   Some Person <someone@example.com>")
+	if strings.Contains(got, "someone@example.com") {
+		t.Fatalf("an email address must be redacted, got %q", got)
+	}
+}
+
+// A display name cannot be recognised by shape, so the caller supplies it.
+func TestScrubRemovesSuppliedNames(t *testing.T) {
+	s := &Scrubber{Names: []string{"Some Person"}}
+	got := s.Clean("author   Some Person <someone@example.com>")
+	if strings.Contains(got, "Some Person") {
+		t.Fatalf("a supplied name must be redacted, got %q", got)
+	}
+	if !strings.Contains(got, "<author>") {
+		t.Fatalf("expected the author placeholder, got %q", got)
+	}
+}
+
+func TestScrubLeavesOrdinaryAtSignsAlone(t *testing.T) {
+	s := &Scrubber{}
+	in := "run the test with pytest -k not_slow"
+	if got := s.Clean(in); got != in {
+		t.Fatalf("Clean rewrote ordinary text: %q", got)
+	}
+}

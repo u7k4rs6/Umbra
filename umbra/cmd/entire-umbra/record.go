@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/u7k4rs6/Umbra/umbra/internal/checkpoint"
 	"github.com/u7k4rs6/Umbra/umbra/internal/report"
@@ -65,12 +66,18 @@ func runRecord(ctx context.Context, argv []string) (int, error) {
 		return ExitRuntime, err
 	}
 
+	exec := runner.NewExec(o.Repo)
+
 	var scrub runner.Scrubber
 	if !*noScrub {
 		s := report.NewScrubber(o.Repo)
+		// The author line that `checkpoint explain --short` prints carries a
+		// display name, which no pattern can recognise by shape. Ask git for
+		// the names configured here so they can be removed by value.
+		s.Names = gitNames(ctx, exec, o.Repo)
 		scrub = s.Clean
 	}
-	rec := runner.NewRecorder(runner.NewExec(o.Repo), scrub)
+	rec := runner.NewRecorder(exec, scrub)
 
 	res, err := checkpoint.New(rec, o.Repo).Resolve(ctx, o.Ref)
 	if err != nil {
@@ -99,6 +106,22 @@ func runRecord(ctx context.Context, argv []string) (int, error) {
 	}
 	fmt.Printf("recorded %s into %s\n", name, *out)
 	return ExitOK, nil
+}
+
+// gitNames returns the author names git would stamp on a commit here, so a
+// recording does not carry them.
+func gitNames(ctx context.Context, run runner.Runner, repo string) []string {
+	var out []string
+	for _, key := range []string{"user.name", "author.name", "committer.name"} {
+		stdout, _, exit, err := run.Run(ctx, "git", []string{"-C", repo, "config", "--get", key}, nil)
+		if err != nil || exit != 0 {
+			continue
+		}
+		if name := strings.TrimSpace(string(stdout)); name != "" {
+			out = append(out, name)
+		}
+	}
+	return out
 }
 
 func baseName(p string) string {
