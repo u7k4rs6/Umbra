@@ -1,0 +1,55 @@
+You are in the Umbra repository. Read umbra/NOTES.md, umbra/BUILDATHON.md and
+umbra/README.md before starting. This is the first task after the hackathon, so
+there is no clock. Correctness over speed.
+
+Goal: find out whether Umbra works on a real repository that is not our fixture.
+This is an experiment, not a feature. The deliverable is a written finding, and
+it is a success whether the answer is yes or no.
+
+No em dashes. go test ./... green before any commit. Commit the writeup, not
+speculative fixes.
+
+1. Pick the target. A mid-sized real Python project, permissively licensed,
+   ideally 5k to 50k lines with an existing pytest suite that passes on a clean
+   checkout. Not a toy, not something enormous. Propose two or three candidates
+   with line counts and test-suite runtime, and say which you would pick and
+   why, before cloning anything.
+
+2. Set it up honestly. Clone it, enable Entire with checkpoints, install the
+   graph plugin, and confirm the test suite passes before you touch anything.
+   Record the baseline runtime, since a slow suite changes what probe selection
+   is worth.
+
+3. Generate a real session. Do actual work in that repository for a while:
+   pick a genuine small change worth making, read the files you would normally
+   read, edit, run some tests, and commit. Do NOT stage the session to make
+   Umbra look good, and do NOT deliberately avoid opening files that will
+   matter. The point is a representative session, not a demo. Note what kind of
+   work it was and roughly how you did it.
+
+4. Run Umbra on that commit, with the full sweep. Report:
+   - the field size and how long the snapshot and impact calls took
+   - the state breakdown and the coverage line
+   - which probes were selected, which cracked, and whether the sweep leaked
+   - the evidence tiers, and how many dependents came back heuristic or needing
+     verification on real code rather than a fixture
+   - the wall-clock time of the whole run
+
+5. Judge the output as a reviewer would, not as its author. For each of the top
+   five ranked dependents, open the source and say whether Umbra's ranking was
+   right, defensible, or wrong. This is the part that matters. A report that
+   runs fast and ranks badly is a failure.
+
+6. Write umbra/experiments/first-real-repo.md with: the repository and commit,
+   what the session did, every number above, the five ranking judgements, what
+   broke, what surprised you, and what this says about whether the product
+   generalises. Include the failures plainly. If Umbra performed badly, say so
+   in the first paragraph.
+
+Do not fix anything you find during this run. Collect the findings first; we
+will decide together what is worth changing. If something crashes, record the
+crash and continue if you can.
+
+---
+
+resume
