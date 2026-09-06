@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/u7k4rs6/Umbra/umbra/internal/checkpoint"
 	"github.com/u7k4rs6/Umbra/umbra/internal/report"
@@ -106,22 +105,6 @@ func runRecord(ctx context.Context, argv []string) (int, error) {
 	}
 	fmt.Printf("recorded %s into %s\n", name, *out)
 	return ExitOK, nil
-}
-
-// gitNames returns the author names git would stamp on a commit here, so a
-// recording does not carry them.
-func gitNames(ctx context.Context, run runner.Runner, repo string) []string {
-	var out []string
-	for _, key := range []string{"user.name", "author.name", "committer.name"} {
-		stdout, _, exit, err := run.Run(ctx, "git", []string{"-C", repo, "config", "--get", key}, nil)
-		if err != nil || exit != 0 {
-			continue
-		}
-		if name := strings.TrimSpace(string(stdout)); name != "" {
-			out = append(out, name)
-		}
-	}
-	return out
 }
 
 func baseName(p string) string {

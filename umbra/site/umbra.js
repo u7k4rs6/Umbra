@@ -512,7 +512,13 @@
   // render draws a whole report. The page calls it once on load; the
   // landing-page viewer calls it again with a report the reader dropped in.
   function render(data) {
-    var svg = document.getElementById("map");
+    return renderInto(document.getElementById("map"), data, true);
+  }
+
+  // renderInto draws a report into a given element. The landing page uses it
+  // for a second, static map: a report from another project, drawn once with
+  // no replay strip and no interaction wiring of its own.
+  function renderInto(svg, data, interactive) {
     if (!data || !data.layout || !svg) { return false; }
     svg.textContent = "";
 
@@ -523,6 +529,8 @@
     drawLabels(svg, data);
 
     svg.setAttribute("aria-label", mapLabel(data));
+    if (!interactive) { return true; }
+
     wireSelection(svg, data);
     wireFilters();
     wireDetail(data);
@@ -778,7 +786,7 @@
   // Expose the reconstruction for the cross-check test that compares it with
   // the Go classifier. Nothing on the page uses this.
   if (typeof globalThis !== "undefined") {
-    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank, render: render };
+    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank, render: render, renderInto: renderInto };
   }
 
   // ---------------------------------------------------------------------
