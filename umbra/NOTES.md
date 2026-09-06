@@ -7,9 +7,13 @@ answered questions at the bottom of `docs/ARCHITECTURE.md` carry the detail.
 
 ## Where the build stands
 
-All eleven phases are done and committed. `go test ./...` is green at every
+All twelve phases are done and committed. `go test ./...` is green at every
 commit, and a fresh clone was checked to build and test green after phase 11
 found that it would not have.
+
+The repository stays **private**. That decision was taken after the phase 12
+scrub pass, and it is what settles the one blocker that pass found: see
+"Before this repository is ever made public" at the end of this file.
 
 | Phase | What landed | Tests |
 |---|---|---|
@@ -25,6 +29,7 @@ found that it would not have.
 | 9 | Attention replay, keyboard, spotlight, day scheme, print | 241 |
 | 10 | Landing page, drop-in viewer, README | 243 |
 | 11 | Semantic-diff review, the self report, scrubber fixes | 249 |
+| 12 | Coverage line, runner check, minimal record, scrub pass | 274 |
 
 Nothing in the code pretends to do what it does not: the table prints
 `probes not run` when tests were skipped, `sweep skipped` when the audit was
@@ -410,9 +415,10 @@ scrubber fixes.
   `BEGIN RSA PRIVATE KEY`, `/home/someone`, `someone@example.com`. All are
   invented and all exist so a test can prove the scrubber removes them.
 - `fixtures/recorded/minimal/recording.json` contains two em dashes, both
-  inside verbatim `entire graph verify` output
-  (`VERDICT: NO EFFECT — the target tests behave...`). Editing recorded tool
-  output would make the fixture a lie about what the tool printed.
+  inside verbatim `entire graph verify` output: the punctuation Graph itself
+  puts between `VERDICT: NO EFFECT` and the sentence explaining it. Editing
+  recorded tool output would make the fixture a lie about what the tool
+  printed, so they stay.
 
 **The checkpoint transcripts are the real exposure, and they are not Umbra's to
 scrub.** Every hook-written checkpoint stores the whole session transcript:
@@ -450,3 +456,35 @@ a repository is the owner's decision, not the build's.
   The kickoff specifies four app modules and four test files, and the fixture has
   exactly those. The leak forensics are tested at depth four with a synthetic
   chain in `sweep_test.go` instead, which exercises the same code path.
+
+## Before this repository is ever made public
+
+It is private, and the phase 12 scrub pass found one reason it should stay that
+way until this is dealt with. Recording it here so the decision is not lost.
+
+**The checkpoint refs on `origin` carry another project's material.** Every
+hook-written checkpoint stores the whole session transcript: 8.9 MB, 1836
+records. Those refs live under `refs/entire/checkpoints/` and are pushed with
+every `git push`. One of them contains verbatim content from **Impeach**, an
+unreleased project that happens to live on the same machine, captured in the
+first few minutes of the build when its handoff files were read to establish
+that they were not Umbra's. The same transcripts carry roughly 1790 absolute
+home paths, 2196 occurrences of the operating-system user name, the owner's
+email address, and paths naming two other projects.
+
+No real credential is in them. The three token-shaped matches are the synthetic
+values from the scrubber's own tests.
+
+Umbra scrubs what Umbra writes. It does not rewrite Entire's storage, so this
+is not something the tool can fix for you.
+
+To publish, one of these has to happen first:
+
+1. Delete the checkpoint refs from the remote and stop syncing them, or
+2. Read them and accept what they contain, or
+3. Rebuild the history in a fresh repository with checkpoint sync off.
+
+The committed working tree itself is clean and stays clean: three tests in
+`internal/report/artifacts_test.go` check the published artifacts directly for
+absolute paths, email addresses and token shapes, so a regenerated report
+cannot quietly reintroduce a leak.
