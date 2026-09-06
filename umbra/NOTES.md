@@ -364,7 +364,7 @@ Two things had to be worked out to get a recording worth committing:
    anyone tries to record from a temporary directory.
 
 **The hand review found a real scrubber gap.** The first recording contained
-`author   Utkarsh Bahuguna <redacted-address>`, from the author line that
+the repository owner's real name and email address, from the author line that
 `checkpoint explain --short` prints and Umbra reads for the session-said
 sentence. The scrubber had no rule for an email address and no way to know a
 display name. Both are fixed: an email pattern is always redacted, and
@@ -376,6 +376,57 @@ Checks that now run as tests: the recording replays every call it holds, it
 contains the calls a real analysis makes, and it carries no absolute home path,
 email address or token shape while still showing the `<repo>` and `<home>`
 placeholders that prove the scrub ran rather than found nothing.
+
+### Phase 12: the pre-public scrub pass
+
+Swept every committed file, re-ran the scrubber over `site/self/` and the
+recordings, read a checkpoint transcript, and confirmed the two earlier
+scrubber fixes.
+
+**Four things were found in committed artifacts and fixed.**
+
+1. **`site/self/umbra.html` and `umbra.json` carried the repository owner's
+   real email address.** They were generated before the email rule existed.
+   Regenerated.
+2. **An email address was being extracted as a file path.** The path character
+   class has to allow `@`, and an address then matches the bare-path shape
+   exactly: dots and a trailing extension. `github.com` got in the same way.
+   Addresses are now rejected at the adapter, and the timeline is filtered
+   against the repository's real file list at the renderer, so nothing that is
+   not a file in this repository can reach a report.
+3. **The session-said line was quoting an arbitrary sentence.** When a session
+   leaves no edit event to bound the search, the code fell back to the last
+   sentence of the whole transcript. For the build session that is a line of
+   narration written hours after the commit, and putting it in a shared report
+   publishes conversation that has nothing to do with the change. The
+   unbounded fallback is gone: the line is omitted and the header says why.
+4. **A test fixture and a note carried a real person's name.** Both anonymised.
+
+**What is left, and why it is left.**
+
+- The scrubber's own test inputs are token-shaped by design:
+  `ghp_0123456789abcdefghijABCDEF`, `sk-0123...`, `xoxb-1234567890-abcdefghij`,
+  `AKIAIOSFODNN7EXAMPLE` (Amazon's published example key),
+  `BEGIN RSA PRIVATE KEY`, `/home/someone`, `someone@example.com`. All are
+  invented and all exist so a test can prove the scrubber removes them.
+- `fixtures/recorded/minimal/recording.json` contains two em dashes, both
+  inside verbatim `entire graph verify` output
+  (`VERDICT: NO EFFECT — the target tests behave...`). Editing recorded tool
+  output would make the fixture a lie about what the tool printed.
+
+**The checkpoint transcripts are the real exposure, and they are not Umbra's to
+scrub.** Every hook-written checkpoint stores the whole session transcript:
+8.9 MB, 1836 records. Sixteen of those refs are already on `origin` under
+`refs/entire/checkpoints/`, and `entire status` reports twenty more waiting for
+the next push. Umbra scrubs its own output; it does not and cannot rewrite
+Entire's storage. A scan of one transcript found roughly 1790 absolute home
+paths, 2196 occurrences of the operating-system user name, the owner's email
+address, paths naming three unrelated projects on the machine, and verbatim
+content from one of them. No real credential: the three token-shaped matches
+are the synthetic values from the scrubber's own tests.
+
+This is written up as a go/no-go item rather than acted on, because publishing
+a repository is the owner's decision, not the build's.
 
 ### Where the build deviates from the letter of the plan
 

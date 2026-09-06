@@ -7,7 +7,7 @@ import "testing"
 const probeShortNoSummary = `● Checkpoint b20f84567474
   session  8017734d-cdf6-4a18-b2f8-f4b5f637ec35
   created  2026-09-04 17:54:32
-  author   Utkarsh Bahuguna <redacted@example.com>
+  author   A Person <someone@example.com>
   tokens   4857.9k
   commits  (none on this branch)
 ────────────────────────────────────────────────────────────
