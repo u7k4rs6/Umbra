@@ -1,6 +1,8 @@
 package report
 
 import (
+	"fmt"
+
 	"github.com/u7k4rs6/Umbra/umbra/internal/graph"
 	"github.com/u7k4rs6/Umbra/umbra/internal/shadow"
 	"github.com/u7k4rs6/Umbra/umbra/internal/transcript"
@@ -84,6 +86,34 @@ type Execution struct {
 	// Degraded is set when verify could not parse per-test ids, which happens
 	// when the runner is not verbose.
 	Degraded bool `json:"degraded,omitempty"`
+	// UnnamedFailures is how many newly failing tests verify counted but did
+	// not name. Its id lists cap at twenty and its whole verdict caps in
+	// bytes, so a large regression arrives as a number with a short list, or
+	// with no list at all. The count is authoritative and the length of the
+	// list is not.
+	UnnamedFailures int `json:"unnamed_failures,omitempty"`
+}
+
+// SweepNamedEverything reports whether the leak list is the whole story.
+//
+// It is false when verify counted failures it did not name, and false when the
+// runner printed no per-test ids at all. Those have different causes and one
+// rule: a sweep whose ids could not be read must never render as a clean
+// audit. Every surface asks this rather than deciding for itself, so the
+// table, the packet and the map cannot drift apart on it.
+func (e Execution) SweepNamedEverything() bool {
+	return e.UnnamedFailures == 0 && !e.Degraded
+}
+
+// UnnamedNote is the one sentence for the tests verify counted and did not
+// name, so the three renderers share its wording as well as its condition.
+func (e Execution) UnnamedNote() string {
+	if e.UnnamedFailures == 0 {
+		return ""
+	}
+	return fmt.Sprintf(
+		"%d further failing test(s) were counted by verify but not named, so this leak list is incomplete",
+		e.UnnamedFailures)
 }
 
 // Leak is a test the full sweep found that the selection missed.

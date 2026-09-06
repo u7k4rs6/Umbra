@@ -62,6 +62,7 @@ func execute(ctx context.Context, o *Options, run runner.Runner, pair *checkpoin
 	a.Execution.PreExisting = v.PreExisting
 	a.Execution.Verdict = v.Line
 	a.Execution.Degraded = v.Degraded
+	noteUnnamed(a, v)
 	if v.TimedOut {
 		a.Notes = append(a.Notes, "the selected tests were cut short by the ten minute timeout")
 	}
@@ -95,6 +96,7 @@ func sweep(ctx context.Context, o *Options, run runner.Runner, pair *checkpoint.
 	a.Commands = append(a.Commands, scrubAll(st, cmds)...)
 	a.Execution.Sweep = true
 	a.Execution.SweepCut = v.TimedOut
+	noteUnnamed(a, v)
 
 	changed := append(append([]string(nil), v.NewlyFailing...), v.NewlyPassing...)
 	leaks := shadow.Forensics(changed, shadow.ForensicsInput{
@@ -123,6 +125,21 @@ func sweep(ctx context.Context, o *Options, run runner.Runner, pair *checkpoint.
 		}
 	}
 	return nil
+}
+
+// noteUnnamed records how many newly failing tests verify counted but could
+// not name.
+//
+// Both runs report it and the larger wins. The sweep runs the whole suite and
+// is a superset of the probes, so its number is normally the one that stands;
+// taking the maximum means neither run can quietly lower a count the other
+// already established. Without this the report takes the length of an id list
+// verify explicitly told it was capped, which is how a change that broke 55
+// tests came back as a clean audit.
+func noteUnnamed(a *report.Analysis, v graph.Verdict) {
+	if n := v.UnnamedFailing(); n > a.Execution.UnnamedFailures {
+		a.Execution.UnnamedFailures = n
+	}
 }
 
 // attachOutcomes marks each test node with what happened, and carries a

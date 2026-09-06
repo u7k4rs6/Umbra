@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +21,20 @@ import (
 //	VERDICT: REGRESSION in 3 tests: ...
 //	VERDICT: NO EFFECT ...
 //
+// The first real repository added two more, and they are why this type carries
+// counts as well as ids. `graph verify --help` says its id lists "cap at 20
+// with a count", and that `--max-bytes` caps the rendered verdict while "the
+// verdict clause always survives". So a large regression arrives either as
+//
+//	NEWLY FAILING (51): <20 ids>, … and 31 more
+//	VERDICT: REGRESSION in 51 tests: <20 ids>, … and 31 more
+//
+// or, once the pair no longer fits the byte budget, as the verdict clause on
+// its own with no NEWLY FAILING line at all. Reading ids from the list alone
+// therefore reports nothing for the largest regressions, which is exactly the
+// case the sweep exists to catch. The recorded shapes are in
+// testdata/verify/ and NOTES.md carries them verbatim.
+//
 // The exit code is 0 even on a regression, so the verdict is read from the
 // text and never from the status.
 type Verdict struct {
@@ -27,6 +42,12 @@ type Verdict struct {
 	NewlyPassing []string
 	PreExisting  []string
 	Line         string
+	// FailingCount is how many tests verify said newly failed. It is
+	// authoritative: the id list is capped and the whole verdict is capped in
+	// bytes, so len(NewlyFailing) is a lower bound and this is not.
+	FailingCount int
+	// PassingCount is the same number for newly passing tests.
+	PassingCount int
 	// Degraded is set when verify could not parse per-test ids, which happens
 	// when the runner is not verbose.
 	Degraded bool
@@ -34,37 +55,87 @@ type Verdict struct {
 	TimedOut bool
 }
 
+// UnnamedFailing is how many newly failing tests verify counted but did not
+// name. Zero means the id list is the whole story.
+func (v Verdict) UnnamedFailing() int {
+	if v.FailingCount <= len(v.NewlyFailing) {
+		return 0
+	}
+	return v.FailingCount - len(v.NewlyFailing)
+}
+
 var (
-	newlyFailingRE = regexp.MustCompile(`(?m)^NEWLY FAILING\s*\(\d+\):\s*(.+)$`)
-	newlyPassingRE = regexp.MustCompile(`(?m)^NEWLY PASSING\s*\(\d+\):\s*(.+)$`)
+	newlyFailingRE = regexp.MustCompile(`(?m)^NEWLY FAILING\s*\((\d+)\):\s*(.+)$`)
+	newlyPassingRE = regexp.MustCompile(`(?m)^NEWLY PASSING\s*\((\d+)\):\s*(.+)$`)
 	preExistingRE  = regexp.MustCompile(`(?m)^PRE-EXISTING[^:]*:\s*(.+)$`)
 	verdictRE      = regexp.MustCompile(`(?m)^VERDICT:\s*(.+)$`)
+	regressionRE   = regexp.MustCompile(`(?m)^VERDICT:\s*REGRESSION in (\d+) tests?(?::\s*(.*))?$`)
 	degradedRE     = regexp.MustCompile(`(?i)output format not recognised|exit-code only`)
+	// truncationRE matches the marker verify appends when it capped the list.
+	// It appears as "… and 31 more" after a comma, and at a small byte budget
+	// as a bare "…" separated from the last id by a space rather than a comma.
+	truncationRE = regexp.MustCompile(`^(?:…|\.\.\.)?\s*(?:and\s+\d+\s+more)?$`)
+	tailEllipsis = regexp.MustCompile(`\s+(?:…|\.\.\.)$`)
 )
 
 // ParseVerdict reads the verify output.
 func ParseVerdict(text string) Verdict {
 	var v Verdict
-	v.NewlyFailing = splitIDs(newlyFailingRE, text)
-	v.NewlyPassing = splitIDs(newlyPassingRE, text)
-	v.PreExisting = splitIDs(preExistingRE, text)
+	v.FailingCount, v.NewlyFailing = countedIDs(newlyFailingRE, text)
+	v.PassingCount, v.NewlyPassing = countedIDs(newlyPassingRE, text)
+	if m := preExistingRE.FindStringSubmatch(text); m != nil {
+		v.PreExisting = splitIDs(m[1])
+	}
 	if m := verdictRE.FindStringSubmatch(text); m != nil {
 		v.Line = strings.TrimSpace(m[1])
 	}
+
+	// The verdict clause is the one verify guarantees to print, so it is the
+	// only place a count can always be found. Above the rendering budget it is
+	// also the only place any id survives.
+	if m := regressionRE.FindStringSubmatch(text); m != nil {
+		n, err := strconv.Atoi(m[1])
+		if err == nil && n > v.FailingCount {
+			v.FailingCount = n
+		}
+		if len(v.NewlyFailing) == 0 {
+			v.NewlyFailing = splitIDs(m[2])
+		}
+	}
+
 	v.Degraded = degradedRE.MatchString(text)
 	return v
 }
 
-func splitIDs(re *regexp.Regexp, text string) []string {
+// countedIDs returns the count in the line's header and the ids it listed,
+// which are not the same number once verify has capped the list.
+func countedIDs(re *regexp.Regexp, text string) (int, []string) {
 	m := re.FindStringSubmatch(text)
 	if m == nil {
+		return 0, nil
+	}
+	n, err := strconv.Atoi(m[1])
+	if err != nil {
+		n = 0
+	}
+	return n, splitIDs(m[2])
+}
+
+func splitIDs(list string) []string {
+	if strings.TrimSpace(list) == "" {
 		return nil
 	}
 	var out []string
-	for _, part := range strings.Split(m[1], ",") {
+	for _, part := range strings.Split(list, ",") {
 		part = strings.TrimSpace(part)
-		// verify caps its lists at twenty and appends a count.
-		if part == "" || strings.HasPrefix(part, "and ") {
+		// verify caps its lists at twenty and appends a count. The marker is
+		// its own comma-separated part when there was room for one, and is
+		// otherwise glued to the last id by a space.
+		if truncationRE.MatchString(part) {
+			continue
+		}
+		part = strings.TrimSpace(tailEllipsis.ReplaceAllString(part, ""))
+		if part == "" {
 			continue
 		}
 		out = append(out, part)

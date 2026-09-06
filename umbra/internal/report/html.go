@@ -152,5 +152,8 @@ func sweepText(a *Analysis) string {
 	if len(a.Execution.Leaks) == 1 {
 		word = "leak"
 	}
+	if !a.Execution.SweepNamedEverything() {
+		return fmt.Sprintf("full sweep, %d %s named, list incomplete", len(a.Execution.Leaks), word)
+	}
 	return fmt.Sprintf("full sweep, %d %s", len(a.Execution.Leaks), word)
 }

@@ -154,12 +154,20 @@ func Packet(w io.Writer, sd Sealed) error {
 		if len(a.Execution.Leaks) == 1 {
 			word = "leak"
 		}
-		fmt.Fprintf(b, "The full suite was swept after the selected tests: **%d %s**.\n\n", len(a.Execution.Leaks), word)
+		if a.Execution.SweepNamedEverything() {
+			fmt.Fprintf(b, "The full suite was swept after the selected tests: **%d %s**.\n\n", len(a.Execution.Leaks), word)
+		} else {
+			fmt.Fprintf(b, "The full suite was swept after the selected tests: **%d %s named, and the list is incomplete**.\n\n",
+				len(a.Execution.Leaks), word)
+		}
 		for _, l := range a.Execution.Leaks {
 			fmt.Fprintf(b, "- `%s`: %s\n", l.Test, l.Reason)
 		}
 		if len(a.Execution.Leaks) > 0 {
 			b.WriteString("\n")
+		}
+		if note := a.Execution.UnnamedNote(); note != "" {
+			fmt.Fprintf(b, "%s.\n\n", note)
 		}
 	} else if a.Run != "none" {
 		fmt.Fprintf(b, "The sweep was skipped, so the selection is unaudited.\n\n")

@@ -305,3 +305,75 @@ func firstLines(s string, n int) string {
 	}
 	return strings.Join(lines, "\n")
 }
+
+// The sweep on pallets/click reported "sweep full suite 0 leaks" on a change
+// that broke 55 tests, because verify had counted 51 and named none of them in
+// a line the parser read. A count it could not turn into names must never
+// render as a clean audit, on any surface.
+func TestSweepNeverReportsACleanAuditItCouldNotRead(t *testing.T) {
+	a := mkAnalysis()
+	a.Run = "shadow"
+	a.Audit = true
+	a.Execution.Selected = []string{"tests/test_service.py::test_rounding"}
+	a.Execution.Sweep = true
+	a.Execution.UnnamedFailures = 31
+
+	out := render(t, a, TableOptions{UTF8: true})
+	if strings.Contains(out, "sweep   full suite  0 leaks\n") {
+		t.Fatalf("a sweep that could not name 31 failures reported a clean audit:\n%s", out)
+	}
+	if !strings.Contains(out, "incomplete") {
+		t.Fatalf("the sweep line must say the list is incomplete:\n%s", out)
+	}
+	if !strings.Contains(out, "31 further failing test(s)") {
+		t.Fatalf("the count verify reported must be printed:\n%s", out)
+	}
+}
+
+// The 15-failure case is the negative half: it still names every leak with its
+// forensics and says nothing about being incomplete.
+func TestSweepStillNamesEveryLeakWhenNothingWasTruncated(t *testing.T) {
+	a := mkAnalysis()
+	a.Run = "shadow"
+	a.Audit = true
+	a.Execution.Selected = []string{"a"}
+	a.Execution.Leaks = []Leak{
+		{Test: "tests/test_formatting.py::test_basic_functionality", Reason: "test file not in the co-change set"},
+		{Test: "tests/test_custom_classes.py::test_context_formatter_class", Reason: "reaches only through structure"},
+	}
+	out := render(t, a, TableOptions{UTF8: true})
+	if !strings.Contains(out, "sweep   full suite  2 leaks\n") {
+		t.Fatalf("an untruncated sweep prints a plain count:\n%s", out)
+	}
+	if strings.Contains(out, "incomplete") {
+		t.Fatalf("nothing was truncated, so nothing should say incomplete:\n%s", out)
+	}
+	if !strings.Contains(out, "test file not in the co-change set") {
+		t.Fatalf("forensics must still be printed:\n%s", out)
+	}
+}
+
+// The same rule on the packet and on the map header, so the three surfaces
+// cannot drift apart on it.
+func TestPacketAndMapHeaderAlsoRefuseACleanAudit(t *testing.T) {
+	a := mkAnalysis()
+	a.Run = "shadow"
+	a.Audit = true
+	a.Execution.Selected = []string{"a"}
+	a.Execution.Sweep = true
+	a.Execution.UnnamedFailures = 31
+
+	var b strings.Builder
+	if err := Packet(&b, Seal(a, nil)); err != nil {
+		t.Fatalf("Packet: %v", err)
+	}
+	if !strings.Contains(b.String(), "31 further failing test(s)") {
+		t.Fatalf("the packet must carry the count:\n%s", b.String())
+	}
+	if !strings.Contains(b.String(), "incomplete") {
+		t.Fatalf("the packet must say the list is incomplete:\n%s", b.String())
+	}
+	if got := sweepText(a); !strings.Contains(got, "incomplete") {
+		t.Fatalf("map header = %q, want it to say the list is incomplete", got)
+	}
+}

@@ -1164,3 +1164,175 @@ The committed working tree itself is clean and stays clean: three tests in
 `internal/report/artifacts_test.go` check the published artifacts directly for
 absolute paths, email addresses and token shapes, so a regenerated report
 cannot quietly reintroduce a leak.
+
+## Phase 22: the sweep that could not read its own verdict
+
+`umbra/experiments/first-real-repo.md` defect 2. On `pallets/click`, a change
+that broke 55 tests produced `sweep full suite 0 leaks`. The audit that exists
+to cover a thin selection returned a clean answer, and the report said nothing
+about being unable to read anything.
+
+### What `graph verify` actually prints, recorded rather than guessed
+
+There is **no machine-readable form of `graph verify`**. Checked before
+parsing anything: `entire graph verify --help` lists `--test`, `--repo`,
+`--setup`, `--record-baseline`, `--pre-edit-baseline` and `--max-bytes`, and
+no `--format`. `entire graph capabilities --json` describes languages and
+extensions and says nothing about verify's output. Human text is the only
+surface there is.
+
+Two sentences from that help text explain everything below:
+
+> ids are, text is not, and id lists cap at 20 with a count
+>
+> `--max-bytes <n>` Cap the rendered verdict; the verdict clause always
+> survives (default: 2048)
+
+Five shapes were captured from real runs against a clone of `pallets/click`,
+base `562e458`, and are committed verbatim under
+`internal/graph/testdata/verify/`. Every one is the unedited stdout of a real
+`entire graph verify` invocation.
+
+**15 newly failing, 1865 bytes, two lines** (`15-both-lines.txt`):
+
+```
+NEWLY FAILING (15): tests/test_arguments.py::test_argument_help, ... , tests/test_formatting.py::test_wrapping_long_options_strings
+VERDICT: REGRESSION in 15 tests: tests/test_arguments.py::test_argument_help, ... , tests/test_formatting.py::test_wrapping_long_options_strings
+```
+
+**17 newly failing, 1040 bytes, one line** (`17-verdict-only.txt`):
+
+```
+VERDICT: REGRESSION in 17 tests: tests/test_arguments.py::test_nested_subcommand_help, ...
+```
+
+**51 newly failing, default budget, 1443 bytes, one line**
+(`51-verdict-only-truncated.txt`):
+
+```
+VERDICT: REGRESSION in 51 tests: tests/test_arguments.py::test_argument_metavar_marks_optional[kwargs0-FOO], ... , tests/test_formatting.py::test_basic_functionality, … and 31 more
+```
+
+**51 newly failing, `--max-bytes 65536`, 2873 bytes, two lines**
+(`51-both-lines-truncated.txt`):
+
+```
+NEWLY FAILING (51): ... , … and 31 more
+VERDICT: REGRESSION in 51 tests: ... , … and 31 more
+```
+
+**51 newly failing, `--max-bytes 200`, 188 bytes, one line**
+(`51-verdict-only-bare-ellipsis.txt`):
+
+```
+VERDICT: REGRESSION in 51 tests: tests/test_arguments.py::test_argument_metavar_marks_optional[kwargs0-FOO], tests/test_arguments.py::test_argument_metavar_marks_optional[kwargs1-FOO] …
+```
+
+**38 newly passing, 1541 bytes, two lines**
+(`38-newly-passing-no-count-in-verdict.txt`), which is the same pair of
+worktrees adjudicated the other way round:
+
+```
+NEWLY PASSING (38): tests/test_arguments.py::test_argument_metavar_marks_optional[kwargs0-FOO], ... , … and 18 more
+VERDICT: PASS ... the change fixes the target behavior and introduces no regressions.
+```
+
+That last one is why the `(n)` header has to be read as well as the verdict
+clause. **A passing verdict carries no number at all**, so `NEWLY PASSING (38)`
+is the only place the count exists, and its list is capped at twenty like every
+other. It is also the shape that proves the verdict clause must not be parsed
+as though every verdict were a regression. The recorded file carries an em dash
+in Graph's own verdict wording; it is unedited tool output, for the same reason
+`fixtures/recorded/minimal/recording.json` keeps the two it holds.
+
+### The rule is bytes, not a count
+
+The experiment writeup describes the threshold as "present at 16 or fewer,
+absent at 17 or more". That is what was measured, and it is the wrong shape of
+explanation. **`--max-bytes` caps the whole rendered verdict, the `VERDICT:`
+clause is the one guaranteed to survive, and `NEWLY FAILING` is dropped to fit
+the budget.** At 15 click ids both lines total 1865 bytes and both survive. At
+17 they would total roughly 2080, over the 2048 default, so the output is the
+1040 byte verdict alone. At 51, raising the budget to 65536 brings the line
+back. The count where it happens therefore depends on how long the test ids
+are, and there is no number to hard-code. `first-real-repo.md` still carries
+the count-shaped description and should be read with this correction.
+
+### Three things the old parser got wrong
+
+1. **The count was never read.** `NEWLY FAILING (15):` carries an authoritative
+   count in its header and `ParseVerdict` discarded it, taking the length of
+   the id list as the truth. Above the cap of twenty those two numbers are
+   different even when the line is present.
+2. **The guaranteed line was never parsed.** `VERDICT: REGRESSION in 51 tests:`
+   carries the same count and up to twenty of the same ids, and it is the one
+   clause verify promises to print. It was captured as a display string and
+   read for nothing.
+3. **The truncation marker was not recognised.** `splitIDs` skipped a part
+   beginning `and `. The real marker is `… and 31 more`, beginning with a
+   Unicode ellipsis, and at a small budget it is a bare ` …` glued to the last
+   id with a space rather than a comma. Both would have been taken for test
+   ids.
+
+### What changed
+
+`Verdict` gains `FailingCount` and `PassingCount`, read from the `(n)` header
+and from `REGRESSION in n tests`, whichever is larger, and
+`Verdict.UnnamedFailing()` returns the difference between the count and the
+ids actually recovered. When the `NEWLY FAILING` line is absent, ids and count
+both come from the verdict clause.
+
+`Execution.UnnamedFailures` carries that number into the report, and
+`Execution.SweepNamedEverything()` is the single predicate the table, the
+packet and the HTML header all ask. It is false when verify counted failures
+it did not name and false when the runner printed no per-test ids at all,
+because those are the same rule: **a sweep whose ids could not be read must
+never render as a clean audit.** That is why this reuses `Degraded` rather
+than standing beside it.
+
+`--max-bytes` was deliberately **not** passed. Raising it restores the
+`NEWLY FAILING` line but the id list still caps at twenty, so it yields
+exactly the same count and the same twenty ids the verdict clause already
+carries. It would buy nothing and would make Umbra depend on a flag an older
+Graph may not accept.
+
+### Known-positives
+
+`internal/graph/verify_test.go` drives the five recorded files. Each was proved
+to fail before the fix:
+
+| Test | Recorded input | Mutation that proved it fires | What it caught |
+|---|---|---|---|
+| `TestParseVerdictReadsTheCountAtFifteen` | 15, both lines | none needed; it is the negative half | 15 ids still named, count 15, nothing unnamed |
+| `TestParseVerdictReadsTheCountAtSeventeen` | 17, verdict only | removed the verdict-clause fallback | count 0, no ids at all |
+| `TestParseVerdictReadsTheCountAtFiftyOne` | 51, verdict only | the same, and separately the old marker handling | count 0, no ids at all |
+| `TestParseVerdictDropsTheTruncationMarker` | 51, three recordings | restored the old `and ` prefix skip | `… and 31 more` parsed as a test id |
+| `TestParseVerdictReadsACountWithNoUsableIDs` | 51, `--max-bytes 200` | removed the verdict-clause fallback | count 0 on a run with 51 regressions |
+| `TestParseVerdictReadsTheHeaderCountWhenTheVerdictCarriesNone` | 38 newly passing | discarded the `(n)` header count | passing count 0, because a PASS verdict has no number |
+| `TestParseVerdictNoEffectCountsNothing` | synthetic NO EFFECT | none needed | the fix must not invent failures on a clean run |
+| `TestSweepNeverReportsACleanAuditItCouldNotRead` | 31 unnamed | reverted the table sweep line | `sweep full suite 0 leaks` |
+| `TestSweepStillNamesEveryLeakWhenNothingWasTruncated` | 2 named leaks | none needed; it is the negative half | plain count and full forensics preserved |
+| `TestPacketAndMapHeaderAlsoRefuseACleanAudit` | 31 unnamed | reverted packet.go and html.go | packet and map header still claimed a clean sweep |
+| `TestNoteUnnamedCarriesTheCountOntoTheReport` | 51 counted, 20 named | made `noteUnnamed` a no-op | the count never reached the report |
+| `TestNoteUnnamedKeepsTheLargerCount` | probe then sweep | the same | a small probe verdict erased what the sweep found |
+| `TestFailOnFiresOnFailuresVerifyCouldNotName` | 31 unnamed | gated on list lengths again | `--fail-on failure` and `--fail-on leak` exited 0 |
+| `TestFailOnDoesNotFireOnADegradedRunWithNoFailures` | degraded, no failures | none needed; it is the negative half | a suite-level pass must not exit 2 |
+
+Seven mutations in all, each applied on its own and reverted. Every one of them
+made at least one test fail, and the three marked "negative half" are the ones
+that must keep passing under all of them.
+
+The 51 case is the same commit `first-real-repo.md` describes as breaking 55
+tests. Fifty-five is pytest's count and fifty-one is verify's; the recorded
+file is verify's own output, so the tests use its number.
+
+### What is still wrong here and was left alone
+
+`splitIDs` splits on commas, and a pytest id can contain one:
+`tests/test_arguments.py::test_deprecated_usage_help_record[use, deprecated]`
+arrives in the recorded 15-failure output as two parts, `...[use` and
+`deprecated]`. That has always been true, it inflates the id list, and it is a
+separate defect. It is not fixed in this pass because the count is now read
+from the header rather than from the length of the list, so it no longer
+affects whether the sweep reports a clean audit. Recorded so it is not
+rediscovered as new.

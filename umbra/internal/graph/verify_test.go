@@ -2,6 +2,8 @@ package graph
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -201,5 +203,164 @@ VERDICT: NO EFFECT the target tests behave exactly as before your edit.`
 	}
 	if !strings.HasPrefix(v.Line, "NO EFFECT") {
 		t.Fatalf("verdict line = %q", v.Line)
+	}
+}
+
+// The five files under testdata/verify are unedited stdout from real
+// `entire graph verify` runs against a clone of pallets/click at 562e458.
+// They exist because the first run on a repository that is not the fixture
+// found the sweep reporting a clean audit on a change that broke 55 tests:
+// verify's id list caps at twenty and its whole verdict caps in bytes, so the
+// NEWLY FAILING line disappears entirely once the pair no longer fits. NOTES
+// carries the shapes verbatim.
+
+func recordedVerdict(t *testing.T, name string) Verdict {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join("testdata", "verify", name))
+	if err != nil {
+		t.Fatalf("reading recorded verify output: %v", err)
+	}
+	return ParseVerdict(string(b))
+}
+
+// The small case has to keep working exactly as it did, ids and all. It is the
+// negative half of the pair: if this ever starts reporting a count without
+// names, the fix has broken the case that was never broken.
+func TestParseVerdictReadsTheCountAtFifteen(t *testing.T) {
+	v := recordedVerdict(t, "15-both-lines.txt")
+	if v.FailingCount != 15 {
+		t.Fatalf("failing count = %d, want 15", v.FailingCount)
+	}
+	if len(v.NewlyFailing) == 0 {
+		t.Fatal("the fifteen ids must still be named")
+	}
+	for _, want := range []string{
+		"tests/test_arguments.py::test_argument_help",
+		"tests/test_formatting.py::test_wrapping_long_options_strings",
+	} {
+		if !contains(v.NewlyFailing, want) {
+			t.Fatalf("id %q missing from %v", want, v.NewlyFailing)
+		}
+	}
+}
+
+// Before the fix this returned no ids and no count, so the sweep reported zero
+// leaks on seventeen newly failing tests.
+func TestParseVerdictReadsTheCountAtSeventeen(t *testing.T) {
+	v := recordedVerdict(t, "17-verdict-only.txt")
+	if strings.Contains(readRecorded(t, "17-verdict-only.txt"), "NEWLY FAILING") {
+		t.Fatal("this recording is meant to have no NEWLY FAILING line")
+	}
+	if v.FailingCount != 17 {
+		t.Fatalf("failing count = %d, want 17", v.FailingCount)
+	}
+	if len(v.NewlyFailing) == 0 {
+		t.Fatal("the verdict clause carries ids and none were read")
+	}
+	if v.UnnamedFailing() != 17-len(v.NewlyFailing) {
+		t.Fatalf("unnamed = %d with %d named", v.UnnamedFailing(), len(v.NewlyFailing))
+	}
+}
+
+// The commit this was captured from is the one the first-real-repo experiment
+// describes as breaking 55 tests. Fifty-five is pytest's count; fifty-one is
+// verify's, and this is verify's own output.
+func TestParseVerdictReadsTheCountAtFiftyOne(t *testing.T) {
+	v := recordedVerdict(t, "51-verdict-only-truncated.txt")
+	if v.FailingCount != 51 {
+		t.Fatalf("failing count = %d, want 51", v.FailingCount)
+	}
+	if len(v.NewlyFailing) != 20 {
+		t.Fatalf("verify caps its list at twenty, got %d: %v", len(v.NewlyFailing), v.NewlyFailing)
+	}
+	if v.UnnamedFailing() != 31 {
+		t.Fatalf("unnamed = %d, want 31", v.UnnamedFailing())
+	}
+}
+
+// "… and 31 more" is not a test id. Before the fix splitIDs only skipped a
+// part beginning "and ", and the real marker begins with a Unicode ellipsis.
+func TestParseVerdictDropsTheTruncationMarker(t *testing.T) {
+	for _, name := range []string{
+		"51-both-lines-truncated.txt",
+		"51-verdict-only-truncated.txt",
+		"51-verdict-only-bare-ellipsis.txt",
+	} {
+		v := recordedVerdict(t, name)
+		for _, id := range v.NewlyFailing {
+			if strings.Contains(id, "…") || strings.Contains(id, "more") || strings.HasPrefix(id, "and ") {
+				t.Fatalf("%s: %q was parsed as a test id", name, id)
+			}
+			if !strings.Contains(id, "::") {
+				t.Fatalf("%s: %q does not look like a test id", name, id)
+			}
+		}
+	}
+}
+
+// The smallest budget verify will render: a count and almost no ids. This is
+// the case the rule is written for, that a count with no usable list must
+// still never read as a clean run.
+func TestParseVerdictReadsACountWithNoUsableIDs(t *testing.T) {
+	v := recordedVerdict(t, "51-verdict-only-bare-ellipsis.txt")
+	if v.FailingCount != 51 {
+		t.Fatalf("failing count = %d, want 51", v.FailingCount)
+	}
+	if v.UnnamedFailing() != 51-len(v.NewlyFailing) {
+		t.Fatalf("unnamed = %d with %d named", v.UnnamedFailing(), len(v.NewlyFailing))
+	}
+	if v.UnnamedFailing() == 0 {
+		t.Fatal("a truncated list must report the tests it could not name")
+	}
+}
+
+// A run that really did break nothing must still report nothing, or the fix
+// has traded a false clean for a false alarm.
+func TestParseVerdictNoEffectCountsNothing(t *testing.T) {
+	v := ParseVerdict("VERDICT: NO EFFECT the target tests behave exactly as before your edit.")
+	if v.FailingCount != 0 || v.UnnamedFailing() != 0 {
+		t.Fatalf("count = %d, unnamed = %d, want 0 and 0", v.FailingCount, v.UnnamedFailing())
+	}
+}
+
+func readRecorded(t *testing.T, name string) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join("testdata", "verify", name))
+	if err != nil {
+		t.Fatalf("reading recorded verify output: %v", err)
+	}
+	return string(b)
+}
+
+func contains(ids []string, want string) bool {
+	for _, id := range ids {
+		if id == want {
+			return true
+		}
+	}
+	return false
+}
+
+// The header count is the only count there is when tests newly pass: the
+// verdict clause for a fix reads "VERDICT: PASS ..." and carries no number, so
+// nothing but "NEWLY PASSING (38)" says how many there were. Its list is
+// capped at twenty like every other. This recording also fixes the wording of
+// a passing verdict, which is not "REGRESSION in n tests" and must not be
+// parsed as one.
+func TestParseVerdictReadsTheHeaderCountWhenTheVerdictCarriesNone(t *testing.T) {
+	name := "38-newly-passing-no-count-in-verdict.txt"
+	raw := readRecorded(t, name)
+	if strings.Contains(raw, "REGRESSION in") {
+		t.Fatal("this recording is meant to be a passing verdict")
+	}
+	v := recordedVerdict(t, name)
+	if v.PassingCount != 38 {
+		t.Fatalf("passing count = %d, want 38", v.PassingCount)
+	}
+	if len(v.NewlyPassing) != 20 {
+		t.Fatalf("verify caps its list at twenty, got %d", len(v.NewlyPassing))
+	}
+	if v.FailingCount != 0 || v.UnnamedFailing() != 0 {
+		t.Fatalf("a passing verdict reports no failures, got count %d", v.FailingCount)
 	}
 }

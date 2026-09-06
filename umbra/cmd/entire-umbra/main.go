@@ -182,12 +182,18 @@ func failOn(o *Options, a *report.Analysis) int {
 		if a.Summary.Umbra > 0 || a.Summary.Penumbra > 0 {
 			return ExitFailOn
 		}
+	// A failure verify counted but could not name is still a failure, and a
+	// leak list verify told us was capped is still a leak. Gating on the
+	// length of a truncated list is the same mistake the sweep itself made.
+	// Degraded is deliberately not consulted here: a suite-level pass with no
+	// per-test ids reports no failures, and that is not a condition to exit 2
+	// on.
 	case "failure":
-		if len(a.Execution.NewFailures) > 0 {
+		if len(a.Execution.NewFailures) > 0 || a.Execution.UnnamedFailures > 0 {
 			return ExitFailOn
 		}
 	case "leak":
-		if len(a.Execution.Leaks) > 0 {
+		if len(a.Execution.Leaks) > 0 || a.Execution.UnnamedFailures > 0 {
 			return ExitFailOn
 		}
 	}

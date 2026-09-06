@@ -232,9 +232,16 @@ func writeExecution(b *strings.Builder, a *Analysis, o TableOptions) {
 	if len(e.Leaks) == 1 {
 		word = "leak"
 	}
-	fmt.Fprintf(b, "sweep   full suite  %d %s\n", len(e.Leaks), word)
+	if e.SweepNamedEverything() {
+		fmt.Fprintf(b, "sweep   full suite  %d %s\n", len(e.Leaks), word)
+	} else {
+		fmt.Fprintf(b, "sweep   full suite  %d %s named, and the list is incomplete\n", len(e.Leaks), word)
+	}
 	for _, l := range e.Leaks {
 		fmt.Fprintf(b, "        %s  %s\n", l.Test, dim(o, l.Reason))
+	}
+	if note := e.UnnamedNote(); note != "" {
+		fmt.Fprintf(b, "        %s\n", dim(o, note))
 	}
 	if e.SweepCut {
 		fmt.Fprintf(b, "        %s\n", dim(o, "the sweep was cut short by its timeout"))
