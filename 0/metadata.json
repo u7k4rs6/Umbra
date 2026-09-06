@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1T2WDGG1B92FV2S7K2JDE1D",
+  "session_id": "8017734d-cdf6-4a18-b2f8-f4b5f637ec35",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T00:46:26.351177593Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "umbra/docs/renders/paper-build.png",
+    "umbra/docs/renders/paper-how.png",
+    "umbra/docs/renders/paper-index.png",
+    "umbra/docs/renders/paper-install.png",
+    "umbra/docs/renders/paper-limits.png",
+    "umbra/docs/renders/paper-map.png",
+    "umbra/site/build.html",
+    "umbra/site/how.html",
+    "umbra/site/index.html",
+    "umbra/site/install.html",
+    "umbra/site/landing.css",
+    "umbra/site/limits.html",
+    "umbra/site/map.html"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "50f0f3cef3d3",
+  "checkpoint_transcript_start": 5218,
+  "transcript_lines_at_start": 5218,
+  "compact_transcript_start": 900,
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 685620,
+    "cache_read_tokens": 11141196,
+    "output_tokens": 24923,
+    "api_call_count": 17
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T00:46:24.097572045Z",
+    "agent_lines": 426,
+    "agent_removed": 1248,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 426,
+    "total_lines_changed": 1674,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
