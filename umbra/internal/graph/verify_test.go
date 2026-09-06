@@ -158,3 +158,48 @@ func TestVerifyWithoutABaseline(t *testing.T) {
 		t.Fatalf("expected one call, got %d", len(f.Calls))
 	}
 }
+
+// Known-positive for the test-status parser.
+//
+// The failure this guards against is a check that looks for the wrong token:
+// counting the lines that say ok rather than looking for the ones that say
+// something failed. A green count and a red run are not the same question, and
+// a checker that answers the first while claiming to answer the second reports
+// a confident pass over a failing run.
+func TestParseVerdictCatchesAPlantedFailure(t *testing.T) {
+	out := `BASELINE RECORDED: /tmp/base.json (pytest; 14 passing, 0 failing, exit 0)
+tests/test_service.py::test_rounding FAILED
+NEWLY FAILING (1): tests/test_service.py::test_rounding
+VERDICT: REGRESSION in 1 test: tests/test_service.py::test_rounding`
+
+	v := ParseVerdict(out)
+	if len(v.NewlyFailing) != 1 || v.NewlyFailing[0] != "tests/test_service.py::test_rounding" {
+		t.Fatalf("newly failing = %v, want the one that failed", v.NewlyFailing)
+	}
+	if !strings.Contains(v.Line, "REGRESSION") {
+		t.Fatalf("verdict line = %q, want the regression the run reported", v.Line)
+	}
+}
+
+// And the other direction: output whose passing lines contain the word ok must
+// not be miscounted. Every line here says ok somewhere and nothing failed.
+func TestParseVerdictDoesNotMiscountTheWordOk(t *testing.T) {
+	out := `BASELINE RECORDED: /tmp/base.json (pytest; 14 passing, 0 failing, exit 0)
+tests/test_tokens.py::test_ok_response ok
+tests/test_bookkeeping.py::test_ok ok
+VERDICT: NO EFFECT the target tests behave exactly as before your edit.`
+
+	v := ParseVerdict(out)
+	if len(v.NewlyFailing) != 0 {
+		t.Fatalf("newly failing = %v, want none", v.NewlyFailing)
+	}
+	if len(v.NewlyPassing) != 0 {
+		t.Fatalf("newly passing = %v, want none; ok in a test name is not a status line", v.NewlyPassing)
+	}
+	if v.Degraded {
+		t.Fatal("a parsed run is not degraded")
+	}
+	if !strings.HasPrefix(v.Line, "NO EFFECT") {
+		t.Fatalf("verdict line = %q", v.Line)
+	}
+}

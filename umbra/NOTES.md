@@ -703,6 +703,65 @@ the sealed pipeline is byte-identical to the committed one.
 `gen-site` now runs the same scan before embedding either sample, so a report
 produced by an older build or edited by hand cannot reach the landing page.
 
+## Phase 15: a known-positive for every check
+
+Four verifications in this project have returned a confident pass that was
+wrong: the `.gitignore` case where the local tests were green but a clone would
+not build, the cracked-probe count that named a test outside the selection, the
+commit check that counted `ok` lines instead of looking for `FAIL`, and the
+refs audit that reported thirty refs of zero bytes because `git ls-tree` is
+scoped to the working directory. Every one of them had only ever passed. A
+check that has never been observed to fail is not a check yet.
+
+Each of these plants what the check is for and asserts it says so. All the
+planted values are invented: `plantedperson` is not a user on any machine and
+`example.invalid` is reserved by RFC 2606, so the address can never be real.
+
+| Test | Planted | Mutation that proved it fires |
+|---|---|---|
+| `TestScannerCatchesPlantedHomePathEmailAndAuthorName` | a home path, an address, an author name | removed the address pattern; the scanner missed the address |
+| `TestSealRemovesWhatTheScannerFinds` | the same three, into the analysis | stopped sealing `a.Commands`; the home path reached line 262 of the JSON |
+| `TestRenderersRefuseAnUnsealedAnalysis` | a zero `Sealed` | none needed; it asserts an error each renderer only returns for the unsealed case |
+| `TestCrackedProbesNeverCountsAFailureOutsideTheSelection` | a failure the selection never ran | made `CrackedProbes` return `NewFailures`; the leak was counted as a crack |
+| `TestParseVerdictCatchesAPlantedFailure` | a run reporting `NEWLY FAILING` | broke the pattern; newly failing came back empty |
+| `TestParseVerdictDoesNotMiscountTheWordOk` | passing lines with `ok` in the test names | the negative half of the same pair |
+| `TestCheckSampleIsRealCatchesAPlantedFabrication` | `sample000class`, an all-zero commit, no commit | disabled the prefix check; the invented id was accepted |
+| `TestCheckSampleIsCleanCatchesAPlantedAddress` | an address in a report about to be published | shares the scanner's mutation above |
+| `TestAuditCatchesPlantedEmail` | a checkpoint ref whose transcript carries both | see below |
+| `TestAuditReportsTheSameNumbersFromASubdirectory` | the same ref, read from two directories | removed `--full-tree`; 178 bytes from the root, 0 from a subdirectory |
+| `TestNoGeneratedArtifactCarriesAnythingPrivate` | a home path added to `site/sample/umbra.json` | caught it on line 1254 |
+
+### The check that had no known-positive and was not on the list
+
+`Box.Overlaps`. All four label-placement tests are built on it, across all
+eight scenarios. Making it return false for every pair was tried, and **every
+one of those tests still passed.** They had been proving nothing about
+collision the whole time; what they proved was that the layout is deterministic
+and that some labels are visible. `TestBoxOverlapsCatchesAPlantedOverlap` is
+the case that has to fail for the rest to mean anything, including the two-unit
+gap that separates a label which merely touches another from one that hides it.
+
+### A cache that reports a pass for a version that never ran
+
+The audit tests run a shell script through `bash`. Go's test cache keys on the
+files the **test binary** opens, and bash opening the script does not count. So
+the script could be edited, `go test ./scripts/` would print `ok` from cache,
+and nothing would have been run. That is the same shape as the four failures
+above, arriving through the tooling rather than the code. The test now reads
+the script itself before running it, which puts it in the cache key. Verified:
+with `--full-tree` removed and no `-count=1`, the test fails.
+
+### The audit script
+
+The three bugs named in the phase 14 record were fixed when they were found, in
+the commit that added the script: `--full-tree`, `grep` guarded with `|| true`
+so a clean transcript does not end the run under `pipefail`, and a tree walk
+with awk instead of a multi-megabyte archive in a shell variable. What phase 15
+adds is the proof that each fix matters. Re-run today, from the repository
+root: **40 refs, 432,226,689 bytes, 74,551 lines carrying a home path, 740
+carrying an address.** The numbers keep climbing because every push writes
+another checkpoint; that is the finding, not a defect in the script.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that

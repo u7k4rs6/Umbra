@@ -199,3 +199,33 @@ func TestLabelPlacementIsDeterministic(t *testing.T) {
 		}
 	}
 }
+
+// Known-positive for the collision tests above.
+//
+// All four of them are built on Box.Overlaps. If it answered false for every
+// pair, every one of them would pass on all eight scenarios and prove nothing.
+// This is the case that has to fail for the rest to mean anything.
+func TestBoxOverlapsCatchesAPlantedOverlap(t *testing.T) {
+	a := Box{X: 100, Y: 100, W: 80, H: 20}
+	for _, tc := range []struct {
+		name string
+		b    Box
+		want bool
+	}{
+		{"the same box", a, true},
+		{"a box inside it", Box{X: 110, Y: 105, W: 10, H: 5}, true},
+		{"a box straddling its left edge", Box{X: 60, Y: 100, W: 60, H: 20}, true},
+		{"a box straddling its top edge", Box{X: 100, Y: 90, W: 80, H: 20}, true},
+		{"a box inside the two unit gap", Box{X: 181, Y: 100, W: 80, H: 20}, true},
+		{"a box just clear of the gap", Box{X: 183, Y: 100, W: 80, H: 20}, false},
+		{"a box just clear below", Box{X: 100, Y: 123, W: 80, H: 20}, false},
+		{"a box in another quadrant", Box{X: -400, Y: -400, W: 80, H: 20}, false},
+	} {
+		if got := a.Overlaps(tc.b); got != tc.want {
+			t.Errorf("%s: Overlaps = %v, want %v", tc.name, got, tc.want)
+		}
+		if got := tc.b.Overlaps(a); got != tc.want {
+			t.Errorf("%s, the other way round: Overlaps = %v, want %v", tc.name, got, tc.want)
+		}
+	}
+}
