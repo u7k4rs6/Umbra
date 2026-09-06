@@ -82,7 +82,7 @@ func Packet(w io.Writer, sd Sealed) error {
 	fmt.Fprintf(b, "## 3. Ranked shadow\n\n")
 	shadowed := a.Shadowed()
 	if len(shadowed) == 0 {
-		fmt.Fprintf(b, "Nothing is in shadow: every dependent the graph found was examined.\n\n")
+		fmt.Fprintf(b, "%s.\n\n", capitalise(a.EmptyDocketReason()))
 	} else {
 		fmt.Fprintf(b, "The %d highest ranked, of %d in shadow. Each score is the product of its printed factors.\n\n",
 			minInt(PacketLimit, len(shadowed)), len(shadowed))
@@ -111,6 +111,15 @@ func Packet(w io.Writer, sd Sealed) error {
 			}
 			b.WriteString("\n")
 		}
+	}
+
+	if len(a.Unresolved) > 0 {
+		fmt.Fprintf(b, "### Changed symbols the graph was never asked about\n\n")
+		fmt.Fprintf(b, "These are not a finding of no dependents. Nothing was traversed for them.\n\n")
+		for _, u := range a.Unresolved {
+			fmt.Fprintf(b, "- `%s` at `%s:%d`: %s\n", u.Name, u.File, u.Line, u.Reason)
+		}
+		b.WriteString("\n")
 	}
 
 	// 4. Tests reaching it.
@@ -263,4 +272,17 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// capitalise raises the first letter of a shared sentence so it can be used
+// both mid-line in the table and as a sentence in the packet.
+func capitalise(s string) string {
+	if s == "" {
+		return s
+	}
+	r := []rune(s)
+	if r[0] >= 'a' && r[0] <= 'z' {
+		r[0] = r[0] - 'a' + 'A'
+	}
+	return string(r)
 }

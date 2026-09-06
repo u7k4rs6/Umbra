@@ -377,3 +377,82 @@ func TestPacketAndMapHeaderAlsoRefuseACleanAudit(t *testing.T) {
 		t.Fatalf("map header = %q, want it to say the list is incomplete", got)
 	}
 }
+
+// Defect 3. "No dependents were found for the changed symbols" is a finding
+// about the code. A commit whose symbols could not be resolved has no such
+// finding, and printing that sentence for it tells the reader the graph was
+// asked and answered when it was never asked at all.
+func TestEmptyDocketDistinguishesUnresolvedFromNoDependents(t *testing.T) {
+	base := func() *Analysis {
+		a := mkAnalysis()
+		a.Nodes = nil
+		a.Summary = shadow.Summarize(nil)
+		a.Sources = []graph.Source{{Name: "HelpFormatter.write_usage", File: "src/click/formatting.py"}}
+		return a
+	}
+
+	asked := base()
+	if got := asked.EmptyDocketReason(); !strings.Contains(got, "found no dependents") {
+		t.Fatalf("a resolved commit with no dependents says %q", got)
+	}
+
+	never := base()
+	never.Unresolved = []UnresolvedSource{{
+		Name: "HelpFormatter.write_usage", File: "src/click/formatting.py", Line: 167,
+		Reason: graph.UnresolvedNoMatch,
+	}}
+	got := never.EmptyDocketReason()
+	if strings.Contains(got, "found no dependents") {
+		t.Fatalf("an unresolved commit must not claim the graph found nothing: %q", got)
+	}
+	if !strings.Contains(got, "unresolved") {
+		t.Fatalf("the sentence must name the gap: %q", got)
+	}
+
+	out := render(t, never, TableOptions{UTF8: true})
+	if strings.Contains(out, "no dependents were found for the changed symbols") {
+		t.Fatalf("the old sentence is still being printed:\n%s", out)
+	}
+	if !strings.Contains(out, "never looked up in the graph") {
+		t.Fatalf("the table must say what was not looked up:\n%s", out)
+	}
+	if !strings.Contains(out, "HelpFormatter.write_usage") {
+		t.Fatalf("an unresolved symbol must be named:\n%s", out)
+	}
+	if !strings.Contains(out, graph.UnresolvedNoMatch) {
+		t.Fatalf("the reason must be printed:\n%s", out)
+	}
+}
+
+// The packet and the map header carry the same distinction, so a reviewer
+// reading either one is told the same thing.
+func TestPacketNamesTheSymbolsTheGraphWasNeverAskedAbout(t *testing.T) {
+	a := mkAnalysis()
+	a.Unresolved = []UnresolvedSource{{
+		Name: "Inner.inner_method", File: "app/models.py", Line: 40,
+		Reason: graph.UnresolvedAmbiguous,
+	}}
+	var b strings.Builder
+	if err := Packet(&b, Seal(a, nil)); err != nil {
+		t.Fatalf("Packet: %v", err)
+	}
+	for _, want := range []string{
+		"never asked about",
+		"Inner.inner_method",
+		graph.UnresolvedAmbiguous,
+		"not a finding of no dependents",
+	} {
+		if !strings.Contains(b.String(), want) {
+			t.Fatalf("the packet is missing %q:\n%s", want, b.String())
+		}
+	}
+}
+
+// Nothing changes for a run where every symbol resolved.
+func TestAResolvedRunSaysNothingAboutUnresolvedSymbols(t *testing.T) {
+	a := mkAnalysis()
+	out := render(t, a, TableOptions{UTF8: true})
+	if strings.Contains(out, "never looked up") {
+		t.Fatalf("a clean run must not mention unresolved symbols:\n%s", out)
+	}
+}

@@ -379,3 +379,72 @@ func TestEveryScenarioIsDocumented(t *testing.T) {
 		}
 	}
 }
+
+// 9. The changed symbols are a method on a class and a function nested inside
+// another function, which are the two definition shapes nothing else in this
+// suite exercises.
+//
+// This scenario builds its sources the way the pipeline does, by handing
+// graph.Bind the names `graph commit` would report, rather than looking a
+// symbol up by its bare name the way the other scenarios do. That is the point
+// of it: the method is named LineItem.subtotal and the snapshot's Name field
+// holds the bare subtotal, and app/models.py holds a second symbol of that
+// name on RefundLine.
+func TestScenarioQualifiedNames(t *testing.T) {
+	field, relMap := scenarioField(t)
+
+	// Exactly what `graph commit --json` reports for this change.
+	sources := graph.Bind([]graph.Source{
+		{Name: "LineItem.subtotal", Kind: "method", File: "app/models.py",
+			Span: [2]int{15, 15}, Change: "body", Weight: graph.Weight("body")},
+		{Name: "pad", Kind: "function", File: "app/report.py",
+			Span: [2]int{32, 32}, Change: "body", Weight: graph.Weight("body")},
+	}, field)
+
+	var ids []string
+	for _, s := range sources {
+		if s.Symbol == "" {
+			t.Fatalf("%s did not bind: %s", s.Name, s.Unresolved)
+		}
+		ids = append(ids, s.Symbol)
+	}
+
+	// The method has to be LineItem's, not RefundLine's. Binding on the bare
+	// name matches both, and either answer would be silently plausible.
+	if got := field.Symbols[ids[0]].QualifiedName; got != "LineItem.subtotal" {
+		t.Fatalf("the method bound to %q", got)
+	}
+	if got := field.Symbols[ids[1]]; got.ContainerID == "" {
+		t.Fatal("pad is meant to be the nested function")
+	}
+
+	session := loadScenario(t, "qualified-names")
+	session.ResolveMentions(Vocabulary(field))
+	examined := BuildExamined(session, map[string]bool{
+		"app/models.py": true, "app/report.py": true,
+	})
+
+	reach := field.Dependents(ids, 2, relMap)
+	if len(reach) == 0 {
+		t.Fatal("a changed method with callers must reach something")
+	}
+	nodes := Build(BuildInput{
+		Field: field, RelMap: relMap, Sources: sources, Reach: reach,
+		Examined: examined, Impacts: map[string]*graph.Impact{},
+	})
+	SortDocket(nodes)
+	if len(nodes) == 0 {
+		t.Fatal("the field is empty for a changed method that has dependents")
+	}
+
+	// The session read app/models.py lines 1 to 18, which covers
+	// LineItem.subtotal and stops before RefundLine.subtotal. A run that bound
+	// the wrong method would describe the wrong half of that file.
+	byName := map[string]*Node{}
+	for _, n := range nodes {
+		byName[n.Symbol.Name] = n
+	}
+	if n, ok := byName["compute_total"]; ok && n.State == Unknown {
+		t.Fatal("compute_total should have a state, not unknown")
+	}
+}

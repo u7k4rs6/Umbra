@@ -1,0 +1,14 @@
+A session whose changed symbols are a method on a class and a function nested
+inside another function, which are the two definition shapes nothing else in
+this suite exercises.
+
+graph commit names the method LineItem.subtotal, its qualified name, while the
+snapshot's Name field holds the bare subtotal. app/models.py holds two symbols
+named subtotal, on LineItem and on RefundLine, so binding on Name alone matches
+both and cannot tell them apart. The nested function is the opposite trap: its
+qualified name is the bare pad even though it has a container, so nothing may
+try to look it up as format_footer.pad.
+
+The session reads app/models.py with a range that stops before RefundLine, so
+the two methods end up in different states and a report that bound the wrong
+one would say the wrong thing about the code.

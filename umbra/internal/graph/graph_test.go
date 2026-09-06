@@ -617,3 +617,161 @@ func TestKindLabel(t *testing.T) {
 		}
 	}
 }
+
+// Binding a changed symbol
+//
+// `graph commit` names a changed entity by the snapshot's qualified_name.
+// Bind compared against the snapshot's Name, which for a method is the bare
+// form, so no changed method ever bound and no impact query was ever issued
+// for one. Every changed symbol in fixtures/app is a module-level function,
+// where the two forms are identical, which is why the fixture could not show
+// it. NOTES carries the shape table this was measured from.
+
+func bindField(t *testing.T) *Field {
+	t.Helper()
+	blob, err := os.ReadFile(filepath.Join("testdata", "snapshot.ndjson"))
+	if err != nil {
+		t.Fatalf("read snapshot: %v", err)
+	}
+	f, err := LoadSnapshot(blob)
+	if err != nil {
+		t.Fatalf("LoadSnapshot: %v", err)
+	}
+	return f
+}
+
+func bindOne(t *testing.T, f *Field, name, file string, line int) Source {
+	t.Helper()
+	out := Bind([]Source{{Name: name, File: file, Span: [2]int{line, line}}}, f)
+	if len(out) != 1 {
+		t.Fatalf("Bind returned %d sources", len(out))
+	}
+	return out[0]
+}
+
+// The case the whole defect is about. app/models.py holds two methods named
+// subtotal, on LineItem and on RefundLine. Matching the bare Name finds both
+// and the old code broke the tie by nearest line, so the answer depended on
+// which line graph commit happened to report.
+func TestBindResolvesAMethodByItsQualifiedName(t *testing.T) {
+	f := bindField(t)
+
+	for _, tc := range []struct{ name, wantSuffix string }{
+		{"LineItem.subtotal", "method:LineItem.subtotal"},
+		{"RefundLine.subtotal", "method:RefundLine.subtotal"},
+		{"Order.line_count", "method:Order.line_count"},
+	} {
+		got := bindOne(t, f, tc.name, "app/models.py", 1)
+		if got.Symbol == "" {
+			t.Fatalf("%s did not bind: %s", tc.name, got.Unresolved)
+		}
+		if !strings.HasSuffix(got.Symbol, tc.wantSuffix) {
+			t.Fatalf("%s bound to %s, want a symbol ending %s", tc.name, got.Symbol, tc.wantSuffix)
+		}
+		sym := f.Symbols[got.Symbol]
+		if sym.QualifiedName != tc.name {
+			t.Fatalf("%s bound to a symbol whose qualified name is %q", tc.name, sym.QualifiedName)
+		}
+		if got.Span != sym.Span {
+			t.Fatalf("%s kept span %v, want the symbol's %v", tc.name, got.Span, sym.Span)
+		}
+	}
+}
+
+// The two methods must not resolve to the same symbol, which is what a bare
+// name lookup would do for one of them.
+func TestBindTellsTwoMethodsOfOneNameApart(t *testing.T) {
+	f := bindField(t)
+	a := bindOne(t, f, "LineItem.subtotal", "app/models.py", 15)
+	b := bindOne(t, f, "RefundLine.subtotal", "app/models.py", 28)
+	if a.Symbol == "" || b.Symbol == "" {
+		t.Fatalf("both must bind, got %q and %q", a.Symbol, b.Symbol)
+	}
+	if a.Symbol == b.Symbol {
+		t.Fatalf("both bound to the same symbol %s", a.Symbol)
+	}
+}
+
+// A nested function is the opposite trap. Its container exists, but Graph does
+// not put it in the qualified name, so the lookup key is the bare name and
+// anything that assembled "format_footer.pad" would find nothing.
+func TestBindResolvesANestedFunctionByItsBareName(t *testing.T) {
+	f := bindField(t)
+	got := bindOne(t, f, "pad", "app/report.py", 32)
+	if got.Symbol == "" {
+		t.Fatalf("the nested function did not bind: %s", got.Unresolved)
+	}
+	sym := f.Symbols[got.Symbol]
+	if sym.QualifiedName != "pad" {
+		t.Fatalf("qualified name = %q, want the bare name", sym.QualifiedName)
+	}
+	if sym.ContainerID == "" {
+		t.Fatal("the fixture's nested function is meant to have a container")
+	}
+	if bad := bindOne(t, f, "format_footer.pad", "app/report.py", 32); bad.Symbol != "" {
+		t.Fatalf("a reconstructed qualified name must not resolve, got %s", bad.Symbol)
+	}
+}
+
+// Module-level functions bound before this change and must still bind.
+func TestBindStillResolvesAModuleLevelFunction(t *testing.T) {
+	f := bindField(t)
+	got := bindOne(t, f, "compute_total", "app/service.py", 20)
+	if got.Symbol == "" {
+		t.Fatalf("compute_total did not bind: %s", got.Unresolved)
+	}
+	if got.Unresolved != "" {
+		t.Fatalf("a bound source must carry no reason, got %q", got.Unresolved)
+	}
+}
+
+// A source that cannot be bound says why, so the report can tell "never asked"
+// from "asked and found nothing".
+func TestBindRecordsWhyASourceDidNotResolve(t *testing.T) {
+	f := bindField(t)
+	got := bindOne(t, f, "NoSuchClass.no_such_method", "app/models.py", 1)
+	if got.Symbol != "" {
+		t.Fatalf("an unknown name must not bind, got %s", got.Symbol)
+	}
+	if got.Unresolved != UnresolvedNoMatch {
+		t.Fatalf("reason = %q, want %q", got.Unresolved, UnresolvedNoMatch)
+	}
+}
+
+// Two symbols of one qualified name in one file, which Graph produces for two
+// nested classes sharing a name. The line decides, and where it does not this
+// must refuse rather than guess: the old code always answered with the nearest.
+func TestBindRefusesAnAmbiguousMatchAndTakesTheLineWhenItDecides(t *testing.T) {
+	f := &Field{
+		Symbols: map[string]*Symbol{
+			"a": {ID: "a", Name: "run", QualifiedName: "Helper.run", File: "collide.py", Span: [2]int{3, 4}},
+			"b": {ID: "b", Name: "run", QualifiedName: "Helper.run", File: "collide.py", Span: [2]int{10, 11}},
+		},
+		ByFile: map[string][]string{"collide.py": {"a", "b"}},
+	}
+	if got := bindOne(t, f, "Helper.run", "collide.py", 3); got.Symbol != "a" {
+		t.Fatalf("line 3 bound to %q, want a", got.Symbol)
+	}
+	if got := bindOne(t, f, "Helper.run", "collide.py", 10); got.Symbol != "b" {
+		t.Fatalf("line 10 bound to %q, want b", got.Symbol)
+	}
+	got := bindOne(t, f, "Helper.run", "collide.py", 99)
+	if got.Symbol != "" {
+		t.Fatalf("a line inside neither span bound to %q, want no match", got.Symbol)
+	}
+	if got.Unresolved != UnresolvedAmbiguous {
+		t.Fatalf("reason = %q, want %q", got.Unresolved, UnresolvedAmbiguous)
+	}
+}
+
+// A snapshot from a build that publishes no qualified_name must still bind
+// module-level symbols exactly as it always did.
+func TestBindFallsBackToTheBareNameWithoutAQualifiedName(t *testing.T) {
+	f := &Field{
+		Symbols: map[string]*Symbol{"x": {ID: "x", Name: "helper", File: "a.py", Span: [2]int{1, 2}}},
+		ByFile:  map[string][]string{"a.py": {"x"}},
+	}
+	if got := bindOne(t, f, "helper", "a.py", 1); got.Symbol != "x" {
+		t.Fatalf("bound to %q, want x", got.Symbol)
+	}
+}

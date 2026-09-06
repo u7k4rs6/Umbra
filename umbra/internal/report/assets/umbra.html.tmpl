@@ -33,6 +33,14 @@
   {{if .CoverageNote}}<p class="notice coverage-note">{{.CoverageNote}}</p>{{end}}
 
   {{range .A.Notes}}<p class="notice">{{.}}</p>{{end}}
+  {{if .A.Unresolved}}
+  <div class="notice unresolved">
+    <p>Changed symbols the graph was never asked about. These are not a finding of no dependents; nothing was traversed for them.</p>
+    <ul>
+      {{range .A.Unresolved}}<li><code>{{.Name}}</code> at <code>{{.File}}:{{.Line}}</code>: {{.Reason}}</li>{{end}}
+    </ul>
+  </div>
+  {{end}}
 </header>
 
 <div class="wrap">

@@ -106,11 +106,7 @@ func Table(w io.Writer, sd Sealed, o TableOptions) error {
 		rows = a.Shadowed()
 	}
 	if len(rows) == 0 {
-		if a.Summary.Lit > 0 {
-			fmt.Fprintf(b, " %s\n", dim(o, "nothing is in shadow: every dependent was examined"))
-		} else {
-			fmt.Fprintf(b, " %s\n", dim(o, "no dependents were found for the changed symbols"))
-		}
+		fmt.Fprintf(b, " %s\n", dim(o, a.EmptyDocketReason()))
 	}
 	for _, n := range rows {
 		writeRow(b, n, o)
@@ -118,6 +114,15 @@ func Table(w io.Writer, sd Sealed, o TableOptions) error {
 	if !o.All && a.Summary.Lit > 0 {
 		b.WriteString("\n")
 		fmt.Fprintf(b, " %s\n", dim(o, fmt.Sprintf("%d lit node(s) not shown; pass --all to list them", a.Summary.Lit)))
+	}
+
+	if len(a.Unresolved) > 0 {
+		b.WriteString("\n")
+		fmt.Fprintf(b, " %s\n", dim(o, fmt.Sprintf(
+			"%d changed symbol(s) were never looked up in the graph:", len(a.Unresolved))))
+		for _, u := range a.Unresolved {
+			fmt.Fprintf(b, "    %s  %s:%d  %s\n", u.Name, u.File, u.Line, dim(o, u.Reason))
+		}
 	}
 
 	// Execution and the sweep.

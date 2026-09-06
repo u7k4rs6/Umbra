@@ -13,22 +13,23 @@ import (
 // never the coined words.
 
 type jsonReport struct {
-	UmbraVersion    string          `json:"umbra_version"`
-	Checkpoint      jsonCheckpoint  `json:"checkpoint"`
-	Inputs          jsonInputs      `json:"inputs"`
-	SessionSaid     string          `json:"session_said,omitempty"`
-	SessionSaidFrom string          `json:"session_said_from,omitempty"`
-	Coverage        jsonCoverage    `json:"coverage"`
-	Notes           []string        `json:"notes,omitempty"`
-	Sources         []jsonSource    `json:"sources"`
-	Nodes           []jsonNode      `json:"nodes"`
-	Timeline        []TimelineEvent `json:"timeline"`
-	T0              int             `json:"t0"`
-	Execution       Execution       `json:"execution"`
-	Summary         jsonSummary     `json:"summary"`
-	Layout          *Layout         `json:"layout,omitempty"`
-	Limitations     []string        `json:"limitations"`
-	CommandsRun     []string        `json:"commands_run"`
+	UmbraVersion    string             `json:"umbra_version"`
+	Checkpoint      jsonCheckpoint     `json:"checkpoint"`
+	Inputs          jsonInputs         `json:"inputs"`
+	SessionSaid     string             `json:"session_said,omitempty"`
+	SessionSaidFrom string             `json:"session_said_from,omitempty"`
+	Coverage        jsonCoverage       `json:"coverage"`
+	Notes           []string           `json:"notes,omitempty"`
+	Sources         []jsonSource       `json:"sources"`
+	Unresolved      []UnresolvedSource `json:"unresolved,omitempty"`
+	Nodes           []jsonNode         `json:"nodes"`
+	Timeline        []TimelineEvent    `json:"timeline"`
+	T0              int                `json:"t0"`
+	Execution       Execution          `json:"execution"`
+	Summary         jsonSummary        `json:"summary"`
+	Layout          *Layout            `json:"layout,omitempty"`
+	Limitations     []string           `json:"limitations"`
+	CommandsRun     []string           `json:"commands_run"`
 }
 
 // jsonCoverage says how the session worked, so a consumer can tell a thin
@@ -169,6 +170,7 @@ func buildJSON(a *Analysis) jsonReport {
 	if r.Sources == nil {
 		r.Sources = []jsonSource{}
 	}
+	r.Unresolved = a.Unresolved
 
 	for _, n := range a.Nodes {
 		jn := jsonNode{

@@ -24,6 +24,11 @@ type Source struct {
 	// OldSignature and NewSignature are present for a signature change.
 	OldSignature string
 	NewSignature string
+	// Unresolved is why this changed entity could not be bound to a symbol in
+	// the snapshot, and is empty when it was bound. It exists so the report
+	// can distinguish a symbol whose dependents were never looked up from one
+	// that was looked up and has none.
+	Unresolved string
 }
 
 // Change weights from ARCHITECTURE.md section 2.
@@ -265,49 +270,99 @@ func parentOf(name string) (string, bool) {
 	return name[:i], true
 }
 
+// Unresolved reasons, kept as constants so the renderers and the tests name
+// the same thing.
+const (
+	// UnresolvedNoMatch means nothing in the file carries that name. A removed
+	// symbol lands here legitimately: it has no entry in the head snapshot by
+	// definition.
+	UnresolvedNoMatch = "no symbol in the snapshot of this file carries that name"
+	// UnresolvedAmbiguous means several symbols in the file carry the name and
+	// the reported line did not settle which.
+	UnresolvedAmbiguous = "several symbols in this file carry that name and the reported line did not settle which"
+)
+
 // Bind attaches each source to its symbol in the field, filling the identity
-// and the real span. A source with no symbol in the snapshot keeps the line
-// Graph reported and is still a light, because a removed symbol has no entry
-// in the head snapshot by definition.
+// and the real span.
+//
+// The name `graph commit` reports for a changed entity is the snapshot's
+// qualified_name, which for a method is "TopClass.method" while the snapshot's
+// Name field holds the bare "method". Binding on Name therefore never matched
+// a changed method, in any repository, and the impact query for it was skipped
+// as though it had no identity. Every changed symbol in fixtures/app is a
+// module-level function, where the two forms are identical, so the whole of
+// that is invisible to the fixture. NOTES carries the table this was measured
+// from, across Python, Go and TypeScript.
+//
+// A source that cannot be bound keeps the line Graph reported and carries the
+// reason it could not be bound, because a symbol that could not be resolved
+// and a symbol with no dependents are different findings and the report has to
+// say which one it has.
 func Bind(sources []Source, f *Field) []Source {
 	out := make([]Source, 0, len(sources))
 	for _, s := range sources {
-		if id, sym := findSymbol(f, s.File, s.Name, s.Span[0]); sym != nil {
+		id, sym, why := findSymbol(f, s.File, s.Name, s.Span[0])
+		if sym != nil {
 			s.Symbol = id
 			s.Span = sym.Span
+			s.Unresolved = ""
+		} else {
+			s.Unresolved = why
 		}
 		out = append(out, s)
 	}
 	return out
 }
 
-func findSymbol(f *Field, file, name string, line int) (string, *Symbol) {
+// findSymbol resolves one changed entity to one snapshot symbol.
+//
+// File, then qualified name, then span containment, and it has to land on
+// exactly one symbol. A qualified name is not unique within a file: two
+// functions in one module can each define a class `Helper` with a method
+// `run`, and Graph reports both as `Helper.run`, distinguishing them only by
+// the line. Where the line does not decide, this returns no match rather than
+// the nearest one, because a guess that always answers is what put a symbol's
+// dependents under the wrong heading in the first place.
+func findSymbol(f *Field, file, name string, line int) (string, *Symbol, string) {
 	var exact []string
 	for _, id := range f.ByFile[file] {
-		if f.Symbols[id].Name == name {
+		if symbolName(f.Symbols[id]) == name {
 			exact = append(exact, id)
 		}
 	}
 	switch len(exact) {
 	case 0:
-		return "", nil
+		return "", nil, UnresolvedNoMatch
 	case 1:
-		return exact[0], f.Symbols[exact[0]]
+		return exact[0], f.Symbols[exact[0]], ""
 	}
-	// More than one symbol shares the name in the file; pick the one whose
-	// span is nearest the reported line.
-	bestID := exact[0]
-	bestDist := -1
+	// Several carry the name. The reported line has to fall inside exactly one
+	// of their spans, or this is ambiguous and nothing is bound.
+	var containing []string
 	for _, id := range exact {
-		d := f.Symbols[id].Span[0] - line
-		if d < 0 {
-			d = -d
-		}
-		if bestDist < 0 || d < bestDist {
-			bestDist, bestID = d, id
+		s := f.Symbols[id]
+		if s.Span[0] <= line && line <= s.Span[1] {
+			containing = append(containing, id)
 		}
 	}
-	return bestID, f.Symbols[bestID]
+	if len(containing) == 1 {
+		return containing[0], f.Symbols[containing[0]], ""
+	}
+	return "", nil, UnresolvedAmbiguous
+}
+
+// symbolName is the name a changed entity is reported under: the provider's
+// qualified_name where it published one, and the bare name otherwise, so a
+// snapshot from a build that does not emit the field still binds module-level
+// symbols exactly as it always did.
+func symbolName(s *Symbol) string {
+	if s == nil {
+		return ""
+	}
+	if s.QualifiedName != "" {
+		return s.QualifiedName
+	}
+	return s.Name
 }
 
 // SemanticLanguages returns the languages the installed Graph can resolve

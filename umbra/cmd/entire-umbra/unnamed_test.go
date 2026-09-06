@@ -69,3 +69,35 @@ func TestFailOnDoesNotFireOnADegradedRunWithNoFailures(t *testing.T) {
 		}
 	}
 }
+
+// Defects 1 and 3, the parts that live in the pipeline rather than in the
+// graph package.
+
+func TestUnresolvedReasonAlwaysSaysSomething(t *testing.T) {
+	if got := unresolvedReason(graph.Source{Unresolved: graph.UnresolvedNoMatch}); got != graph.UnresolvedNoMatch {
+		t.Fatalf("reason = %q, want the recorded one", got)
+	}
+	// A source that reached here without a recorded reason is still named
+	// rather than dropped, because a silent skip is the defect.
+	if got := unresolvedReason(graph.Source{}); got == "" {
+		t.Fatal("a source with no recorded reason must still produce a sentence")
+	}
+}
+
+// A changed entity Graph could only name as a whole file has no symbol-level
+// dependents to report. Counting it is what lets the report say so instead of
+// printing the sentence reserved for "the graph looked and found nothing",
+// which is defect 3 in the writeup.
+func TestModuleGranularityCountsWholeFileChanges(t *testing.T) {
+	sources := []graph.Source{
+		{Name: "src/click/formatting.py", Kind: "module", File: "src/click/formatting.py"},
+		{Name: "wrap_text", Kind: "function", File: "src/click/formatting.py"},
+		{Name: "app/api.py", Kind: "file", File: "app/api.py"},
+	}
+	if got := moduleGranularity(sources); got != 2 {
+		t.Fatalf("module granularity count = %d, want 2", got)
+	}
+	if got := moduleGranularity(sources[1:2]); got != 0 {
+		t.Fatalf("a symbol-level source counted as %d, want 0", got)
+	}
+}

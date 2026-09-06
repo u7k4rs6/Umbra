@@ -1336,3 +1336,197 @@ separate defect. It is not fixed in this pass because the count is now read
 from the header rather than from the length of the list, so it no longer
 affects whether the sweep reports a clean audit. Recorded so it is not
 rediscovered as new.
+
+## Phase 23: the changed method that was never traversed
+
+`umbra/experiments/first-real-repo.md` defects 1 and 3. `graph commit` names a
+changed method `HelpFormatter.write_usage`. The snapshot's `Name` is the bare
+`write_usage`. `Bind` compared on `Name`, the match failed, `Source.Symbol`
+stayed empty, and `analyze.go` skipped the impact query for any source without
+one. **A changed method's dependents were never traversed, in any repository,
+ever.** Every changed symbol in `fixtures/app` is a module-level function,
+where the two forms are identical, which is why nothing caught it.
+
+`Bind` is in `internal/graph/sources.go`, not in a `bind.go`; there is no such
+file.
+
+### The shapes, collected before any code was written
+
+A probe repository with every definition shape Graph might name differently, in
+the three semantic languages most likely to matter, committed once as a
+baseline and then with one line changed inside every shape. What the snapshot
+publishes and what `graph commit` calls each:
+
+| Language | Shape | snapshot `name` | snapshot `qualified_name` | snapshot `container_id` | `graph commit` `name` |
+|---|---|---|---|---|---|
+| Python | module function | `module_function` | `module_function` | none | `module_function` |
+| Python | nested function | `nested_function` | `nested_function` | the enclosing function | `nested_function` |
+| Python | class | `TopClass` | `TopClass` | none | `TopClass` |
+| Python | method | `method` | `TopClass.method` | `TopClass` | `TopClass.method` |
+| Python | staticmethod | `static_method` | `TopClass.static_method` | `TopClass` | `TopClass.static_method` |
+| Python | classmethod | `class_method` | `TopClass.class_method` | `TopClass` | `TopClass.class_method` |
+| Python | property | `prop` | `TopClass.prop` | `TopClass` | `TopClass.prop` |
+| Python | class nested in a function | `NestedClass` | `NestedClass` | the enclosing function | `NestedClass` |
+| Python | method on a function-nested class | `nested_method` | `NestedClass.nested_method` | `NestedClass` | `NestedClass.nested_method` |
+| Python | class nested in a class | `Inner` | `Inner` | `TopClass` | `Inner` |
+| Python | method on a class-nested class | `inner_method` | `Inner.inner_method` | `Inner` | `Inner.inner_method` |
+| Python | async function | `async_function` | `async_function` | none | `async_function` |
+| Go | function | `ModuleFunction` | `ModuleFunction` | none | `ModuleFunction` |
+| Go | value-receiver method | `Method` | `TopStruct.Method` | `TopStruct` | `TopStruct.Method` |
+| Go | pointer-receiver method | `PointerMethod` | `TopStruct.PointerMethod` | `TopStruct` | `TopStruct.PointerMethod` |
+| Go | struct field | `Field` | `TopStruct.Field` | `TopStruct` | (unchanged in the probe) |
+| Go | interface method | `InterfaceMethod` | `Named.InterfaceMethod` | `Named` | (unchanged in the probe) |
+| TypeScript | function | `moduleFunction` | `moduleFunction` | none | `moduleFunction` |
+| TypeScript | method | `method` | `TopClass.method` | `TopClass` | `TopClass.method` |
+| TypeScript | static method | `staticMethod` | `TopClass.staticMethod` | `TopClass` | `TopClass.staticMethod` |
+| TypeScript | getter | `prop` | `TopClass.prop` | `TopClass` | `TopClass.prop` |
+| TypeScript | nested function | `nestedFunction` | `nestedFunction` | the enclosing function | `nestedFunction` |
+| TypeScript | method on a nested class | `nestedMethod` | `NestedClass.nestedMethod` | `NestedClass` | `NestedClass.nestedMethod` |
+
+**One rule covers every row, in all three languages: `graph commit`'s `name` is
+the snapshot's `qualified_name`.** So this is a lookup and not a string
+problem, and the field to look up is one the provider already publishes. No
+name is reconstructed here and no separator is assumed.
+
+Two details worth recording because they constrain the implementation:
+
+- **`qualified_name` is one level deep, never a full path.** A method on a
+  class nested inside another class is `Inner.inner_method`, not
+  `TopClass.Inner.inner_method`. Anything that tried to rebuild the qualified
+  name from a chain of containers would produce a string Graph never emits.
+- **`container_id` is a symbol id, and it is exact.** It is not needed for
+  binding, because `qualified_name` already carries the container's name, but
+  it is what proves the qualified name is the provider's own and not ours.
+
+The existing `FoldFields` and `parentOf` in the same file already split a
+qualified field name on its last dot, so the shape was known for fields in
+phase 7 and was never generalised to methods.
+
+### Qualified names are not unique within a file
+
+Two functions in one file, each defining a class `Helper` with a method `run`:
+
+```
+collide.py  method  name=run  qualified=Helper.run  line=3   container=...67a82ea9
+collide.py  method  name=run  qualified=Helper.run  line=10  container=...67a82ea9#2
+```
+
+`graph commit` reports both, by the same name, distinguished only by
+`after_start_line` 3 and 10. Graph itself suffixes the duplicate id with `#2`.
+So the file path narrows but does not decide, and a name plus a file is not an
+identity.
+
+**The rule implemented is therefore: file, then qualified name, then span
+containment, and it must land on exactly one symbol.** The reported line has to
+fall inside exactly one candidate's span. The old code broke a tie by picking
+the nearest start line, which always returns something and is a guess. Nearest
+is gone; if the line does not settle it, the source is unresolved and the
+report says so by name.
+
+### Two rules on failure
+
+Neither of these is new behaviour bolted on; both are the same sentence problem
+defect 3 describes. "The graph found no dependents" is a finding about the
+code. "The graph was never asked" is a gap in the analysis. They read
+identically and mean opposite things.
+
+`report.Analysis.Unresolved` carries every changed symbol that could not be
+looked up, with a reason, and `Analysis.EmptyDocketReason()` is the single
+sentence the table, the packet and the map header all ask for when the docket
+is empty. There are three ways to have no rows and they are now three
+sentences:
+
+| Situation | What the report says |
+|---|---|
+| everything was examined | nothing is in shadow: every dependent was examined |
+| asked, and there is nothing | the graph was asked about every changed symbol and found no dependents |
+| every symbol unresolved | no dependents could be looked up: every changed symbol is listed as unresolved below |
+| some unresolved | no dependents were found for the symbols that resolved, and the unresolved ones below were never asked about |
+
+**No skip is silent.** `analyze.go` used to `continue` past a source with no
+symbol and past an impact call that errored. Both now append to `Unresolved`
+with the reason, the table and the packet list them by name and location, the
+map carries them in its header block, and `umbra.json` gains an `unresolved`
+array. A whole-file change also gets its own note, because a changed entity
+Graph could only name as a module has no symbol-level dependents to be asked
+about and that is not a statement about the code.
+
+### Fixtures
+
+`fixtures/app/app/report.py` gains `format_footer`, which holds a nested
+function `pad`, and `tests/test_report.py` gains a test for it. That is the one
+definition shape in the fixture whose qualified name is bare while its
+container is not. The method shape was already present and unexercised:
+`app/models.py` holds `LineItem.subtotal` and `RefundLine.subtotal`, two
+symbols of one bare name in one file, which is the case a bare-name lookup
+cannot tell apart.
+
+`fixtures/recorded/qualified-names/` is a ninth scenario whose changed symbols
+are that method and that nested function, and whose test builds its sources
+through `graph.Bind` from the names `graph commit` reports rather than by
+looking a symbol up by its bare name the way the other eight do.
+
+**The captured snapshot was spliced, not re-captured.** A clean re-capture from
+a standalone copy of the fixture produced the three new symbols and also
+changed eighteen unrelated edges: imports resolved to in-repo files instead of
+`external:import:app.models` because the copy has `app/` at its root, and the
+`FILE_CHANGES_WITH` edge between `app/api.py` and `app/service.py` disappeared
+because the copy has one commit and no co-change history. Both would have moved
+scenario results for reasons that have nothing to do with this change. Only the
+three symbol records and the nine relations touching them were added, and the
+two file records whose contents changed had their blob and size refreshed.
+
+### Known-positives
+
+| Test | Mutation that proved it fires | What it caught |
+|---|---|---|
+| `TestBindResolvesAMethodByItsQualifiedName` | matched the bare `Name` again | a changed method bound to nothing at all |
+| `TestBindTellsTwoMethodsOfOneNameApart` | the same | `LineItem.subtotal` and `RefundLine.subtotal` collapsed together |
+| `TestBindResolvesANestedFunctionByItsBareName` | none needed; it is the negative half | also asserts a reconstructed `format_footer.pad` resolves to nothing |
+| `TestBindStillResolvesAModuleLevelFunction` | none needed; it is the negative half | what worked before still works |
+| `TestBindRecordsWhyASourceDidNotResolve` | dropped the recorded reason | an unresolved source with nothing to say about itself |
+| `TestBindRefusesAnAmbiguousMatchAndTakesTheLineWhenItDecides` | restored the nearest-line tiebreak, and separately the bare-name match | a guess that always answers |
+| `TestBindFallsBackToTheBareNameWithoutAQualifiedName` | none needed | a snapshot without the field still binds as before |
+| `TestScenarioQualifiedNames` | the bare-name match | the ninth scenario's method did not bind |
+| `TestEmptyDocketDistinguishesUnresolvedFromNoDependents` | restored the old two-branch wording and dropped the table's list | "no dependents were found" printed for a commit nothing was looked up for |
+| `TestPacketNamesTheSymbolsTheGraphWasNeverAskedAbout` | dropped the packet section | the packet claimed a clean analysis |
+| `TestAResolvedRunSaysNothingAboutUnresolvedSymbols` | none needed; it is the negative half | a clean run stays quiet |
+| `TestUnresolvedReasonAlwaysSaysSomething` | none needed | a source with no recorded reason is still named |
+| `TestModuleGranularityCountsWholeFileChanges` | made the predicate always false | a whole-file change reported as a finding of no dependents |
+
+Six mutations, each applied alone and reverted, every one making at least one
+test fail. Four tests are the negative half and passed under all six.
+
+### What it did to the real report
+
+`entire umbra 562e458` on the `pallets/click` clone, the commit the experiment
+was written from. No ranking weight was touched in this pass.
+
+```
+before   3.  format_usage  src/click/core.py:1163  type consumer  depth 1  echo  5.3
+after    1.  format_usage  src/click/core.py:1163  direct caller  depth 1  echo  8.0
+```
+
+The node the writeup judged "right node, wrong rank" is now first, and it is
+described by the `CALLS` edge Graph always had rather than by the `PARAM_TYPE`
+edge from its enclosing class. `Command.get_usage` likewise moves from
+`type consumer` to `transitive caller`. The order changed because the edges are
+now the real ones, not because anything was tuned.
+
+On the whole-file commit, where nothing could be resolved:
+
+```
+before   no dependents were found for the changed symbols
+after    note   1 changed entity(s) were reported only at whole-file granularity, so no symbol-level dependents could be asked for
+         note   1 changed symbol(s) could not be looked up in the graph, so nothing was traversed for them; they are named below
+         no dependents could be looked up: every changed symbol is listed as unresolved below
+         1 changed symbol(s) were never looked up in the graph:
+            src/click/formatting.py  src/click/formatting.py:1  no symbol in the snapshot of this file carries that name
+```
+
+### Deliberately not done in this pass
+
+The echo demotion of the twelve `core.py` nodes and the absent
+`UsageError.show` are both downstream of this bug and are now standing on
+different edges than when they were judged. They are left exactly as they were,
+to be re-judged against the corrected field rather than tuned around here.

@@ -41,8 +41,14 @@ type Analysis struct {
 	Channels         map[string]bool
 
 	Sources []graph.Source
-	Nodes   []*shadow.Node
-	Summary shadow.Summary
+	// Unresolved names the changed symbols the graph could not be asked about,
+	// with the reason for each. It is deliberately separate from Sources: a
+	// symbol whose dependents were never looked up and a symbol that was
+	// looked up and has none are different findings, and a report that prints
+	// the same sentence for both is telling the reader the wrong thing.
+	Unresolved []UnresolvedSource
+	Nodes      []*shadow.Node
+	Summary    shadow.Summary
 
 	Timeline []TimelineEvent
 	Cut      int
@@ -116,6 +122,19 @@ func (e Execution) UnnamedNote() string {
 		e.UnnamedFailures)
 }
 
+// UnresolvedSource is a changed symbol the graph could not be asked about.
+//
+// It exists because "the graph found no dependents" and "the graph was never
+// asked" read identically in a report and mean opposite things. The first is a
+// finding about the code. The second is a gap in the analysis, and naming the
+// symbol is what lets a reviewer tell them apart.
+type UnresolvedSource struct {
+	Name   string `json:"name"`
+	File   string `json:"file"`
+	Line   int    `json:"line,omitempty"`
+	Reason string `json:"reason"`
+}
+
 // Leak is a test the full sweep found that the selection missed.
 type Leak struct {
 	Test   string `json:"test"`
@@ -156,6 +175,26 @@ func (e Execution) SweepOnlyFailures() []string {
 		}
 	}
 	return out
+}
+
+// EmptyDocketReason is the sentence for a docket with nothing in it.
+//
+// There are three ways to have no rows and they are not the same statement.
+// Everything was examined; the graph was asked and found nothing; or the graph
+// was never asked because a changed symbol could not be resolved. The last one
+// used to render as the second, which reads as an all-clear on an analysis
+// that did not happen. Every surface asks this rather than choosing its own
+// words.
+func (a *Analysis) EmptyDocketReason() string {
+	switch {
+	case a.Summary.Lit > 0 && len(a.Unresolved) == 0:
+		return "nothing is in shadow: every dependent was examined"
+	case len(a.Unresolved) > 0 && len(a.Unresolved) >= len(a.Sources):
+		return "no dependents could be looked up: every changed symbol is listed as unresolved below"
+	case len(a.Unresolved) > 0:
+		return "no dependents were found for the symbols that resolved, and the unresolved ones below were never asked about"
+	}
+	return "the graph was asked about every changed symbol and found no dependents"
 }
 
 // Shadowed returns the nodes that are not lit, in docket order.

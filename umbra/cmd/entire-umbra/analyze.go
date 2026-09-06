@@ -101,6 +101,15 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	if len(a.Sources) == 0 && len(bound) > 0 {
 		a.Notes = append(a.Notes, "nothing in this commit changed code the graph can follow, so there is no field to light")
 	}
+	// A changed entity Graph could only name at module granularity has no
+	// dependents to report and is not a finding about the code. Saying so here
+	// is what keeps "the graph could not resolve this" out of the sentence
+	// reserved for "the graph resolved this and found nothing".
+	if n := moduleGranularity(a.Sources); n > 0 {
+		a.Notes = append(a.Notes, fmt.Sprintf(
+			"%d changed entity(s) were reported only at whole-file granularity, so no symbol-level dependents could be asked for",
+			n))
+	}
 
 	sourceIDs := make([]string, 0, len(a.Sources))
 	sourceFiles := map[string]bool{}
@@ -112,16 +121,33 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	}
 
 	// Step 3c: impact per source, for exact call-site lines and co-change.
+	//
+	// Every skip is surfaced. A source with no symbol used to be passed over in
+	// silence, which is how a changed method's dependents went untraversed
+	// while the report read as though the graph had been asked and had nothing
+	// to say. An impact call that errors is surfaced for the same reason.
 	impacts := map[string]*graph.Impact{}
 	for _, s := range a.Sources {
 		if s.Symbol == "" {
+			a.Unresolved = append(a.Unresolved, report.UnresolvedSource{
+				Name: s.Name, File: s.File, Line: s.Span[0], Reason: unresolvedReason(s),
+			})
 			continue
 		}
 		imp, err := graph.LoadImpact(ctx, run, head, s.Name, s.File, s.Span[0])
 		if err != nil {
+			a.Unresolved = append(a.Unresolved, report.UnresolvedSource{
+				Name: s.Name, File: s.File, Line: s.Span[0],
+				Reason: "the impact query for it failed: " + scrub.Clean(err.Error()),
+			})
 			continue
 		}
 		impacts[s.Symbol] = imp
+	}
+	if len(a.Unresolved) > 0 {
+		a.Notes = append(a.Notes, fmt.Sprintf(
+			"%d changed symbol(s) could not be looked up in the graph, so nothing was traversed for them; they are named below",
+			len(a.Unresolved)))
 	}
 	a.Channels["callsites"] = len(impacts) > 0
 
@@ -371,4 +397,28 @@ func limitations(a *report.Analysis, caps *graph.Capabilities, e *shadow.Examine
 
 func writeTable(sd report.Sealed, all bool) error {
 	return report.Table(os.Stdout, sd, report.DetectTableOptions(all))
+}
+
+// unresolvedReason turns a source that did not bind into a sentence. Bind
+// records why; anything without a recorded reason is still named rather than
+// dropped.
+func unresolvedReason(s graph.Source) string {
+	if s.Unresolved != "" {
+		return s.Unresolved
+	}
+	return "it could not be matched to a symbol in the snapshot"
+}
+
+// moduleGranularity counts changed entities Graph reported as a whole file
+// rather than as a definition inside it. It answers with the file's own path
+// as the entity name and a dependent count of zero, which is not a statement
+// about the code.
+func moduleGranularity(sources []graph.Source) int {
+	n := 0
+	for _, s := range sources {
+		if s.Kind == "module" || s.Name == s.File {
+			n++
+		}
+	}
+	return n
 }

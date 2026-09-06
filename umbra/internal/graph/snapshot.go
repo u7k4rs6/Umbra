@@ -11,12 +11,22 @@ import (
 
 // Symbol is one definition in the repository.
 type Symbol struct {
-	ID     string
-	Name   string
-	Kind   string
-	File   string
-	Span   [2]int
-	IsTest bool
+	ID   string
+	Name string
+	// QualifiedName is the provider's own qualified form, one level deep:
+	// "TopClass.method" for a method, and the bare name for anything at module
+	// level. It is what `graph commit` names a changed entity by, so it is the
+	// field a changed symbol is bound through. It is never reconstructed here;
+	// a snapshot that omits it leaves this empty and binding falls back to
+	// Name. NOTES carries the table this was measured from.
+	QualifiedName string
+	// ContainerID is the enclosing symbol, when there is one. It is not used
+	// for binding, because QualifiedName already carries the container's name.
+	ContainerID string
+	Kind        string
+	File        string
+	Span        [2]int
+	IsTest      bool
 	// Signature is the declaration line Graph reported. It reaches a report
 	// only under --snippets, capped and scrubbed.
 	Signature string
@@ -55,14 +65,16 @@ type snapRecord struct {
 	Path string `json:"path"`
 
 	// symbol
-	ID        string `json:"id"`
-	Kind      string `json:"kind"`
-	Name      string `json:"name"`
-	FilePath  string `json:"file_path"`
-	StartLine int    `json:"start_line"`
-	EndLine   int    `json:"end_line"`
-	Signature string `json:"signature"`
-	Language  string `json:"language"`
+	ID            string `json:"id"`
+	Kind          string `json:"kind"`
+	Name          string `json:"name"`
+	QualifiedName string `json:"qualified_name"`
+	ContainerID   string `json:"container_id"`
+	FilePath      string `json:"file_path"`
+	StartLine     int    `json:"start_line"`
+	EndLine       int    `json:"end_line"`
+	Signature     string `json:"signature"`
+	Language      string `json:"language"`
 
 	// relation
 	FromID   string         `json:"from_id"`
@@ -116,13 +128,15 @@ func LoadSnapshot(ndjson []byte) (*Field, error) {
 				continue
 			}
 			s := &Symbol{
-				ID:        r.ID,
-				Name:      r.Name,
-				Kind:      r.Kind,
-				File:      r.FilePath,
-				Span:      [2]int{r.StartLine, r.EndLine},
-				Signature: r.Signature,
-				Language:  r.Language,
+				ID:            r.ID,
+				Name:          r.Name,
+				QualifiedName: r.QualifiedName,
+				ContainerID:   r.ContainerID,
+				Kind:          r.Kind,
+				File:          r.FilePath,
+				Span:          [2]int{r.StartLine, r.EndLine},
+				Signature:     r.Signature,
+				Language:      r.Language,
 			}
 			// The snapshot carries no test marking, which the Step 0 probe
 			// confirmed, so IsTest comes from file and name conventions.
