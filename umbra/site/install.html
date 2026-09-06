@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src data:; connect-src 'self'">
+<title>Install</title>
+<link rel="stylesheet" href="umbra.css">
+<link rel="stylesheet" href="landing.css">
+<script>document.documentElement.classList.remove("nojs");document.documentElement.classList.add("js");</script>
+</head>
+<body class="scheme-night">
+
+<a class="skip mono" href="#main">Skip to the content</a>
+
+<div class="grid-overlay" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<header class="topbar" id="topbar">
+  <div class="bar">
+    <a class="wordmark mono" href="index.html">Umbra</a>
+    <nav class="pill mono" aria-label="Pages">
+      <a href="map.html">Map</a>
+      <a href="how.html">How it works</a>
+      <a href="install.html" class="on">Install</a>
+      <a href="build.html">Build</a>
+      <a href="limits.html">Limits</a>
+    </nav>
+    <a class="ghost mono" href="https://github.com/u7k4rs6/Umbra">Source</a>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="band top" data-reveal>
+  <div class="head">
+    <span class="marker mono">01 &nbsp; Install</span>
+    <h2 class="big">One binary. No model, no network.</h2>
+    <p class="sub">Any executable named <code>entire-&lt;name&gt;</code> on your PATH is dispatched by the Entire CLI kubectl style, so this is the whole installation.</p>
+  </div>
+
+  <div class="cards two">
+    <div class="card term" data-torch>
+      <span class="n mono">01</span>
+      <span class="word mono">Install and run</span>
+      <pre class="block">go install github.com/u7k4rs6/Umbra/umbra/cmd/entire-umbra@main
+entire umbra HEAD --test "pytest -v" --out ./umbra-out
+open ./umbra-out/umbra.html</pre>
+      <p class="plain">Requires the Entire CLI with Checkpoints enabled and the entire-graph plugin. Use <code>pytest -v</code>, not <code>-q</code>: quiet mode prints no per-test names, so the verifier cannot tell you which test broke, and the verdict degrades to a suite-level pass or fail. Umbra says so in the header when that happens.</p>
+    </div>
+    <div class="card term" data-torch>
+      <span class="n mono">02</span>
+      <span class="word mono">Reproduce this site's map</span>
+      <pre class="block">git clone https://github.com/u7k4rs6/Umbra
+cd Umbra/umbra/fixtures/app &amp;&amp; ./setup.sh
+cd ../../..
+. umbra/fixtures/app/.venv/bin/activate
+entire umbra 0063443 --test "pytest -v"</pre>
+      <p class="plain">That reports 8 probes selected and 5 cracked, with a full sweep and 0 leaks. The venv is activated because the runner has to be on PATH: the tests run in a detached worktree that has no venv in it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" data-reveal>
+  <div class="head">
+    <span class="marker mono">02 &nbsp; Flags</span>
+    <h2 class="big">The whole command surface.</h2>
+  </div>
+  <div class="flags">
+    <div class="flag"><code>--test CMD</code><span class="plain">Test runner prefix. Validated test ids are appended as separate argv elements, never joined into a shell string.</span></div>
+    <div class="flag"><code>--run none|shadow|all</code><span class="plain">Which selected tests to run. Default shadow. With none the map still renders.</span></div>
+    <div class="flag"><code>--no-audit</code><span class="plain">Skip the full-suite sweep, which is on by default.</span></div>
+    <div class="flag"><code>--history</code><span class="plain">Add the opt-in scar factor from git history.</span></div>
+    <div class="flag"><code>--depth 1|2|3</code><span class="plain">Dependency hops. Default 2.</span></div>
+    <div class="flag"><code>--format table|json|html|packet</code><span class="plain">What goes to stdout.</span></div>
+    <div class="flag"><code>--out PATH</code><span class="plain">Write umbra.json, umbra.html and umbra.packet.md.</span></div>
+    <div class="flag"><code>--fail-on umbra|penumbra|failure|leak</code><span class="plain">Exit 2 when the condition holds, for use in CI.</span></div>
+    <div class="flag"><code>--snippets</code><span class="plain">Include declaration lines in the report. Off by default.</span></div>
+    <div class="flag"><code>--all</code><span class="plain">List lit nodes in the table instead of counting them.</span></div>
+    <div class="flag"><code>--test-root PATH</code><span class="plain">Where the runner runs, when the project is nested.</span></div>
+  </div>
+  <p class="caption center">Exit codes: 0 completed, 2 the <code>--fail-on</code> condition was met, 1 runtime error.</p>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="foot-grid">
+    <div class="foot-col brand">
+      <span class="wordmark mono">Umbra</span>
+      <p class="plain">Finds the code an AI agent's change affects but the agent never looked at. A plugin for the Entire CLI. Deterministic, offline, and there is no model anywhere in it.</p>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">The site</span>
+      <a href="index.html">Home</a>
+      <a href="map.html">The map</a>
+      <a href="how.html">How it works</a>
+      <a href="install.html">Install</a>
+      <a href="build.html">Build record</a>
+      <a href="limits.html">Limits</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Built on</span>
+      <a href="https://github.com/entireio/cli">Entire CLI</a>
+      <a href="https://github.com/entireio/entire-graph">Entire Graph</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Source</span>
+      <a href="https://github.com/u7k4rs6/Umbra">Repository</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/NOTES.md">Build record</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/docs/FRONTEND_SPEC.md">Frontend spec</a>
+    </div>
+  </div>
+  <p class="foot-note mono">Built during Bengaluru Tech Week on the Entire ecosystem. Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
+</footer>
+
+<script src="site.js"></script>
+<script src="motion.js"></script>
+</body>
+</html>

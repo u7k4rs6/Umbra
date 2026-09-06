@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src data:; connect-src 'self'">
+<title>How it works</title>
+<link rel="stylesheet" href="umbra.css">
+<link rel="stylesheet" href="landing.css">
+<script>document.documentElement.classList.remove("nojs");document.documentElement.classList.add("js");</script>
+</head>
+<body class="scheme-night">
+
+<a class="skip mono" href="#main">Skip to the content</a>
+
+<div class="grid-overlay" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<header class="topbar" id="topbar">
+  <div class="bar">
+    <a class="wordmark mono" href="index.html">Umbra</a>
+    <nav class="pill mono" aria-label="Pages">
+      <a href="map.html">Map</a>
+      <a href="how.html" class="on">How it works</a>
+      <a href="install.html">Install</a>
+      <a href="build.html">Build</a>
+      <a href="limits.html">Limits</a>
+    </nav>
+    <a class="ghost mono" href="https://github.com/u7k4rs6/Umbra">Source</a>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="band top" data-reveal>
+  <div class="head">
+    <span class="marker mono">01 &nbsp; States</span>
+    <h2 class="big">Four states. Missing data is one of them.</h2>
+    <p class="sub">A transcript with no tool records gives every node the unknown state, which is the correct answer rather than a guess. Nothing here is ever an error.</p>
+  </div>
+
+  <div class="cards four">
+    <div class="card" data-torch>
+      <span class="n mono">01</span><span class="glyph state-lit big-glyph">&#9679;</span>
+      <span class="word mono">Lit</span>
+      <p class="plain">Read with a range covering the symbol, at or after the change began. Or edited.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">02</span><span class="glyph state-penumbra big-glyph">&#9680;</span>
+      <span class="word mono">Penumbra</span>
+      <p class="plain">Half seen. One of the five tiers below, from a partial read down to a mention.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">03</span><span class="glyph state-umbra big-glyph">&#9675;</span>
+      <span class="word mono">Umbra</span>
+      <p class="plain">Nothing in the session touched the file or named it. This is what the tool exists to find.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">04</span><span class="glyph state-unknown big-glyph">?</span>
+      <span class="word mono">Unknown</span>
+      <p class="plain">The transcript carries no tool events and no mentions, so no state can be computed.</p>
+    </div>
+  </div>
+
+  <p class="center-note mono">The five penumbra tiers, strongest evidence first</p>
+  <p class="tiers">
+    <span class="chip"><b>glance</b><i>a partial read whose range missed the symbol</i></span>
+    <span class="chip"><b>glimpse</b><i>only a search hit on the file</i></span>
+    <span class="chip"><b>quoted</b><i>its content appeared inside a tool result</i></span>
+    <span class="chip"><b>afterimage</b><i>read fully, but only before the change began</i></span>
+    <span class="chip"><b>echo</b><i>named in the agent's own words, never opened</i></span>
+  </p>
+</section>
+
+<section class="band" id="ranking" data-reveal>
+  <div class="head">
+    <span class="marker mono">02 &nbsp; Ranking</span>
+    <h2 class="big">Six factors, all printed next to the node.</h2>
+    <p class="sub">Every score can be recomputed by hand. That is the point of printing them.</p>
+  </div>
+
+  <ol class="factors" id="factors">
+    <li><b>Relation weight.</b> A direct caller is 3, a data flow or type consumer 2, a caller reached through another symbol 1.5, a co-change file 1.</li>
+    <li><b>How much depends on it.</b> Multiplied by 1 plus the base-two logarithm of 1 plus its own dependents.</li>
+    <li><b>How weakly it was seen.</b> Multiplied by 1 for umbra, 0.7 for echo, 0.6 for afterimage, 0.5 for the other penumbra tiers, 0 for lit.</li>
+    <li><b>Far field.</b> Multiplied by 1.5 when it sits in a different package from the symbol that changed.</li>
+    <li><b>Fault line.</b> Multiplied by 1.5 when the call site sits inside error handling.</li>
+    <li><b>Tests.</b> Plus 3 if it is a test, plus 2 if a test reaches it.</li>
+  </ol>
+
+  <div class="cards three tight">
+    <div class="card" data-torch>
+      <span class="word mono">Worked by hand</span>
+      <p class="plain"><code>test_rounding</code> is a direct caller, so 3. No dependents of its own, so 1. Full umbra, so 1. It lives in <code>tests/</code> while the change is in <code>app/</code>, so 1.5. Ordinary call site, so 1. It is a test, so add 3. That is 3 x 1 x 1 x 1.5 x 1 + 3 = 7.5.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="word mono">The beacon override</span>
+      <p class="plain">A call site within four lines of a <code>SAFETY</code>, <code>CRITICAL</code> or <code>INVARIANT</code> comment is pinned to the top whatever it scored, with the comment shown. Somebody wrote that note by hand; it outranks a heuristic.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="word mono">The scar factor</span>
+      <p class="plain">Opt in with <code>--history</code>: a file with several recent fix commits is multiplied by up to 2. Off by default because it is noisy, and printed like every other factor when it is on.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="pipeline" data-reveal>
+  <div class="head">
+    <span class="marker mono">03 &nbsp; The pipeline</span>
+    <h2 class="big">What happens when you run it.</h2>
+    <p class="sub">Every input comes through documented Entire and Graph output. There is no model at any step.</p>
+  </div>
+  <ol class="factors steps">
+    <li><b>Resolve.</b> Turn a checkpoint id or a commit-ish into a checkpoint, a commit and its parent, and say how the pairing was made.</li>
+    <li><b>Check out.</b> Detached worktrees of head and parent under the plugin data directory, never in your working tree.</li>
+    <li><b>Load the field.</b> A graph snapshot, the relation map from the installed capabilities, and the changed symbols from the commit.</li>
+    <li><b>Walk it.</b> Breadth first to the requested depth, keeping the shortest path from each dependent back to a source.</li>
+    <li><b>Subtract.</b> Build the examined set from the transcript's tool activity and the agent's own words, and classify every node.</li>
+    <li><b>Probe.</b> Select the tests that reach shadow, record a baseline on the parent, and adjudicate on the head.</li>
+    <li><b>Sweep.</b> Run the whole suite once and report every test the selection missed, with the reason it missed it.</li>
+  </ol>
+</section>
+
+<section class="band" id="sweep" data-reveal>
+  <div class="head">
+    <span class="marker mono">04 &nbsp; The sweep</span>
+    <h2 class="big">A selection that audits itself is worth more than one that does not.</h2>
+  </div>
+  <div class="cards two">
+    <div class="card" data-torch>
+      <span class="word mono">What a leak is</span>
+      <p class="plain">A test that changed state under the edit but that selection never chose. It is reported separately from a cracked probe, because calling it a probe would name a test that was never among the probes.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="word mono">Why it was missed</span>
+      <p class="plain">Each leak carries its reason: a path deeper than the search went, no resolved call edges from the test file, a path only over a relation Umbra does not follow, or nothing the graph can see at all. That is how you see the size of the gap.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="foot-grid">
+    <div class="foot-col brand">
+      <span class="wordmark mono">Umbra</span>
+      <p class="plain">Finds the code an AI agent's change affects but the agent never looked at. A plugin for the Entire CLI. Deterministic, offline, and there is no model anywhere in it.</p>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">The site</span>
+      <a href="index.html">Home</a>
+      <a href="map.html">The map</a>
+      <a href="how.html">How it works</a>
+      <a href="install.html">Install</a>
+      <a href="build.html">Build record</a>
+      <a href="limits.html">Limits</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Built on</span>
+      <a href="https://github.com/entireio/cli">Entire CLI</a>
+      <a href="https://github.com/entireio/entire-graph">Entire Graph</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Source</span>
+      <a href="https://github.com/u7k4rs6/Umbra">Repository</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/NOTES.md">Build record</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/docs/FRONTEND_SPEC.md">Frontend spec</a>
+    </div>
+  </div>
+  <p class="foot-note mono">Built during Bengaluru Tech Week on the Entire ecosystem. Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
+</footer>
+
+<script src="site.js"></script>
+<script src="motion.js"></script>
+</body>
+</html>

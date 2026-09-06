@@ -63,13 +63,26 @@ func run(root string) error {
 		return err
 	}
 
-	// The sample is embedded in the page as well as sitting beside it. A page
-	// opened from file:// cannot fetch its own sibling, and the landing page
-	// has to work from file://.
-	if err := embedSample(filepath.Join(site, "index.html"), blob, sampleTag); err != nil {
+	// The sample is embedded in the pages as well as sitting beside them. A
+	// page opened from file:// cannot fetch its own sibling, and the site has
+	// to work from file://.
+	//
+	// The site is more than one page now, so this embeds into every page that
+	// carries the block rather than into index.html by name. A page that draws
+	// no map carries no block and is skipped, which keeps it small.
+	pages, err := sitePages(site)
+	if err != nil {
 		return err
 	}
-	fmt.Printf("embedded %s (%d bytes)\n", samplePath, len(blob))
+	for _, page := range pages {
+		n, err := embedSample(page, blob, sampleTag)
+		if err != nil {
+			return err
+		}
+		if n {
+			fmt.Printf("embedded %s into %s (%d bytes)\n", samplePath, filepath.Base(page), len(blob))
+		}
+	}
 
 	// The second map, when there is one, is a report from a session in another
 	// project. It is optional: the page renders without it.
@@ -78,10 +91,15 @@ func run(root string) error {
 		if err := CheckSampleIsClean(importedPath, blob); err != nil {
 			return err
 		}
-		if err := embedSample(filepath.Join(site, "index.html"), blob, importedTag); err != nil {
-			return err
+		for _, page := range pages {
+			n, err := embedSample(page, blob, importedTag)
+			if err != nil {
+				return err
+			}
+			if n {
+				fmt.Printf("embedded %s into %s (%d bytes)\n", importedPath, filepath.Base(page), len(blob))
+			}
 		}
-		fmt.Printf("embedded %s (%d bytes)\n", importedPath, len(blob))
 	}
 	return nil
 }
@@ -135,26 +153,48 @@ const (
 	closeTag    = "</script>"
 )
 
-// embedSample replaces the contents of one data block in the page.
-func embedSample(path string, blob []byte, id string) error {
+// sitePages lists the html pages at the top of the site directory. The report
+// directories under it hold generated reports, not pages, and are left alone.
+func sitePages(site string) ([]string, error) {
+	entries, err := os.ReadDir(site)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, e := range entries {
+		if e.IsDir() || filepath.Ext(e.Name()) != ".html" {
+			continue
+		}
+		out = append(out, filepath.Join(site, e.Name()))
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("%s holds no pages", site)
+	}
+	return out, nil
+}
+
+// embedSample replaces the contents of one data block in a page, and reports
+// whether the page carried that block at all. A page that draws no map is not
+// an error; it just does not need the data.
+func embedSample(path string, blob []byte, id string) (bool, error) {
 	page, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return false, err
 	}
 	open := `<script type="application/json" id="` + id + `">`
 	text := string(page)
 	start := strings.Index(text, open)
 	if start < 0 {
-		return fmt.Errorf("%s has no %s block", path, id)
+		return false, nil
 	}
 	from := start + len(open)
 	end := strings.Index(text[from:], closeTag)
 	if end < 0 {
-		return fmt.Errorf("%s has an unclosed %s block", path, id)
+		return false, fmt.Errorf("%s has an unclosed %s block", path, id)
 	}
 
 	// The same escaping the report uses: a literal closing tag inside a string
 	// would end the script element early.
 	safe := strings.ReplaceAll(string(blob), "</", `<\/`)
-	return os.WriteFile(path, []byte(text[:from]+safe+text[from+end:]), 0o644)
+	return true, os.WriteFile(path, []byte(text[:from]+safe+text[from+end:]), 0o644)
 }

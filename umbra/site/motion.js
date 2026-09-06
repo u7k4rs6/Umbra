@@ -77,7 +77,7 @@
   var topbar = document.getElementById("topbar");
   var progress = document.querySelector(".progress");
   var stage = document.getElementById("stage");
-  var spyLinks = all("#spy a");
+  var spyLinks = all(".pill a[data-spy]");
   var factors = all("#factors li");
   var sections = spyLinks.map(function (a) {
     return document.getElementById(a.getAttribute("data-spy"));
@@ -139,12 +139,14 @@
   // and it ends on the exact value site.js wrote.
   function countUp() {
     var line = document.getElementById("contradiction");
-    if (!line) { return; }
-    all("b", line).forEach(function (b, i) {
+    var targets = [];
+    if (line) { targets = targets.concat(all("b", line)); }
+    targets = targets.concat(all(".stat dd, .card .count"));
+    targets.forEach(function (b, i) {
       var target = parseInt(b.textContent, 10);
       if (!isFinite(target) || target <= 0) { return; }
       var started = null;
-      var dur = 620 + i * 90;
+      var dur = 620 + (i % 5) * 90;
       b.textContent = "0";
       function frame(t) {
         if (!started) { started = t; }

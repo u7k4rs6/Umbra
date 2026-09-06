@@ -72,6 +72,25 @@
     }
   }
 
+  // The four numbers in the hero and the three counts on the state cards are
+  // the report's own. Nothing on this page is a figure somebody chose.
+  function showStats(data) {
+    if (!data) { return; }
+    var sum = data.summary || {};
+    var v = {
+      lit: sum.lit || 0,
+      penumbra: sum.penumbra || 0,
+      umbra: sum.umbra || 0,
+      unknown: sum.unknown || 0,
+      fails: ((data.execution || {}).new_failures || []).length
+    };
+    v.total = v.lit + v.penumbra + v.umbra + v.unknown;
+    all("[data-stat]").forEach(function (el) {
+      var key = el.getAttribute("data-stat");
+      if (key in v) { el.textContent = String(v[key]); }
+    });
+  }
+
   function add(el, text) { el.appendChild(document.createTextNode(text)); }
   function strong(el, text) {
     var b = document.createElement("b");
@@ -376,6 +395,7 @@
     drawCorona(data);
     showSaid(data);
     showContradiction(data);
+    showStats(data);
     applyFilter();
     dayDirty = true;
     if (wipe < 100) { ensureDay(); }

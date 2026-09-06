@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src data:; connect-src 'self'">
+<title>Build record</title>
+<link rel="stylesheet" href="umbra.css">
+<link rel="stylesheet" href="landing.css">
+<script>document.documentElement.classList.remove("nojs");document.documentElement.classList.add("js");</script>
+</head>
+<body class="scheme-night">
+
+<a class="skip mono" href="#main">Skip to the content</a>
+
+<div class="grid-overlay" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<header class="topbar" id="topbar">
+  <div class="bar">
+    <a class="wordmark mono" href="index.html">Umbra</a>
+    <nav class="pill mono" aria-label="Pages">
+      <a href="map.html">Map</a>
+      <a href="how.html">How it works</a>
+      <a href="install.html">Install</a>
+      <a href="build.html" class="on">Build</a>
+      <a href="limits.html">Limits</a>
+    </nav>
+    <a class="ghost mono" href="https://github.com/u7k4rs6/Umbra">Source</a>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="band top" data-reveal>
+  <div class="head">
+    <span class="marker mono">01 &nbsp; The record</span>
+    <h2 class="big">Nineteen phases, and the mistakes are in the record too.</h2>
+    <p class="sub">Every phase is a commit, the test count is in the commit message, and <code>go test ./...</code> was green at each one. A build record that only lists what worked is not a record.</p>
+  </div>
+  <div class="phases">
+      <div class="prow"><span class="pn mono">0</span><span class="pw">Repository, docs, README pointer</span><span class="pt mono">0</span></div>
+      <div class="prow"><span class="pn mono">1</span><span class="pw">Step 0 probe, eight questions answered, degradations written</span><span class="pt mono">0</span></div>
+      <div class="prow"><span class="pn mono">2</span><span class="pw">Module, Runner, resolve, worktrees, command surface</span><span class="pt mono">40</span></div>
+      <div class="prow"><span class="pn mono">3</span><span class="pw">Transcript adapter, mentions, timeline, session-said fallback</span><span class="pt mono">67</span></div>
+      <div class="prow"><span class="pn mono">4</span><span class="pw">Snapshot loader, relation map, BFS, impact parser, sources</span><span class="pt mono">89</span></div>
+      <div class="prow"><span class="pn mono">5</span><span class="pw">Classifier, call-site window, six-factor ranker, terminal table</span><span class="pt mono">158</span></div>
+      <div class="prow"><span class="pn mono">6</span><span class="pw">Test selection, verify with baseline, the sweep and leak forensics</span><span class="pt mono">187</span></div>
+      <div class="prow"><span class="pn mono">7</span><span class="pw">JSON, layout, packet, umbra record, the eight scenarios</span><span class="pt mono">227</span></div>
+      <div class="prow"><span class="pn mono">8</span><span class="pw">HTML map, docket, detail panel</span><span class="pt mono">240</span></div>
+      <div class="prow"><span class="pn mono">9</span><span class="pw">Attention replay, keyboard, spotlight, day scheme, print</span><span class="pt mono">241</span></div>
+      <div class="prow"><span class="pn mono">10</span><span class="pw">Landing page, drop-in viewer, README</span><span class="pt mono">243</span></div>
+      <div class="prow"><span class="pn mono">11</span><span class="pw">Semantic-diff review, the self report, scrubber fixes</span><span class="pt mono">249</span></div>
+      <div class="prow"><span class="pn mono">12</span><span class="pw">Coverage line, runner check, minimal record, scrub pass</span><span class="pt mono">274</span></div>
+      <div class="prow"><span class="pn mono">13</span><span class="pw">Exit-code tests end to end, the real four-hop leak chain</span><span class="pt mono">286</span></div>
+      <div class="prow"><span class="pn mono">14</span><span class="pw">A real sample on the page, the imported map, light field, labels</span><span class="pt mono">298</span></div>
+      <div class="prow"><span class="pn mono">15</span><span class="pw">The scrubber becomes the only exit; a known-positive for every check</span><span class="pt mono">316</span></div>
+      <div class="prow"><span class="pn mono">16</span><span class="pw">The eclipse hero: a drawn corona, the beats, the day and night divider</span><span class="pt mono">316</span></div>
+      <div class="prow"><span class="pn mono">17</span><span class="pw">Ground and focus checked from screenshots, PUBLISH.md, README pass</span><span class="pt mono">316</span></div>
+      <div class="prow"><span class="pn mono">18</span><span class="pw">The motion layer, then the site</span><span class="pt mono">316</span></div>
+  </div>
+</section>
+
+<section class="band" data-reveal>
+  <div class="head">
+    <span class="marker mono">02 &nbsp; What it found</span>
+    <h2 class="big">Four confident answers that were wrong.</h2>
+    <p class="sub">Every one of them came from a check that had only ever passed. Each now has a test that plants what the check is for and proves it fires.</p>
+  </div>
+  <div class="cards two">
+    <div class="card" data-torch>
+      <span class="n mono">01</span><span class="word mono">The gitignore that hid a package</span>
+      <p class="plain">A semantic diff showed <code>umbra/cmd</code> missing entirely. The second line of a gitignore written in the first commit, <code>entire-umbra</code>, matched the binary and also the directory its source lives in. Seven files had never been committed, through nine phases of green test runs, because the compiler reads the working tree and git reads the repository. A clone was the only symptom available, and nobody had made one.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">02</span><span class="word mono">Umbra found its own blind spot</span>
+      <p class="plain">Run on the commit where it changed its own <code>shadow.Build</code>, all twelve dependents came back umbra. That reading is correct: the change was made with a shell command rather than the editing tool, so the session produced no read and no edit event. The examined set is built from tool activity. It is in the limitations rather than tuned away.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">03</span><span class="word mono">Five leaks, one shape</span>
+      <p class="plain">Five scrubbing bugs were the same bug five times: an output path that wrote without going through the scrubber. Each was fixed where it was found, which fixed that path and left the shape. The renderers now take a value only the scrubbing path can produce, so a new output cannot skip it by omission.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="n mono">04</span><span class="word mono">Tests that proved nothing</span>
+      <p class="plain">Four label-placement tests across eight scenarios were all built on one overlap function. Making it return false for every pair left every one of them passing. They had been proving determinism, not collision. The case that has to fail for the rest to mean anything is now written down.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" data-reveal>
+  <div class="head">
+    <span class="marker mono">03 &nbsp; Disclosure</span>
+    <h2 class="big">Who wrote what.</h2>
+  </div>
+  <div class="cards two">
+    <div class="card" data-torch>
+      <span class="word mono">The agent</span>
+      <p class="plain">All product code across every phase was written during the build with an AI coding agent, captured in Entire checkpoints. That includes the tests, this site, the corona renderer and every document in the repository except the four planning documents, which were written before the build with AI assistance and are the first commit.</p>
+    </div>
+    <div class="card" data-torch>
+      <span class="word mono">The human</span>
+      <p class="plain">The problem, the settled decisions in the kickoff, the scope of every phase, the decision to keep the repository private, and the visual direction for this site, which was specified before it was built and not proposed by the agent. Every phase was reviewed and accepted by hand before the next one started.</p>
+    </div>
+  </div>
+  <p class="caption center">No code was reused. The idea of subtracting the examined set from a blast radius was developed in planning for this event.</p>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="foot-grid">
+    <div class="foot-col brand">
+      <span class="wordmark mono">Umbra</span>
+      <p class="plain">Finds the code an AI agent's change affects but the agent never looked at. A plugin for the Entire CLI. Deterministic, offline, and there is no model anywhere in it.</p>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">The site</span>
+      <a href="index.html">Home</a>
+      <a href="map.html">The map</a>
+      <a href="how.html">How it works</a>
+      <a href="install.html">Install</a>
+      <a href="build.html">Build record</a>
+      <a href="limits.html">Limits</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Built on</span>
+      <a href="https://github.com/entireio/cli">Entire CLI</a>
+      <a href="https://github.com/entireio/entire-graph">Entire Graph</a>
+    </div>
+    <div class="foot-col">
+      <span class="mono foot-head">Source</span>
+      <a href="https://github.com/u7k4rs6/Umbra">Repository</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/NOTES.md">Build record</a>
+      <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/docs/FRONTEND_SPEC.md">Frontend spec</a>
+    </div>
+  </div>
+  <p class="foot-note mono">Built during Bengaluru Tech Week on the Entire ecosystem. Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
+</footer>
+
+<script src="site.js"></script>
+<script src="motion.js"></script>
+</body>
+</html>
