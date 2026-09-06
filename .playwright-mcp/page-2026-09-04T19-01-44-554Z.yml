@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: Umbra 0.1.0 checkpoint
+      - strong [ref=e4]: b20f84567474
+      - text: commit
+      - strong [ref=e5]: "0063443"
+      - text: parent
+      - strong [ref=e6]: faf4dc6
+      - text: agent
+      - strong [ref=e7]: Claude Code
+      - text: depth
+      - strong [ref=e8]: "2"
+    - generic [ref=e9]:
+      - generic [ref=e10]: Session said (the agent's own account, what the agent said after its last edit, because Entire stored no summary; displayed, never checked)
+      - text: Now running the focused test the probe calls for.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - img "2 of 11 dependents lit" [ref=e13]
+        - generic [ref=e16]: 2 of 11 dependents lit
+      - generic [ref=e17]: 8 probes, 5 cracked
+      - generic [ref=e18]: full sweep, 0 leaks
+    - paragraph [ref=e19]: commit 0063443 carries no Entire-Checkpoint trailer, so it was paired with checkpoint b20f845 by session time
+    - paragraph [ref=e20]: graph checkpoint had no commit for this checkpoint, so the change came from graph commit
+  - img "Eclipse map" [ref=e23]
+  - contentinfo [ref=e25]:
+    - paragraph [ref=e26]: "graph edges are incomplete: reflection, dynamic dispatch and configuration are invisible, so umbra is a lower bound on what was unexamined. read evidence is file and line-range based; a mention in the agent's text is attention, not reading, and is the weakest tier. fault lines and beacons are matched by a regex window around the call site, not by a parser. ranking weights are hand set and printed; they are a heuristic, not a measurement. relations not traversed: CONFIGURES, CONSTRUCTS, EMITS, HANDLES_GRAPHQL, HANDLES_GRPC, HANDLES_ROUTE, HANDLES_TOOL, HANDLES_TRPC, HTTP_CALLS, LISTENS_ON, RESOURCE_DEPENDS_ON, SIMILAR_TO."
+    - paragraph [ref=e27]:
+      - text: "Reproduce:"
+      - code [ref=e28]: entire umbra b20f84567474 --test "/home/utkuputku/Desktop/Umbra/umbra/fixtures/app/.venv/bin/python -m pytest -v"
+    - paragraph [ref=e29]: Layout and states are computed from the checkpoint and the graph; no model was involved.

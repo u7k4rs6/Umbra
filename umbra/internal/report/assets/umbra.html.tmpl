@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<title>Eclipse map {{.A.CheckpointID}}</title>
+<style>{{.CSS}}</style>
+</head>
+<body>
+
+<header>
+  <p class="head-line">
+    Umbra {{.A.Version}}&nbsp; checkpoint <strong>{{orNone .A.CheckpointID}}</strong>&nbsp;
+    commit <strong>{{short .A.Commit}}</strong>&nbsp; parent <strong>{{short .A.Parent}}</strong>&nbsp;
+    agent <strong>{{orNone .A.Agent}}</strong>&nbsp; depth <strong>{{.A.Depth}}</strong>
+  </p>
+
+  {{if .A.SessionSaid}}
+  <div class="said">
+    <span class="said-label">Session said <span class="said-from">(the agent's own account, {{.A.SessionSaidFrom}}; displayed, never checked)</span></span>
+    <span class="said-text">{{.A.SessionSaid}}</span>
+  </div>
+  {{end}}
+
+  <div class="facts">
+    <span class="fact">{{.EclipseGlyph}} <span>{{.IlluminationText}}</span></span>
+    <span class="fact">{{.ProbeText}}</span>
+    <span class="fact">{{.SweepText}}</span>
+  </div>
+
+  {{range .A.Notes}}<p class="notice">{{.}}</p>{{end}}
+</header>
+
+<div class="wrap">
+  <div class="col-map">
+    <svg id="map" viewBox="0 0 1200 800" aria-label="Eclipse map"></svg>
+    <noscript><p class="noscript">The map needs JavaScript. The docket below lists every shadowed dependent.</p></noscript>
+  </div>
+  <div class="col-docket">
+    <div class="docket-head">
+      <h2>Docket <span class="sub">the shadowed dependents, ranked</span></h2>
+      <div class="filters" id="filters">
+        <button type="button" data-filter="shadowed" class="on">shadowed only</button>
+        <button type="button" data-filter="all">all</button>
+        <button type="button" data-filter="probes">probes only</button>
+        <button type="button" data-filter="cracks">cracks only</button>
+        <button type="button" data-filter="leaks">leaks</button>
+      </div>
+    </div>
+
+    <table class="docket" id="docket">
+      <caption>Every dependent the change reaches, with the evidence for its state and the six factors behind its score.</caption>
+      <colgroup>
+        <col class="c-state"><col class="c-sym">
+        <col class="c-rel"><col class="c-mods"><col class="c-score">
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Symbol and where</th>
+          <th scope="col">Relation</th>
+          <th scope="col">Why it ranks</th>
+          <th scope="col" class="num">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+      {{range .Rows}}
+        <tr data-id="{{.ID}}" data-state="{{.State}}"
+            data-leak="{{if .IsLeak}}1{{else}}0{{end}}"
+            data-crack="{{if .Cracked}}1{{else}}0{{end}}"
+            data-probe="{{if .Probes}}1{{else}}0{{end}}"
+            {{if .Pinned}}class="pinned"{{end}}>
+          <td class="state">
+            {{if .Pinned}}<span class="pin" title="pinned to the top by a beacon">&#9650;</span>{{end}}
+            <span class="glyph state-{{.State}}">{{.Glyph}}</span>
+            <span class="word">{{.State}}</span>
+            {{if .Cracked}}<span class="crack" title="a probe covering this failed">&#10799;</span>{{end}}
+          </td>
+          <td class="sym">
+            <code class="name">{{.Name}}</code>{{if .Kind}} <span class="sub">{{.Kind}}</span>{{end}}
+            {{if .File}}<code class="path" title="{{.File}}:{{.Line}}">{{.File}}:{{.Line}}</code>{{end}}
+          </td>
+          <td class="rel">{{if .Relation}}{{.Relation}}<br><span class="sub">depth {{.Depth}}</span>{{end}}</td>
+          <td class="mods">
+            {{range .Chips}}<span class="chip"><b>{{.Word}}</b>{{if .Meaning}}<i>{{.Meaning}}</i>{{end}}</span>{{end}}
+            {{if .IsLeak}}<span class="reason">{{.Reason}}</span>{{end}}
+            <details>
+              <summary>evidence</summary>
+              <p>{{.Sentence}}</p>
+              {{if .Beacon}}<p><code>{{.Beacon}}</code></p>{{end}}
+              {{if .Factors}}<p class="sub">{{.Factors}}</p>{{end}}
+              {{if .Probes}}<p class="sub">probes: {{.Probes}}</p>{{end}}
+              {{if .Excerpt}}<pre>{{.Excerpt}}</pre>{{end}}
+              {{if .Signature}}<p><code>{{.Signature}}</code></p>{{end}}
+            </details>
+          </td>
+          <td class="num">{{if .Score}}{{.Score}}{{end}}</td>
+        </tr>
+      {{end}}
+      </tbody>
+    </table>
+    {{if .LitHidden}}<p class="sub lit-note">{{.LitHidden}} lit dependent(s) hidden by the default filter.</p>{{end}}
+
+    <aside id="detail" class="detail" hidden aria-label="Node detail">
+      <button type="button" class="detail-close" aria-label="Close detail">Close</button>
+      <div class="detail-body"></div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <p>{{range .A.Limitations}}{{.}}. {{end}}</p>
+  <p>Reproduce: <code>{{.Reproduce}}</code></p>
+  <p>Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
+</footer>
+
+<script type="application/json" id="umbra-data">{{.JSON}}</script>
+<script>{{.JS}}</script>
+</body>
+</html>
