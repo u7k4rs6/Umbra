@@ -44,6 +44,53 @@
     });
   }
 
+  // The headline arrives a word at a time, each one rising out of its own
+  // clipped line. The text nodes are untouched: every word keeps its own
+  // characters in order and the accessible name of the heading does not
+  // change, which is the difference between a text animation and a text
+  // animation that breaks a screen reader.
+  function splitHeadline() {
+    var h = document.querySelector("h1[data-stage]");
+    if (!h || h.getAttribute("data-split") === "1") { return; }
+
+    var pieces = [];
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) {
+          n.nodeValue.split(/(\s+)/).forEach(function (part) {
+            if (part === "") { return; }
+            pieces.push({ text: part, em: node !== h });
+          });
+        } else if (n.nodeType === 1) {
+          walk(n);
+        }
+      });
+    })(h);
+
+    if (!pieces.length) { return; }
+    h.textContent = "";
+    var i = 0;
+    pieces.forEach(function (piece) {
+      if (/^\s+$/.test(piece.text)) {
+        h.appendChild(document.createTextNode(" "));
+        return;
+      }
+      var line = document.createElement("span");
+      line.className = "wline";
+      var word = document.createElement(piece.em ? "em" : "span");
+      word.className = "word-in";
+      word.textContent = piece.text;
+      word.style.setProperty("--wd", (0.10 + i * 0.055).toFixed(3) + "s");
+      i++;
+      line.appendChild(word);
+      h.appendChild(line);
+    });
+    h.setAttribute("data-split", "1");
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { h.classList.add("words-in"); });
+    });
+  }
+
   function wireReveals() {
     var bands = all("[data-reveal]");
     if (!("IntersectionObserver" in window)) {
@@ -173,6 +220,7 @@
       wireSpyOnly();
       return;
     }
+    splitHeadline();
     stageHero();
     wireReveals();
     wireTorch();

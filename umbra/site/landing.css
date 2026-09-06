@@ -1406,3 +1406,37 @@ pre.block { background-color: rgba(0, 0, 0, 0.6); }
 }
 
 section.band, .hero { overflow: clip; }
+
+/* -------------------------------------------------------- the headline */
+
+/* Each word rises out of its own clipped line. The heading keeps its text and
+ * its accessible name; only the boxes around the words are new. */
+h1 .wline {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.06em;
+}
+h1 .word-in {
+  display: inline-block;
+  transform: translateY(105%) rotate(2.5deg);
+  opacity: 0;
+  transition:
+    transform 1s var(--ease) var(--wd, 0s),
+    opacity 0.7s var(--ease) var(--wd, 0s);
+}
+h1.words-in .word-in { transform: none; opacity: 1; }
+
+/* The headline no longer needs the blanket stage fade: the words carry it. */
+.js h1[data-split="1"][data-stage] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  h1 .word-in { transform: none !important; opacity: 1 !important; transition: none !important; }
+}
+@media print {
+  h1 .word-in { transform: none !important; opacity: 1 !important; }
+}
