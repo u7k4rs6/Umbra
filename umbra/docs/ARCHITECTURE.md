@@ -293,13 +293,143 @@ A fresh session, given only `entire checkpoint explain <latest>`, `entire graph 
 
 ## Open questions
 
-Fill in after Step 0.
+Answered by the Step 0 probe on 2026-09-04. Installed versions: Entire CLI 0.10.5,
+entire-graph v0.4.1-nightly.202609030616.ddcebd05, Python 3.14.4, pytest 8.3.4.
+The probe session, its checkpoint `b20f84567474` and the commit `0063443` are the evidence.
 
-- Do Read tool inputs in the stored transcript include `offset` and `limit`?
-- Do Grep and Glob results list file paths in a parseable form?
-- What relation names does the installed Graph report in `capabilities`, and does the snapshot mark test symbols?
-- Does `graph checkpoint` exist in the installed plugin, and does it distinguish signature from body changes for Python?
-- Does `graph verify` accept a test command with pytest node IDs and report per-test state changes?
-- Does `graph impact` report call-site lines for callers in the installed version?
-- Does `checkpoint explain --short` return a stored summary without `--generate`?
-- Is `ENTIRE_PLUGIN_DATA_DIR` set for unmanaged plugins?
+**1. Do Read tool inputs in the stored transcript include `offset` and `limit`? Yes.**
+A full read stores `{"file_path": "..."}` with no range keys; a partial read stores
+`{"file_path": "...", "offset": 1, "limit": 12}`. `file_path` is absolute, so the adapter
+relativizes it against the record's `cwd` field, which is present on every record along with
+`timestamp`, `sessionId`, `uuid` and `gitBranch`. Edit stores `file_path`, `old_string`,
+`new_string` and `replace_all`. The range is therefore real and the `glance` tier is live.
+
+**2. Do Grep and Glob results list file paths in a parseable form? Partly, and the answer
+depends on the harness rather than on Entire.**
+The Claude Code harness that ran the probe exposes no `Grep` or `Glob` tool at all, so the
+session searched with `Bash` running `grep -rn`. Tool results arrive as
+`tool_result.content` holding a plain string (the field is documented to also carry an array
+of blocks, so the adapter accepts both), and that string quotes matches as
+`app/refunds.py:23:        refundable = compute_total(...)`. Paths are recoverable from it.
+Consequence: the adapter keeps its `Grep` and `Glob` handling, because ordinary Claude Code
+builds do have those tools, and additionally recovers paths from tool results, which is the
+`quoted` tier the design already defines. In a transcript like the probe's, a file seen only
+in grep output reaches `quoted` rather than `glimpse`. Both are penumbra, so no state is lost;
+only the tier name changes. This is recorded as a degradation rather than a redesign.
+
+**3. What relation names does the installed Graph report, and does the snapshot mark test
+symbols? 31 relation names; test symbols are not marked.**
+`capabilities` reports `DEFINES, CONTAINS, IMPORTS, CALLS, CONSTRUCTS, ASYNC_CALLS, EXTENDS,
+INHERITS, IMPLEMENTS, OVERRIDES, USES_TYPE, PARAM_TYPE, RETURNS_TYPE, READS_FIELD,
+WRITES_FIELD, ACCESSES, HANDLES_ROUTE, HANDLES_GRPC, HANDLES_GRAPHQL, HANDLES_TRPC,
+HTTP_CALLS, EMITS, LISTENS_ON, HANDLES_TOOL, CONFIGURES, SIMILAR_TO, TESTS,
+RESOURCE_DEPENDS_ON, DATA_FLOWS, FILE_CHANGES_WITH`. For Python the supported set is
+`CALLS, CONSTRUCTS, CONTAINS, DEFINES, IMPORTS, DATA_FLOWS, USES_TYPE, PARAM_TYPE,
+RETURNS_TYPE, EXTENDS, INHERITS, OVERRIDES, ASYNC_CALLS, HANDLES_GRAPHQL`. `FILE_CHANGES_WITH`
+and `TESTS` are language independent and appear in the `full` profile. So the mapping table in
+`relations.go` binds: calls to `CALLS` and `ASYNC_CALLS`; type usage to `USES_TYPE`,
+`PARAM_TYPE` and `RETURNS_TYPE`; data flow to `DATA_FLOWS`; co-change to `FILE_CHANGES_WITH`.
+Every entry in `features_requiring_network_access` is `false`, which confirms the offline claim.
+
+Symbol records carry `record_type, id, stable_id_version, kind, name, qualified_name,
+file_path, start_line, end_line, signature, body_hash, language`. `file_path` is repository
+relative. There is no `is_test` field, so **the degradation applies: `IsTest` comes from file
+conventions only**.
+
+Relation records carry `from_id, to_id, type, confidence, reason, relation_scope, resolution,
+target_kind, warning_codes` and, for CALLS, an `evidence` array of
+`{kind: "call_site", file_path, start_line, end_line, detail}`. The evidence span is the
+calling function's span rather than the exact call line, so the exact line comes from `impact`
+(see question 6).
+
+**4. Does `graph checkpoint` exist, and does it distinguish signature from body changes for
+Python? The command exists; the distinction is clean; the checkpoint bridge does not work for
+imported checkpoints.**
+`entire graph checkpoint b20f84567474` answers
+`checkpoint b20f84567474 has no associated commit in this repository`, because a checkpoint
+created by `entire import` is read-only history and carries no commit. **The documented
+degradation applies: sources come from `graph commit <sha>`.** That path is strong.
+`entire graph commit HEAD --repo . --json` returns per file a `changes` array of
+`{type, kind, name, before_start_line, after_start_line, dependents_count}`, where `type` is
+one of `signature_changed`, `body_changed`, `added`, `removed`, `renamed`, and a
+`signature_changed` entry also carries `old_signature` and `new_signature`. On the probe commit
+it reported `compute_total signature changed (7 dependents)` against three `body changed`
+entries. Signature and body are therefore fully distinguished for Python and the source
+weights in section 2 stand as written.
+
+**5. Does `graph verify` accept pytest node IDs and report per-test state changes? Yes, with
+one correction to the documents.**
+A baseline is mandatory: without `--record-baseline` or `--pre-edit-baseline` the command
+refuses to run. Verbosity matters. **`pytest -q`, the runner used as the example in PRD.md and
+in the demo script, is not parseable**: verify answers
+`output format not recognised, so the baseline is exit-code only` and records zero per-test
+results. `pytest -v` is parsed correctly (`parser: "pytest"`, 14 results on the fixture).
+**Correction in effect: the default and documented runner becomes `pytest -v`, and when the
+recorded baseline comes back with `parser: exit-code-only` Umbra says so in the header and
+falls back to a suite-level verdict.** Output shapes to parse:
+`NEWLY FAILING (3): id, id, id`, `VERDICT: REGRESSION in 3 tests: ...`,
+`VERDICT: NO EFFECT ...`, `BASELINE RECORDED: <path> (pytest; 14 passing, 0 failing, exit 0)`,
+and `PRE-EXISTING` for failures that predate the change. There is no `--json` flag on verify,
+so the parser is line based. **The exit code is 0 even on REGRESSION**, so the verdict is read
+from the text and never from the status. Baseline files are JSON with
+`format_version, recorded_at, repo, test_command, parser, exit_code, results`.
+
+**6. Does `graph impact` report call-site lines? Yes, in both formats.**
+Text matches the shape the design assumed: `handle_order (umbra/.../api.py:16, def :14)`,
+where 16 is the call site and 14 the definition. `--format json` is better and is what Umbra
+uses: each caller entry carries `endpoint` (id, name, kind, file_path, start_line, end_line,
+language), `relation`, `direction`, `depth` and `call_site: {file_path, line}`, plus
+`additional_sites: n` when a caller calls more than once. Transitive callers are marked
+`[via handle_order]` in text and by `depth` in JSON. The same call also returns callees, type
+consumers, data flows and co-change files, so one `impact` call per source covers section 3's
+needs. **Fault line and beacon are live; the ranker keeps all six factors.**
+
+**7. Does `checkpoint explain --short` return a stored summary without `--generate`? No, not
+for imported checkpoints.**
+`--short` prints `## Intent` (the user's prompt, truncated) and then
+`## Summary` followed by
+`*No summary. Imported history is read-only, so summaries cannot be generated.*`.
+**The documented degradation applies: the "session said" line falls back to the last assistant
+sentence before the commit, and is omitted when there is none.** The fallback reads the
+transcript that `--raw-transcript` already provides, so it costs no extra command. The
+scrubbing and the 200 character cap in SECURITY_AND_ACCESS.md apply to the fallback exactly as
+they would to a stored summary. `--json` on explain returns a metadata envelope
+(`checkpoint_id, strategy, checkpoints_count, session_count, sessions[]`) and, as documented,
+never embeds transcript bytes.
+
+**8. Is `ENTIRE_PLUGIN_DATA_DIR` set for unmanaged plugins? Yes.**
+A throwaway executable named `entire-umbraprobe` placed on `$PATH` and invoked as
+`entire umbraprobe HEAD --run none` received its arguments unchanged and an environment of 24
+variables including
+`ENTIRE_PLUGIN_DATA_DIR=/home/<user>/.local/share/entire/plugins/data/umbraprobe`,
+`ENTIRE_REPO_ROOT=<repo>` and `ENTIRE_CLI_VERSION=0.10.5`. Kubectl-style dispatch works for an
+unmanaged binary, so worktrees and baselines go under `ENTIRE_PLUGIN_DATA_DIR` with
+`$XDG_CACHE_HOME/umbra` as the fallback, and `ENTIRE_REPO_ROOT` saves a `git rev-parse` call.
+
+### Degradations in effect
+
+| Finding | Effect | Where absorbed |
+|---|---|---|
+| Snapshot does not mark test symbols | `IsTest` from file conventions only (`test_*.py`, `*_test.py`, `*_test.go`, `*.test.*`, `tests/`) | Field loader |
+| `graph checkpoint` has no commit for imported checkpoints | Sources come from `graph commit <sha>`; the header names the fallback | Sources |
+| No stored summary on imported checkpoints | "session said" falls back to the last assistant sentence before the commit, scrubbed and capped, or is omitted | Header |
+| No `Grep` or `Glob` tool in the probe harness | Paths recovered from tool result text, so a grep-only file reaches `quoted` rather than `glimpse`; `Grep` and `Glob` handling stays for harnesses that have them | Adapter |
+| `pytest -q` is not parseable by verify | Documented runner becomes `pytest -v`; an `exit-code-only` baseline degrades to a suite-level verdict and the header says so | Tests, header |
+| verify exits 0 on REGRESSION | The verdict is parsed from text, never from the exit status | Tests |
+
+### Additional findings the documents did not anticipate
+
+- The imported checkpoint carries no commit, so **resolve cannot use the `Entire-Checkpoint`
+  trailer** for this session: the probe's commits have no trailer, because the Claude Code
+  hooks were installed part way through the session and were not loaded by the running process.
+  Resolve therefore accepts a commit-ish directly, and when the commit has no trailer it pairs
+  the commit with the checkpoint whose session window contains the commit timestamp, from
+  `entire checkpoint list --json`. The header states which route was used. Trailer resolution
+  stays the preferred path for sessions recorded with live hooks.
+- `impact --format json` supersedes the text parser the design sketched. The text parser is
+  kept only as a fallback and is exercised by a unit test.
+- CALLS relations in the snapshot carry call-site evidence directly, so `impact` is needed once
+  per source rather than once per node.
+- `entire graph snapshot --repo . --format ndjson` on this repository returns 435 records in
+  under 0.2 seconds, so the 30 second size warning in SECURITY_AND_ACCESS.md is unlikely to
+  fire on repositories of fixture scale.
