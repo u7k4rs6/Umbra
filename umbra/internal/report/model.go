@@ -46,6 +46,7 @@ type Analysis struct {
 	HasCut   bool
 
 	Execution   Execution
+	Layout      *Layout
 	Limitations []string
 	Commands    []string
 }

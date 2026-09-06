@@ -84,9 +84,9 @@ func TestForensicsNoEdgeFromTheTestFile(t *testing.T) {
 func TestForensicsReachesOnlyThroughAnotherFamily(t *testing.T) {
 	f := &graph.Field{
 		Symbols: map[string]*graph.Symbol{
-			"t":    {ID: "t", Name: "test_typed", File: "tests/test_t.py", Kind: "function", IsTest: true},
-			"mid":  {ID: "mid", Name: "Holder", File: "app/models.py", Kind: "class"},
-			"src":  {ID: "src", Name: "compute_total", File: "app/service.py", Kind: "function"},
+			"t":   {ID: "t", Name: "test_typed", File: "tests/test_t.py", Kind: "function", IsTest: true},
+			"mid": {ID: "mid", Name: "Holder", File: "app/models.py", Kind: "class"},
+			"src": {ID: "src", Name: "compute_total", File: "app/service.py", Kind: "function"},
 		},
 		Out:    map[string][]graph.Edge{},
 		In:     map[string][]graph.Edge{},

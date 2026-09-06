@@ -1,0 +1,2 @@
+{"type": "user", "cwd": "/repo", "sessionId": "scenario-session", "timestamp": "2026-09-05T10:01:00.000Z", "message": {"role": "user", "content": "change compute_total"}}
+{"type": "assistant", "cwd": "/repo", "sessionId": "scenario-session", "timestamp": "2026-09-05T10:02:00.000Z", "message": {"role": "assistant", "content": [{"type": "text", "text": "Done."}]}}

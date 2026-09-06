@@ -138,7 +138,12 @@ func TestFarField(t *testing.T) {
 		{"tests/test_service.py", "app/service.py", true},
 		{"app/api.py", "app/service.py", false},
 		{"app/sub/deep.py", "app/service.py", false},
-		{"service.py", "app/service.py", true},
+		{"service.py", "app/service.py", false},
+		// A project nested inside the repository: the shared prefix must be
+		// removed before the packages are compared, or nothing is ever far.
+		{"umbra/fixtures/app/tests/test_service.py", "umbra/fixtures/app/app/service.py", true},
+		{"umbra/fixtures/app/app/api.py", "umbra/fixtures/app/app/service.py", false},
+		{"a/b/c/x.py", "a/b/c/d/y.py", false},
 	}
 	for _, c := range cases {
 		if got := FarField(c.node, c.source); got != c.want {

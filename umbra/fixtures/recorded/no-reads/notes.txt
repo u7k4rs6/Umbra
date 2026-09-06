@@ -1,0 +1,1 @@
+A transcript with no tool activity and no mentions, so every node is unknown.
