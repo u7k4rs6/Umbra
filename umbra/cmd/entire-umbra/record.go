@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/u7k4rs6/Umbra/umbra/internal/checkpoint"
-	"github.com/u7k4rs6/Umbra/umbra/internal/report"
 	"github.com/u7k4rs6/Umbra/umbra/internal/runner"
 )
 
@@ -30,7 +29,6 @@ func runRecord(ctx context.Context, argv []string) (int, error) {
 	noAudit := fs.Bool("no-audit", false, "skip the sweep")
 	history := fs.Bool("history", false, "add the scar factor")
 	repo := fs.String("repo", "", "repository to analyze")
-	noScrub := fs.Bool("no-scrub", false, "write the recording without scrubbing (never use for a committed fixture)")
 
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n  entire umbra record <ref> --out fixtures/recorded/<scenario>/\n\nFlags:\n")
@@ -67,16 +65,10 @@ func runRecord(ctx context.Context, argv []string) (int, error) {
 
 	exec := runner.NewExec(o.Repo)
 
-	var scrub runner.Scrubber
-	if !*noScrub {
-		s := report.NewScrubber(o.Repo)
-		// The author line that `checkpoint explain --short` prints carries a
-		// display name, which no pattern can recognise by shape. Ask git for
-		// the names configured here so they can be removed by value.
-		s.Names = gitNames(ctx, exec, o.Repo)
-		scrub = s.Clean
-	}
-	rec := runner.NewRecorder(exec, scrub)
+	// The same scrubber the analysis uses, derived once. There is no flag to
+	// turn it off: a recording is committed, and an unscrubbed one is a leak
+	// waiting for someone to forget the flag.
+	rec := runner.NewRecorder(exec, o.Scrubber(ctx, exec).Clean)
 
 	res, err := checkpoint.New(rec, o.Repo).Resolve(ctx, o.Ref)
 	if err != nil {

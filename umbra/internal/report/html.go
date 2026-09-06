@@ -41,7 +41,11 @@ type htmlData struct {
 // There are no external requests: the CSS and JS are embedded, the fonts are
 // system stacks, and the Content-Security-Policy in the template forbids
 // anything else.
-func HTML(w io.Writer, a *Analysis) error {
+func HTML(w io.Writer, sd Sealed) error {
+	if !sd.Valid() {
+		return ErrUnsealed
+	}
+	a := sd.a
 	tmpl, err := template.New("umbra.html.tmpl").Funcs(template.FuncMap{
 		"orNone": orNone,
 		"short":  shortSHA,
@@ -57,7 +61,7 @@ func HTML(w io.Writer, a *Analysis) error {
 	if err != nil {
 		return err
 	}
-	blob, err := MarshalJSON(a)
+	blob, err := MarshalJSON(sd)
 	if err != nil {
 		return err
 	}

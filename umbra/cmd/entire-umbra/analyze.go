@@ -33,13 +33,7 @@ type pipelineState struct {
 
 // pipeline runs the seven steps from ARCHITECTURE.md and returns the analysis.
 func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoint.Resolution, pair *checkpoint.Pair) (*report.Analysis, *pipelineState, error) {
-	scrub := report.NewScrubber(o.Repo)
-	// A display name cannot be recognised by shape, so the scrubber has to be
-	// told. A session's own shell commands carry the author name whenever it
-	// ran git with an explicit identity, and those commands reach the
-	// timeline. Only umbra record used to do this, so an ordinary run left the
-	// name in the report.
-	scrub.Names = gitNames(ctx, run, o.Repo)
+	scrub := o.Scrubber(ctx, run)
 
 	a := &report.Analysis{
 		Version:      Version,
@@ -375,22 +369,6 @@ func limitations(a *report.Analysis, caps *graph.Capabilities, e *shadow.Examine
 	return out
 }
 
-func writeTable(a *report.Analysis, all bool) error {
-	return report.Table(os.Stdout, a, report.DetectTableOptions(all))
-}
-
-// gitNames returns the author names git would stamp on a commit here, so a
-// recording does not carry them.
-func gitNames(ctx context.Context, run runner.Runner, repo string) []string {
-	var out []string
-	for _, key := range []string{"user.name", "author.name", "committer.name"} {
-		stdout, _, exit, err := run.Run(ctx, "git", []string{"-C", repo, "config", "--get", key}, nil)
-		if err != nil || exit != 0 {
-			continue
-		}
-		if name := strings.TrimSpace(string(stdout)); name != "" {
-			out = append(out, name)
-		}
-	}
-	return out
+func writeTable(sd report.Sealed, all bool) error {
+	return report.Table(os.Stdout, sd, report.DetectTableOptions(all))
 }

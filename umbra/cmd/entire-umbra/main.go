@@ -160,7 +160,11 @@ func analyze(ctx context.Context, o *Options) (int, error) {
 		return ExitRuntime, err
 	}
 
-	if err := emit(o, a); err != nil {
+	// One choke point. Seal scrubs the analysis and builds the layout from
+	// the scrubbed values; every renderer takes the sealed value and nothing
+	// else can be written.
+	sd := report.Seal(a, st.Scrub)
+	if err := emit(o, sd); err != nil {
 		return ExitRuntime, err
 	}
 	return failOn(o, a), nil

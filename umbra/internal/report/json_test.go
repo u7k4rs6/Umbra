@@ -14,7 +14,7 @@ import (
 func jsonOf(t *testing.T, a *Analysis) map[string]any {
 	t.Helper()
 	var buf bytes.Buffer
-	if err := WriteJSON(&buf, a); err != nil {
+	if err := WriteJSON(&buf, Seal(a, nil)); err != nil {
 		t.Fatalf("WriteJSON: %v", err)
 	}
 	var out map[string]any
@@ -139,7 +139,7 @@ func TestJSONEscapesHostileSymbolNames(t *testing.T) {
 	a := mkAnalysis()
 	a.Nodes[0].Symbol.Name = `<img src=x onerror=alert(1)>`
 	var buf bytes.Buffer
-	if err := WriteJSON(&buf, a); err != nil {
+	if err := WriteJSON(&buf, Seal(a, nil)); err != nil {
 		t.Fatalf("WriteJSON: %v", err)
 	}
 	if strings.Contains(buf.String(), "<img") {

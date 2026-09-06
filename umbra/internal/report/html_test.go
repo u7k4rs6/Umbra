@@ -9,9 +9,8 @@ import (
 
 func htmlOf(t *testing.T, a *Analysis) string {
 	t.Helper()
-	a.Layout = BuildLayout(a)
 	var b strings.Builder
-	if err := HTML(&b, a); err != nil {
+	if err := HTML(&b, Seal(a, nil)); err != nil {
 		t.Fatalf("HTML: %v", err)
 	}
 	return b.String()

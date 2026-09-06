@@ -54,7 +54,11 @@ const (
 )
 
 // Table writes the terminal rendering from FRONTEND_SPEC.md.
-func Table(w io.Writer, a *Analysis, o TableOptions) error {
+func Table(w io.Writer, sd Sealed, o TableOptions) error {
+	if !sd.Valid() {
+		return ErrUnsealed
+	}
+	a := sd.a
 	b := &strings.Builder{}
 
 	// Header.

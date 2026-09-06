@@ -10,7 +10,7 @@ import (
 func packetOf(t *testing.T, a *Analysis) string {
 	t.Helper()
 	var b strings.Builder
-	if err := Packet(&b, a); err != nil {
+	if err := Packet(&b, Seal(a, nil)); err != nil {
 		t.Fatalf("Packet: %v", err)
 	}
 	return b.String()

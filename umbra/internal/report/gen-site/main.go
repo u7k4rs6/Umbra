@@ -17,6 +17,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/u7k4rs6/Umbra/umbra/internal/report"
 )
 
 func main() {
@@ -57,6 +59,9 @@ func run(root string) error {
 	if err := CheckSampleIsReal(blob); err != nil {
 		return err
 	}
+	if err := CheckSampleIsClean(samplePath, blob); err != nil {
+		return err
+	}
 
 	// The sample is embedded in the page as well as sitting beside it. A page
 	// opened from file:// cannot fetch its own sibling, and the landing page
@@ -70,6 +75,9 @@ func run(root string) error {
 	// project. It is optional: the page renders without it.
 	importedPath := filepath.Join(site, "imported", "umbra.json")
 	if blob, err := os.ReadFile(importedPath); err == nil {
+		if err := CheckSampleIsClean(importedPath, blob); err != nil {
+			return err
+		}
 		if err := embedSample(filepath.Join(site, "index.html"), blob, importedTag); err != nil {
 			return err
 		}
@@ -98,6 +106,27 @@ func CheckSampleIsReal(blob []byte) error {
 		return fmt.Errorf("the sample carries a placeholder commit %q", d.Checkpoint.Commit)
 	}
 	return nil
+}
+
+// CheckSampleIsClean refuses to embed a report that carries anything
+// SECURITY_AND_ACCESS.md says must never reach one.
+//
+// The scrubber runs when the report is produced. This runs when it is
+// published, on the finished bytes, so a sample produced by an older build or
+// edited by hand cannot reach the landing page. Display names are not checked
+// here, because they cannot be recognised by shape and this program has no
+// repository to ask; the output-wide test covers them.
+func CheckSampleIsClean(path string, blob []byte) error {
+	found := report.ScanArtifact(blob, nil)
+	if len(found) == 0 {
+		return nil
+	}
+	msgs := make([]string, 0, len(found))
+	for _, f := range found {
+		msgs = append(msgs, f.String())
+	}
+	return fmt.Errorf("%s carries %d thing(s) that must not be published:\n  %s",
+		path, len(found), strings.Join(msgs, "\n  "))
 }
 
 const (

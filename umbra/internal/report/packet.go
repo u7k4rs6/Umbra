@@ -14,7 +14,11 @@ const PacketLimit = 20
 
 // Packet writes the Blind Spot Packet: five sections, markdown, suitable as a
 // pull request comment. It is the same data as every other renderer.
-func Packet(w io.Writer, a *Analysis) error {
+func Packet(w io.Writer, sd Sealed) error {
+	if !sd.Valid() {
+		return ErrUnsealed
+	}
+	a := sd.a
 	b := &strings.Builder{}
 
 	fmt.Fprintf(b, "# Blind spot packet\n\n")

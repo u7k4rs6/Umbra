@@ -43,7 +43,7 @@ func mkAnalysis() *Analysis {
 func render(t *testing.T, a *Analysis, o TableOptions) string {
 	t.Helper()
 	var b strings.Builder
-	if err := Table(&b, a, o); err != nil {
+	if err := Table(&b, Seal(a, nil), o); err != nil {
 		t.Fatalf("Table: %v", err)
 	}
 	return b.String()

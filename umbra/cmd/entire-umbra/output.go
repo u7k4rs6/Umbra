@@ -10,26 +10,24 @@ import (
 
 // emit writes every requested output. The table always goes to stdout unless
 // another format was asked for on stdout; --out writes the files.
-func emit(o *Options, a *report.Analysis) error {
-	a.Layout = report.BuildLayout(a)
-
+func emit(o *Options, sd report.Sealed) error {
 	// Stdout.
 	switch o.Format {
 	case "table":
-		if err := writeTable(a, o.All); err != nil {
+		if err := writeTable(sd, o.All); err != nil {
 			return err
 		}
 	case "json":
-		if err := report.WriteJSON(os.Stdout, a); err != nil {
+		if err := report.WriteJSON(os.Stdout, sd); err != nil {
 			return err
 		}
 	case "packet":
-		if err := report.Packet(os.Stdout, a); err != nil {
+		if err := report.Packet(os.Stdout, sd); err != nil {
 			return err
 		}
 	case "html":
 		// The HTML always goes to a file, so the table keeps stdout useful.
-		if err := writeTable(a, o.All); err != nil {
+		if err := writeTable(sd, o.All); err != nil {
 			return err
 		}
 	}
@@ -46,7 +44,7 @@ func emit(o *Options, a *report.Analysis) error {
 	if err != nil {
 		return err
 	}
-	if err := report.WriteJSON(f, a); err != nil {
+	if err := report.WriteJSON(f, sd); err != nil {
 		f.Close()
 		return err
 	}
@@ -59,7 +57,7 @@ func emit(o *Options, a *report.Analysis) error {
 	if err != nil {
 		return err
 	}
-	if err := report.Packet(pf, a); err != nil {
+	if err := report.Packet(pf, sd); err != nil {
 		pf.Close()
 		return err
 	}
@@ -72,7 +70,7 @@ func emit(o *Options, a *report.Analysis) error {
 	if err != nil {
 		return err
 	}
-	if err := report.HTML(hf, a); err != nil {
+	if err := report.HTML(hf, sd); err != nil {
 		hf.Close()
 		return err
 	}

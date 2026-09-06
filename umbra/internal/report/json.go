@@ -125,11 +125,11 @@ type jsonSummary struct {
 	Illumination *float64 `json:"illumination"`
 }
 
-// BuildJSON turns the analysis into the report structure.
+// buildJSON turns the analysis into the report structure.
 //
-// Every value that came from a transcript has already been scrubbed and
-// capped. Signature lines appear only when --snippets is on.
-func BuildJSON(a *Analysis) jsonReport {
+// It is unexported and takes an already sealed analysis, so no caller outside
+// this package can turn an unscrubbed Analysis into bytes.
+func buildJSON(a *Analysis) jsonReport {
 	r := jsonReport{
 		UmbraVersion: a.Version,
 		Checkpoint: jsonCheckpoint{
@@ -241,16 +241,22 @@ func snippet(a *Analysis, s string) string {
 }
 
 // WriteJSON renders the report as indented JSON.
-func WriteJSON(w io.Writer, a *Analysis) error {
+func WriteJSON(w io.Writer, sd Sealed) error {
+	if !sd.Valid() {
+		return ErrUnsealed
+	}
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(true)
-	return enc.Encode(BuildJSON(a))
+	return enc.Encode(buildJSON(sd.a))
 }
 
 // MarshalJSON returns the report bytes, for embedding in the HTML.
-func MarshalJSON(a *Analysis) ([]byte, error) {
-	return json.MarshalIndent(BuildJSON(a), "", "  ")
+func MarshalJSON(sd Sealed) ([]byte, error) {
+	if !sd.Valid() {
+		return nil, ErrUnsealed
+	}
+	return json.MarshalIndent(buildJSON(sd.a), "", "  ")
 }
 
 func nonNilStrings(s []string) []string {

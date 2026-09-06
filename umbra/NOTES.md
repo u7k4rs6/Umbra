@@ -617,6 +617,92 @@ is the reason a script like this should never be trusted unread:
    all-clear, on exactly the question the script exists to answer. It needs
    `--full-tree`.
 
+## Phase 15: the scrubber becomes the only exit
+
+Five scrubbing bugs so far have been the same bug five times: an output path
+that wrote without going through the scrubber. Each was fixed where it was
+found, which fixed that path and left the shape intact.
+
+| # | Phase | The path that wrote unscrubbed |
+|---|---|---|
+| 1 | 11 | Paths from outside the repository reached the timeline through search output |
+| 2 | 11 | The base64 heuristic redacted git object ids and worktree paths, so the reproduce list could not be checked |
+| 3 | 12 | The recording carried an email address; the scrubber had no rule for one |
+| 4 | 14.1 | `graph.Verify` appended its commands to `a.Commands` raw, bypassing the scrubber every other command went through |
+| 5 | 14.2 | Only `umbra record` set `scrub.Names`, so an ordinary run left the author's display name in the timeline |
+
+Number 2 is the odd one out: it removed too much rather than too little. The
+other four are the same shape.
+
+### The inventory, before anything changed
+
+Every place an artifact is written, and whether it scrubbed:
+
+| Writer | What it writes | Scrubbed before phase 15 |
+|---|---|---|
+| `emit` stdout, `--format table` | terminal table | only whatever the builder happened to scrub |
+| `emit` stdout, `--format json` | report JSON | same |
+| `emit` stdout, `--format packet` | packet markdown | same |
+| `emit --out`, `umbra.json` | report JSON | same |
+| `emit --out`, `umbra.packet.md` | packet markdown | same |
+| `emit --out`, `umbra.html` | map, with the JSON embedded | same |
+| `report.BuildLayout` via `emit` | node and ring label text inside the map | **no**, it ran before any scrub and copied node names into the layout |
+| `runner.Recorder.Save` | `fixtures/recorded/*/recording.json` | yes, but through a nil-able function, and `--no-scrub` turned it off |
+| `gen-site` | `site/umbra.css`, `site/umbra.js` | not applicable, they are source assets |
+| `gen-site` `embedSample` | the JSON embedded in `site/index.html` | **no check of its own**, it inherited whatever the committed sample carried |
+| `analyze.go` | the reproduce list | yes, since 14.1 |
+| `execute.go` | the verify commands in the reproduce list | yes, since 14.1 |
+
+"Only whatever the builder happened to scrub" is the honest description of the
+old state. Values were scrubbed as they were built, one call site at a time,
+and the renderers took an `*Analysis` and wrote whatever was in it. Nothing in
+the type system knew the difference between an analysis that had been through
+the scrubber and one that had not.
+
+### The choke point
+
+`report.Sealed` wraps an `*Analysis` in an unexported field. `report.Seal` is
+the only way to make one, and `WriteJSON`, `MarshalJSON`, `HTML`, `Packet` and
+`Table` all take a `Sealed` and refuse a zero value. `BuildJSON` is now
+`buildJSON` and unexported. A new output path cannot skip the scrubber by
+omission, because there is nothing for it to write from until it has sealed
+something.
+
+`Seal` scrubs every string in the analysis that could carry text from the
+machine, then builds the layout from the scrubbed values. That ordering is the
+fix for the row marked no above: the layout carries node names and file names
+as label text, and building it first meant a scrubbed report could ship with an
+unscrubbed picture on it. Nothing had leaked that way yet. It was open.
+
+A nil scrubber means the default one for this machine, never no scrubbing.
+There is no flag for less. `umbra record --no-scrub` is gone: a recording is
+committed, and a flag that turns off scrubbing on a committed artifact is the
+next bug in the table above waiting for someone to forget it.
+
+### One derivation of the scrub inputs
+
+`Options.Scrubber` derives home, repository, user, host and the git author
+names once and caches them on the options. `umbra record` and the analysis
+pipeline both call it and get the same value. Bug 5 was possible only because
+there were two constructions and one of them was missing a line.
+
+### The output-wide check
+
+`report.ScanArtifact` reads finished bytes and reports absolute home paths,
+addresses, token shapes and supplied display names, with line numbers. It does
+not care which code path produced the bytes, which is the point: a new writer
+is covered the day it exists rather than the day someone adds it to a list.
+
+`TestNoGeneratedArtifactCarriesAnythingPrivate` walks `site/`,
+`fixtures/recorded/` and `docs/renders/` rather than naming files, and takes
+the author names from `git log` so it fails for whoever cloned the repository
+as readily as for its author. **It scans 25 artifacts and found nothing.** The
+existing corpus needed no re-scrubbing, and the self report regenerated through
+the sealed pipeline is byte-identical to the committed one.
+
+`gen-site` now runs the same scan before embedding either sample, so a report
+produced by an older build or edited by hand cannot reach the landing page.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that

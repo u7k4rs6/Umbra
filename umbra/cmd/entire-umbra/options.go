@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/u7k4rs6/Umbra/umbra/internal/report"
 )
 
 // Version is stamped at build time; the binary prints it on every run so a
@@ -34,6 +36,11 @@ type Options struct {
 	// found automatically from the project files near the tests and is only
 	// needed when that search picks the wrong one.
 	TestRoot string
+
+	// scrub is the one scrubber for this run, derived on first use by
+	// Scrubber and shared by every path that writes anything. It is
+	// unexported so no caller can substitute a weaker one.
+	scrub *report.Scrubber
 }
 
 // Exit codes from PRD.md.
