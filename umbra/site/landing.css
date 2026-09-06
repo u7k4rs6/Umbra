@@ -1024,3 +1024,205 @@ ul.limits > li:hover::before { color: var(--amber-2); }
   .prow { grid-template-columns: 4ch minmax(0, 1fr); }
   .pt { display: none; }
 }
+
+/* ====================================================================
+   Depth pass.
+   Everything below adds texture and light. It changes no content, it
+   animates only opacity, transform and filter, and every piece of it is
+   off under prefers-reduced-motion.
+   ==================================================================== */
+
+/* ------------------------------------------------------------------ grain */
+
+/* Flat black on a good screen looks like a hole. A little film grain gives it
+ * a surface to be. The noise is one inline SVG turbulence, rendered once by
+ * the browser and tiled, so it costs nothing to scroll. */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  will-change: transform;
+  animation: grain 7s steps(6) infinite;
+}
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-3%, 2%); }
+  40%  { transform: translate(2%, -3%); }
+  60%  { transform: translate(-2%, -2%); }
+  80%  { transform: translate(3%, 1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* --------------------------------------------------------- card highlight */
+
+/* A hairline that catches light along the top edge, brightest where the
+ * pointer is. It is the single detail that makes a flat rectangle read as a
+ * surface with an edge. */
+.card, .panel, .install, .stats, .replay {
+  position: relative;
+}
+.card::after, .panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+  background: linear-gradient(
+    100deg,
+    transparent,
+    color-mix(in srgb, var(--amber-2) 55%, transparent) 40%,
+    color-mix(in srgb, var(--amber-1) 75%, transparent) 50%,
+    color-mix(in srgb, var(--amber-2) 55%, transparent) 60%,
+    transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.card:hover::after, .panel:hover::after { opacity: 0.7; }
+
+/* ------------------------------------------------------- the ghost number */
+
+/* The section index, set enormous and almost invisible behind the heading.
+ * It is the same number the marker prints, at the size the section deserves. */
+.band { position: relative; }
+.band .head { position: relative; z-index: 1; }
+.band[data-ghost]::before {
+  content: attr(data-ghost);
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: clamp(140px, 20vw, 300px);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--ink) 3.2%, transparent);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+/* ----------------------------------------------------------- the ticker */
+
+/* A strip of the report's own numbers, moving. Nothing on it is a figure
+ * somebody chose: every value is read out of umbra.json by site.js. */
+.ticker {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 16px 0;
+  margin: 0;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.ticker-run {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: ticker 48s linear infinite;
+}
+.ticker:hover .ticker-run { animation-play-state: paused; }
+.ticker-run > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0 34px;
+  border-right: 1px solid var(--rule);
+  white-space: nowrap;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.ticker-run b {
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--amber-2);
+  letter-spacing: 0.06em;
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ------------------------------------------------------- the hero's light */
+
+/* The pointer carries a torch over the hero too, not only over the panels. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+  background: radial-gradient(
+    460px circle at var(--hx, 50%) var(--hy, 40%),
+    color-mix(in srgb, var(--amber-2) 7%, transparent),
+    transparent 70%);
+}
+.hero:hover::before { opacity: 1; }
+
+/* A very slow drift, so the hero is never quite still.
+ *
+ * It moves the streamers only, not the whole corona. Scaling the corona SVG
+ * scales the occluding disc with it, while the map drawn on top does not move,
+ * and the two come apart: the moon grows over the source nodes that are meant
+ * to sit on it. The field is the only part that may breathe. */
+.corona .corona-field {
+  animation: drift 72s ease-in-out infinite;
+  transform-origin: 600px 400px;
+}
+@keyframes drift {
+  0%   { transform: scale(1) rotate(0deg); }
+  50%  { transform: scale(1.035) rotate(1.2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* --------------------------------------------------------- the big foot */
+
+/* The wordmark, once, at the size of the page. It is the last thing on every
+ * page and the only place the name is allowed to be loud. */
+.foot-mark {
+  font-family: var(--serif);
+  font-size: clamp(84px, 22vw, 340px);
+  line-height: 0.78;
+  letter-spacing: -0.05em;
+  color: color-mix(in srgb, var(--ink) 6%, transparent);
+  text-align: center;
+  margin: 40px 0 -10px;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- polish */
+
+.head .marker { letter-spacing: 0.24em; }
+h2.big em { font-style: italic; color: var(--amber-2); }
+.stat dd { text-shadow: 0 0 32px color-mix(in srgb, var(--amber-2) 30%, transparent); }
+.card .count { text-shadow: 0 0 28px color-mix(in srgb, var(--amber-2) 26%, transparent); }
+h1 { text-shadow: 0 0 60px rgba(0, 0, 0, 0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+  .corona .corona-field { animation: none; }
+  .ticker-run { animation: none; }
+  .hero::before { display: none; }
+  .card::after, .panel::after { transition: none; }
+}
+
+@media print {
+  .grain, .ticker, .foot-mark { display: none; }
+  .band[data-ghost]::before { display: none; }
+  .card::after, .panel::after { display: none; }
+  .corona .corona-field { animation: none; }
+}

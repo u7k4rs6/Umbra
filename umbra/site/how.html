@@ -14,6 +14,7 @@
 <a class="skip mono" href="#main">Skip to the content</a>
 
 <div class="grid-overlay" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
 <div class="progress" aria-hidden="true"><span></span></div>
 
 <header class="topbar" id="topbar">
@@ -32,7 +33,7 @@
 
 <main id="main">
 
-<section class="band top" data-reveal>
+<section data-ghost="01" class="band top" data-reveal>
   <div class="head">
     <span class="marker mono">01 &nbsp; States</span>
     <h2 class="big">Four states. Missing data is one of them.</h2>
@@ -72,7 +73,7 @@
   </p>
 </section>
 
-<section class="band" id="ranking" data-reveal>
+<section data-ghost="02" class="band" id="ranking" data-reveal>
   <div class="head">
     <span class="marker mono">02 &nbsp; Ranking</span>
     <h2 class="big">Six factors, all printed next to the node.</h2>
@@ -104,7 +105,7 @@
   </div>
 </section>
 
-<section class="band" id="pipeline" data-reveal>
+<section data-ghost="03" class="band" id="pipeline" data-reveal>
   <div class="head">
     <span class="marker mono">03 &nbsp; The pipeline</span>
     <h2 class="big">What happens when you run it.</h2>
@@ -121,7 +122,7 @@
   </ol>
 </section>
 
-<section class="band" id="sweep" data-reveal>
+<section data-ghost="04" class="band" id="sweep" data-reveal>
   <div class="head">
     <span class="marker mono">04 &nbsp; The sweep</span>
     <h2 class="big">A selection that audits itself is worth more than one that does not.</h2>
@@ -138,6 +139,10 @@
   </div>
 </section>
 </main>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-run"><span><b>4</b>states</span><span><b>5</b>penumbra tiers</span><span><b>6</b>ranking factors</span><span><b>320</b>tests green</span><span><b>19</b>phases</span><span><b>0</b>dependencies</span><span><b>0</b>network requests</span><span><b>0</b>models involved</span><span><b>1</b>binary</span><span><b>4</b>states</span><span><b>5</b>penumbra tiers</span><span><b>6</b>ranking factors</span><span><b>320</b>tests green</span><span><b>19</b>phases</span><span><b>0</b>dependencies</span><span><b>0</b>network requests</span><span><b>0</b>models involved</span><span><b>1</b>binary</span></div>
+</div>
 
 <footer class="site-foot">
   <div class="foot-grid">
@@ -166,6 +171,7 @@
       <a href="https://github.com/u7k4rs6/Umbra/blob/main/umbra/docs/FRONTEND_SPEC.md">Frontend spec</a>
     </div>
   </div>
+  <div class="foot-mark" aria-hidden="true">Umbra</div>
   <p class="foot-note mono">Built during Bengaluru Tech Week on the Entire ecosystem. Layout and states are computed from the checkpoint and the graph; no model was involved.</p>
 </footer>
 

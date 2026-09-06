@@ -1062,6 +1062,77 @@ Two additions to the table in phase 16, both landing page only.
 | "Nothing moves on load. The page renders in its final state." | The hero stages itself in over about a second | The report still does not move on load and that rule is untouched there. This is the landing page, which phase 16 already established may use scroll and hover motion. It is off entirely under reduced motion, and the page is fully readable with script off |
 | "There are no cards, no panels with drop shadows, no gradients as decoration" | Panels with a hairline, a 2 percent surface and a 2px radius | Still no fills, no shadows and no radius worth the name. The one gradient that is decoration is the drafting grid, and it is doing a job: it gives the columns a rhythm and makes the black read as a surface rather than as nothing |
 
+## Phase 19: a site, and then a depth pass
+
+### From one page to six
+
+The landing page was one long document. It is now `index`, `map`, `how`,
+`install`, `build` and `limits`, with shared chrome. `gen-site` learned about
+more than one page: it embeds the report data into every page that carries the
+block and skips the ones that do not, so only `index` and `map` pay the 480 KB
+and the other four are a few kilobytes each. `embedSample` returns whether the
+page carried the block, which turns a page without a map into an ordinary case
+rather than an error.
+
+The header and footer are written into each page rather than assembled at build
+time, so four tests guard against drift: every page carries the same
+navigation, every navigation target is a page that exists, every page carries
+the same stylesheets, policy, skip link and footer and fetches nothing, and a
+page carries the report data if and only if it draws a map.
+
+**One layout bug worth naming.** The hero rows had `margin: 0 auto` while being
+flex items of a flex column. `margin: auto` on a flex item turns off stretch,
+so each row shrank to fit and centred itself: the copy column came out 386px
+wide inside a 1440px hero, which is why the headline was wrapping one word per
+line. Found from a screenshot, then confirmed from the box model rather than
+guessed at.
+
+### The depth pass
+
+Flat black on a good screen reads as a hole rather than a surface. What was
+added, all of it opacity, transform and filter only:
+
+- **Film grain.** One inline SVG turbulence, tiled, at 4.5 percent, stepping
+  through six positions. It is the cheapest thing on the page and it does more
+  for the black than anything else.
+- **An edge light on every card**, a masked gradient border that brightens
+  under the pointer. This is the detail that makes a rectangle read as a
+  surface with an edge rather than as a box.
+- **A ghost section index**, the marker's own number set at 300px behind the
+  heading at 3 percent.
+- **A ticker** of the project's real counts: four states, five tiers, six
+  factors, 320 tests, 19 phases, zero dependencies, zero network requests, zero
+  models. Nothing on it is a figure somebody chose.
+- **The wordmark once at the foot**, at 340px and 6 percent.
+- **A slow drift on the corona**, and one bug from it worth recording.
+
+**The drift desynced the map from the eclipse.** Animating the whole corona SVG
+scales the occluding disc with it, while the map drawn on top does not move, so
+the moon grew over the four source nodes that are meant to sit on it. The
+screenshot showed the centre of the disc empty where the labels had been. Only
+`.corona-field` may breathe; the moon and the map stay fixed to each other.
+
+### On the library that was suggested
+
+The brief pointed at a Three.js component library. It was looked at and not
+used, for a reason worth writing down rather than leaving implied: the kickoff
+rule is vanilla JS and CSS, no libraries, no external requests, works from
+`file://`, and the test suite rests on it. Three.js is several hundred
+kilobytes of dependency and the good templates there are paid, so they are not
+ours to copy either. The idea was taken instead. Their heroes run a stock WebGL
+shader; this one draws a corona from the report's own numbers with no
+dependency at all, which is the better version of the same move because it
+means something.
+
+### Checked
+
+Six pages at 390, 900 and 1440: no horizontal overflow, no external requests,
+no console errors, on any of the eighteen combinations. Reduced motion: zero
+animations running anywhere on the page and nothing left hidden. Script off:
+readable, with the grain, ticker, grid and pill hidden rather than left as dead
+furniture. Print: white ground, no grain, no ticker, no ghost numbers. First
+tab stop is the skip link.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that
