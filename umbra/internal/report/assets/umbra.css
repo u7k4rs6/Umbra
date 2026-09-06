@@ -17,6 +17,10 @@
   /* On the night scheme a pool is simply the absence of glow, so nothing is
      painted over it. */
   --pool-ink: transparent;
+  /* The peak opacity of the light field. Every gradient stop is a fraction of
+     this, so a scheme dims the whole field by changing one number and the
+     falloff keeps its shape. */
+  --glow-peak: 0.32;
 
   --ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -39,8 +43,13 @@
     --focus: #1A4F9C;
     /* On a light ground, removing the warm glow makes a pool brighter than
        its surroundings, which reads as more light rather than less. The pools
-       are painted instead, so shadow means the same thing in both schemes. */
-    --pool-ink: rgba(28, 31, 38, 0.17);
+       are painted instead, so shadow means the same thing in both schemes.
+       The tone is the page's own ink, not a neutral grey: a grey pool on a
+       warm ground reads as dirt rather than as shade. */
+    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+    /* Half the night peak. The same opacity that reads as a soft glow on a
+       dark ground reads as a wash on a light one. */
+    --glow-peak: 0.15;
   }
 }
 
@@ -428,10 +437,11 @@ button.tick.cut {
 
 /* Motion happens only in response to an action, and never on load. */
 .node circle, .node path, .node polyline { transition: fill 240ms ease-out, opacity 240ms ease-out, r 240ms ease-out; }
-.pools circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
+.pools circle,
+.shade circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .node circle, .node path, .node polyline, .pools circle { transition: none; }
+  .node circle, .node path, .node polyline, .pools circle, .shade circle { transition: none; }
   .torch { display: none; }
 }
 
@@ -451,7 +461,8 @@ button.tick.cut {
     --fail: #B3452F;
     --pass: #3E8A5C;
     --focus: #1A4F9C;
-    --pool-ink: rgba(28, 31, 38, 0.17);
+    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+    --glow-peak: 0.15;
   }
   .replay, .filters, .detail, .torch { display: none !important; }
   .label[hidden] { display: block !important; }

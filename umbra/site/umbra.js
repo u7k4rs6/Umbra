@@ -73,10 +73,7 @@
     if (allUnknown(data)) { return; }
 
     // 3. The radial glow around each source, masked by the shadow blobs.
-    var grad = el("radialGradient", { id: "glow" });
-    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.32 }));
-    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
-    defs.appendChild(grad);
+    defs.appendChild(glowGradient("glow", 1));
 
     // 4. The shadow mask. White lets light through; the blurred black blobs
     // subtract it, so several umbra nodes close together merge into one pool.
@@ -86,14 +83,22 @@
       x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: "#fff"
     }));
 
+    // Every node gets a blob, including the ones that are lit at the end.
+    // The sweep replays earlier states, and a node that finishes lit was in
+    // shadow before the session reached it: without a blob of its own it
+    // cannot show that, and the pool it should have cast never appears.
+    // The blob is keyed by node id and its radius is set from the state,
+    // here and again in applyState.
     var blobs = el("g", { filter: "url(#pool)", "class": "pools" });
     (data.nodes || []).forEach(function (n) {
       var place = layout.nodes[n.id];
       if (!place) { return; }
       var spec = poolFor(n.state);
-      if (!spec) { return; }
       blobs.appendChild(el("circle", {
-        cx: place.x, cy: place.y, r: spec.r, fill: spec.fill,
+        cx: place.x, cy: place.y,
+        r: spec ? spec.r : 0,
+        fill: spec ? spec.fill : "#000",
+        opacity: spec ? 1 : 0,
         "data-pool": n.id
       }));
     });
@@ -112,10 +117,11 @@
     // point near the single-source value however many lights there are.
     var ids = Object.keys(layout.sources || {});
     var share = ids.length > 1 ? 1 / Math.sqrt(ids.length) : 1;
+    var radius = glowRadius(ids.length);
     ids.forEach(function (id) {
       var p = layout.sources[id];
       light.appendChild(el("circle", {
-        cx: p.x, cy: p.y, r: 500, fill: "url(#glow)", opacity: share
+        cx: p.x, cy: p.y, r: radius, fill: "url(#glow)", opacity: share
       }));
     });
     svg.appendChild(light);
@@ -128,14 +134,57 @@
       var place = layout.nodes[n.id];
       if (!place) { return; }
       var spec = poolFor(n.state);
-      if (!spec) { return; }
       shade.appendChild(el("circle", {
-        cx: place.x, cy: place.y, r: spec.r, fill: "var(--pool-ink)",
-        opacity: n.state === "penumbra" ? 0.55 : 1,
+        cx: place.x, cy: place.y,
+        r: spec ? spec.r : 0,
+        fill: "var(--pool-ink)",
+        opacity: spec ? (n.state === "penumbra" ? 0.55 : 1) : 0,
         "data-shade": n.id
       }));
     });
     svg.appendChild(shade);
+  }
+
+  // GLOW_STOPS is how many stops the light falls through. Two stops draw a
+  // straight ramp, which the eye reads as banded rings and leaves a visible
+  // edge where the circle ends. These fall on an ease-out curve and reach zero
+  // opacity at GLOW_ZERO_AT of the radius, so the circle has no rim: by the
+  // time the geometry ends there has been nothing to see for a while.
+  var GLOW_STOPS = 10;
+  var GLOW_ZERO_AT = 85;
+
+  // glowGradient builds the falloff. Every stop is expressed against the
+  // --glow-peak custom property rather than a number, so a scheme can dim the
+  // whole field by redefining one value and the curve keeps its shape.
+  function glowGradient(id, scale) {
+    var grad = el("radialGradient", { id: id });
+    for (var i = 0; i < GLOW_STOPS; i++) {
+      var t = i / (GLOW_STOPS - 1);
+      var ease = (1 - t) * (1 - t) * (1 - t);
+      var stop = el("stop", {
+        offset: (t * GLOW_ZERO_AT).toFixed(2) + "%",
+        "stop-color": "var(--lit-glow)"
+      });
+      stop.style.stopOpacity = "calc(var(--glow-peak) * " + (ease * scale).toFixed(4) + ")";
+      grad.appendChild(stop);
+    }
+    // Held at zero from the curve's end to the geometry's edge.
+    var last = el("stop", { offset: "100%", "stop-color": "var(--lit-glow)" });
+    last.style.stopOpacity = "0";
+    grad.appendChild(last);
+    return grad;
+  }
+
+  // glowRadius is how far one source's light reaches.
+  //
+  // Several sources share the field, and their gradients add. Dimming each one
+  // is not enough on its own: the lit area still grows with the number of
+  // sources until the middle of the map is uniformly bright and the pools stop
+  // reading as pools. The radius comes down as well, so more lights means more
+  // smaller pools of light rather than one larger wash.
+  function glowRadius(count) {
+    if (count < 2) { return 500; }
+    return Math.round(500 / Math.pow(count, 0.25));
   }
 
   // poolFor returns the mask blob for a state, or null when the state casts no
@@ -1076,10 +1125,7 @@
     if (reduced || !fine) { return; }
 
     var defs = svg.querySelector("defs");
-    var grad = el("radialGradient", { id: "torch" });
-    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.18 }));
-    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
-    defs.appendChild(grad);
+    defs.appendChild(glowGradient("torch", 0.56));
 
     var torch = el("circle", { r: 110, fill: "url(#torch)", "class": "torch", cx: -999, cy: -999 });
     svg.appendChild(torch);
