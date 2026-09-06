@@ -14,4 +14,13 @@ fi
 ./.venv/bin/python -m pip install --quiet -r requirements.txt
 
 echo "fixture ready. run tests with:"
-echo "  cd $here && ./.venv/bin/python -m pytest -q"
+echo "  cd $here && ./.venv/bin/python -m pytest -v"
+echo
+echo "to run Umbra over this fixture, put the runner on PATH first:"
+echo "  . $here/.venv/bin/activate"
+echo "  entire umbra 0063443 --test \"pytest -v\""
+echo
+echo "use -v, not -q: quiet mode prints no per-test names, so entire graph"
+echo "verify cannot name which test broke and falls back to a suite-level"
+echo "pass or fail. a runner that is not on PATH fails the same way, because"
+echo "the tests run in a detached worktree that has no .venv in it."

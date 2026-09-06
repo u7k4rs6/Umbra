@@ -275,6 +275,57 @@ That self run also found two scrubber bugs:
   included the slash. The reproduce list is only useful if a reader can check a
   line, so hex runs are exempt and the slash is out of the class.
 
+### Phase 12: the runner check
+
+Grepped every committed file for `pytest -q`. What it found, and what was done:
+
+- **No recorded scenario mentions pytest at all**, so none had to be
+  re-recorded. The scenario transcripts exercise reads, searches, edits and
+  mentions; the test command is not part of what they model.
+- **`fixtures/app/setup.sh` told the reader to run `pytest -q`.** That is the
+  demo path, since the README's reproduce section runs `setup.sh`. Changed to
+  `-v`, and the script now also prints the activate line and says why.
+- **Everything else that names `pytest -q` documents the limitation on
+  purpose** and was left alone: the README paragraph that warns against it, the
+  NOTES tables, the comment on `DefaultTestRunner`, the landing-page caption,
+  and `verify_test.go`, which tests the degraded path and needs the quiet form
+  to do it. The four documents in `docs/` are the original design and stay as
+  written.
+- **`internal/transcript/testdata/classic.jsonl` contains a Bash command
+  `pytest tests/test_api.py`.** That is a faithful record of what the probe
+  session ran, inside a fixture the adapter parses. It is never passed to
+  `verify` and it is not a documented reproduce path, so it stays accurate to
+  the session it models.
+
+**The check found a second cause of the same failure, and it was in the
+README's own reproduce command.** The documented line was:
+
+```
+entire umbra 0063443 --test "umbra/fixtures/app/.venv/bin/python -m pytest -v"
+```
+
+That degrades to an exit-code-only verdict even though it says `-v`, and it
+names no cracked test. The runner path is relative to the repository root, but
+Umbra runs the tests in a **detached worktree** of the commit, starting in the
+project directory inside it. The path does not resolve from there, and the
+virtualenv is not in the worktree at all because it is not committed. A runner
+that cannot start produces no output, so `verify` has nothing to parse and
+falls back to a suite verdict. The symptom is identical to the `pytest -q` one
+and the cause is different.
+
+The documented path now activates the venv so the runner is on `PATH`:
+
+```
+. umbra/fixtures/app/.venv/bin/activate
+entire umbra 0063443 --test "pytest -v"
+```
+
+Confirmed against the fixture: 8 probes selected, **5 cracked, all named**,
+`tests/test_service.py::{test_empty_is_zero,test_negative,test_rounding}` and
+both tests in `tests/test_refunds.py`, with a full sweep and 0 leaks. The
+reasoning is written up in `fixtures/app/runner_test_note.md` and summarised in
+the README and on the landing page.
+
 ### Where the build deviates from the letter of the plan
 
 - **The README is at the repository root, not a one-line pointer.** That rule
