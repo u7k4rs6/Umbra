@@ -762,6 +762,147 @@ root: **40 refs, 432,226,689 bytes, 74,551 lines carrying a home path, 740
 carrying an address.** The numbers keep climbing because every push writes
 another checkpoint; that is the finding, not a defect in the script.
 
+## Phase 16: the eclipse hero
+
+The landing page is restyled around a drawn total eclipse. Nothing in the
+report, the report template, the drop-in viewer's behaviour or any Go file
+changed. The new files are `site/landing.css`, `site/corona.js` and a rewritten
+`site/index.html` and `site/site.js`. `site/umbra.css` and `site/umbra.js` are
+still the report's own, copied by `gen-site`, and still byte-identical to it.
+
+### The corona is a renderer
+
+There is no raster asset on the page and no request for one. `corona.js` builds
+the eclipse in inline SVG: layered radial gradients warped by a `feTurbulence`
+`fractalNoise` with a fixed seed through an `feDisplacementMap`, streamers laid
+along the x axis and rotated to their angles, an occluding disc taken out by a
+mask, a bright ring hugging the limb, and one bright limb point with an
+anisotropic flare made from a rotated linear gradient and one blur.
+
+It is deterministic. Nothing calls `Math.random`. The limb angle comes from a
+hash of the checkpoint's commit and the streamer geometry from a small linear
+generator seeded by the same number, so the same `umbra.json` always draws the
+same corona. The filament count reads the report: twenty, plus forty six times
+the lit fraction, plus three per source. More of the field in the light means a
+denser corona, and the number comes from `summary`, not from a constant chosen
+because it looked good.
+
+Cost was a real constraint, not a note. Every filter has an explicit
+`filterUnits="userSpaceOnUse"` region, so it rasterises once at a fixed size.
+No filter primitive is ever animated. The only thing that moves after the first
+paint is a clip inset and an opacity. The day layer is a second copy of the
+same two SVGs, so it would rasterise the turbulence twice; it is therefore
+built only when the divider is off its resting position, which means an
+ordinary visit pays for one corona.
+
+Four attempts, each judged from a screenshot rather than from the code:
+
+1. Uniform thick filaments over a strong body read as a cartoon sunburst, and
+   the brightest part of the gradient sat *inside* the moon where nothing could
+   see it.
+2. Peaking the gradient at the limb fixed that and produced a visible circular
+   rim at the outer edge.
+3. Softening the tail moved the rim but did not remove it. The cause was that
+   the outer stops were written as multiples of the limb radius, so the last
+   one fell past the end of the gradient and the alpha dropped from 0.012 to
+   zero inside the final one percent of the radius. Writing the tail in
+   absolute fractions removed it.
+4. The limb flare was drawn on top of the moon and read as a scratch across the
+   disc. It is now drawn behind the moon, with only the bead in front, which is
+   also what actually happens.
+
+### The hero is the live map wearing the eclipse
+
+The map is the same `renderInto` from `umbra.js`, drawn from the layout already
+in `umbra.json`. The JS still computes no positions. The occluding disc sits at
+the layout centre, so the four changed symbols are inside it and their
+dependents sit in the corona at ring radii the Go code chose.
+
+One thing had to give. The map paints its own background rectangle in
+`--night`, as the spec requires, and that rectangle covered the corona behind
+it. The rectangle is made transparent by a CSS rule on the landing page and the
+stage carries the ground colour instead. `umbra.js` is untouched; a CSS `fill`
+outranks the presentation attribute it sets.
+
+### The four beats
+
+`01 CLAIM`, `02 FIELD`, `03 THE CUT`, `04 SWEEP`, in the project's own words.
+Each drives the map to a real point in the timeline: seq 0, the last event
+before the cut, `t0` itself, and the end. The page loads at `04`, which is the
+eclipse, so nothing moves before first paint.
+
+The beats drive the map **through the replay strip's own controls**: they click
+a tick or send the key the strip already listens for. The landing page does not
+reach inside `umbra.js` and does not duplicate the state rules.
+
+### Day and night
+
+The divider is a real inversion, not a filter. The day side is a second drawing
+of the same two SVGs under day tokens, clipped by `clip-path`, so its gradients
+and pools are computed from day values and the shadow pools stay darker than
+the paper around them. Cloning needed one thing that is easy to miss: duplicate
+ids in one document resolve to whichever came first, so the day copy would have
+pointed at the night layer's gradients and inherited the night palette. Every
+id in the copy is suffixed.
+
+It is a `role="slider"`, operable with the arrow keys, and it settles to
+whichever scheme it was left nearest. `Home`, `End` and `Space` are stopped at
+the divider rather than passed on, because `umbra.js` binds those on the
+document for the replay and a focused divider should not also scrub the sweep.
+Verified: the sweep counter is unchanged after driving the divider by keyboard.
+
+### The font decision
+
+**A system serif stack, no font files.** The task offered a choice between that
+and a subsetted woff2 committed at `site/assets/`. There is no such file in
+this repository, and FRONTEND_SPEC.md says the surfaces must not fetch fonts,
+so the stack is the option that can actually be carried out today without
+inventing an asset. The headline is `ui-serif, Georgia, "Iowan Old Style",
+"Palatino Linotype", "Times New Roman", serif`.
+
+### Where this direction conflicts with FRONTEND_SPEC.md
+
+Every one of these is confined to `site/`. The report obeys the spec exactly,
+and the two files they share are untouched.
+
+| Spec says | This page does | How it is resolved |
+|---|---|---|
+| "No all-caps labels anywhere. No letter-spacing tricks." | Every label, nav item, legend word and marker is monospace, uppercase, tracked at 0.18em | Landing page only. The report's own labels are unchanged, and the test that keeps `site/umbra.css` byte-identical to the report's stylesheet still passes |
+| "no numbered markers except on the replay timeline, which is a real sequence" | Numbered section markers, `01` to `11` | The four in the rail are a real sequence: they are positions in the session's timeline and clicking one moves the playhead. The section markers are navigation and are the one place this page takes the liberty knowingly |
+| Night is `#10141C`, "a blue-black night, not a neutral near-black" | Pure black `#000000` | Landing page only. The reason the spec gives for the blue-black is that a neutral near-black with one neon accent reads as a template; this page answers that with a full warm ramp rather than with a single accent |
+| `--focus: #9CC4FF`, a blue | `--focus` is the warm accent | "No third hue anywhere" was the instruction. Focus rings stay 2px with a 2px offset and were checked at every tab stop |
+| `--pass: #8FBF9F` green, `--fail: #C8553D` red | `--pass` is the warm off-white ink, `--fail` is the accent | The landing page has no docket, so pass and fail appear only as node motifs, and those are already distinguished by shape: a cracked probe carries two crack strokes whatever colour it is drawn in. The report keeps the green and the red |
+| "Landing page: single column, 960px max" | Two columns to 1340px, with the map as a full-height stage beside the copy | The direction asked for the hero to be the map with the copy beside it. Below 1000px it collapses to the single column the spec describes |
+| "There are no cards" | The legend and the beats sit in hairline-bordered cells | They are controls, not decoration: each one filters or moves the map. No fills, no shadows, no radii |
+
+### The QA checklist, re-run
+
+Every line of the checklist in FRONTEND_SPEC.md, against the landing page.
+
+| Check | Result |
+|---|---|
+| Renders from `file://`, night and day, no network requests | Six requests, all `file://`: the page, two stylesheets, three scripts. Nothing else |
+| Greyscale: the states are distinguishable by shape and hatch alone | Yes. `landing-night-greyscale.png`. Lit is a filled disc, penumbra a half disc, umbra an outlined hatched disc; the legend orbs differ in radius as well as in value. `unknown` does not occur in this report |
+| Sweep from seq 0 to the end produces the same final state as the page load | Yes, checked by comparing every node's aria-label after a full 1x then 4x play against a fresh load: identical |
+| The afterimage transition at the cut is visible; a mention lights a node only to echo | Yes. Beat 03 is the cut, and the node aria-labels carry the tier |
+| Every coined word has its plain meaning beside it | Yes: the three legend orbs, the five tier chips, the state table |
+| Keyboard-only walk | Sixteen tab stops in reading order: four nav links, the install command, copy, the map as one stop, the divider, three legend orbs, four beats, then the replay. Every stop has an accessible name |
+| Screen reader announces node labels and the current replay event | Node groups are `role="button"` with labels like `apply_refund, penumbra, echo, depth 1`; the map is `role="group"` with a one-sentence label; the replay's current event is in an `aria-live="polite"` region |
+| Reduced motion: no tweens, replay still works | Yes. Transitions are off and the divider settles instantly instead of tweening |
+| No JavaScript: the page reads | Yes. The stage, legend, beats and replay are hidden rather than left as empty boxes, and the noscript line explains why. Everything else is text and reads identically |
+| Drop a report from another repository | Renders. The second map on the page is exactly that case, committed |
+| Drop a text file | "That file was not an Umbra report: it is not valid JSON." |
+| Drop a 25 MB file | "That file is 25 MB. The viewer refuses anything over 20 MB." |
+| A symbol named `<img src=x onerror=alert(1)>` renders as text | No `img` element is created and the raw tag does not appear in the map's `innerHTML`; the name reaches the node's aria-label as text. Its visible label happens to be hidden by the existing overflow rule for that node, which is placement, not escaping |
+| Narrow layout at 360px | No horizontal overflow at 360, 390, 560, 900, 1280 or 1600. `landing-narrow-360.png` |
+| Nothing moves before first paint | The page loads at beat 04 with the divider at rest. No transition runs on load |
+
+One checklist line does not apply. "Enter the map, reach the top umbra node,
+open detail, reach a docket row, filter to tests only" is the report's walk;
+the landing page has no docket and no detail panel, which is what the spec's
+own landing-page section describes. The map is still one tab stop and its nodes
+still carry their labels.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that

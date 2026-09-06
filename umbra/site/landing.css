@@ -1,0 +1,512 @@
+/* Landing page only.
+ *
+ * The report's own stylesheet is umbra.css, copied here by gen-site so the two
+ * surfaces cannot drift. This file sits on top of it and restyles the landing
+ * page alone. It never changes the report, the report template or the drop-in
+ * viewer's behaviour.
+ *
+ * Where this file departs from docs/FRONTEND_SPEC.md, the departure is listed
+ * in NOTES.md under phase 16 with the reason.
+ */
+
+/* ------------------------------------------------------------------ tokens */
+
+:root {
+  /* One hue. Everything warm on this page is 28 degrees, and nothing else has
+   * a hue at all. The ramp runs from the corona's hottest inner light to the
+   * cold ash at its edge. */
+  --amber-1: #FFE2B4;
+  --amber-2: #FFA33C;
+  --amber-3: #E5661B;
+  --amber-4: #7A2F08;
+  --amber-5: #3A1604;
+
+  --ground: #000000;
+  --ink: #F3EAE0;
+  --ink-2: #9A8F84;
+  --ink-3: #5E564E;
+  --rule: #241E18;
+
+  /* The serif display face is a system stack. No font file is fetched or
+   * committed; FRONTEND_SPEC.md forbids fetching fonts and this page keeps
+   * that rule exactly. */
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+
+  --measure: 68ch;
+  --wipe: 100%;
+}
+
+/* The map tokens, so the eclipse map wears this page's palette rather than the
+ * report's. umbra.css keeps its own values; these override only inside the
+ * landing page's layers. */
+.scheme-night {
+  --night: #000000;
+  --ink: #F3EAE0;
+  --ink-2: #9A8F84;
+  --rule: #241E18;
+  --lit: #FFF3DC;
+  --lit-glow: var(--amber-2);
+  --penumbra: #7A5B33;
+  --umbra: #14110D;
+  --umbra-edge: #5C5044;
+  --unknown: #5E564E;
+  --fail: var(--amber-3);
+  --pass: var(--ink);
+  --focus: var(--amber-2);
+  /* The corona behind the map is the light on this page, so the map's own
+   * field is turned down to keep the two from adding into a haze. */
+  --glow-peak: 0.16;
+  --pool-ink: transparent;
+}
+
+/* The day scheme is a real inversion: paper ground, ink text, and pools that
+ * are darker than the paper around them rather than a lightened negative. */
+.scheme-day {
+  --night: #F7F3ED;
+  --ink: #14100C;
+  --ink-2: #5B5148;
+  --rule: #E0D8CC;
+  --lit: #FFFFFF;
+  --lit-glow: #B85C00;
+  --penumbra: #B39A73;
+  --umbra: #14100C;
+  --umbra-edge: #6B6055;
+  --unknown: #9A9088;
+  --fail: #8A3D06;
+  --pass: #14100C;
+  --focus: #8A3D06;
+  --glow-peak: 0.14;
+  --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+  --ground: #F7F3ED;
+  --amber-2: #B85C00;
+  --amber-3: #8A3D06;
+}
+
+/* ------------------------------------------------------------------- page */
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  padding: 0;
+}
+
+main { max-width: 1340px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* Every label, nav item, legend word and section marker is monospace,
+ * uppercase, widely tracked. FRONTEND_SPEC.md forbids this for the report and
+ * it still does; this is the landing page's own voice. */
+.mono {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+
+.rail {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+  padding: 20px 0 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.rail .wordmark { color: var(--ink); letter-spacing: 0.3em; }
+.rail nav { display: flex; gap: 22px; margin-left: auto; }
+.rail a { color: var(--ink-2); text-decoration: none; }
+.rail a:hover, .rail a:focus-visible { color: var(--amber-2); }
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(36px, 5.2vw, 72px);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  margin: 0 0 18px;
+  color: var(--ink);
+  text-wrap: balance;
+}
+h1 em { font-style: italic; color: var(--amber-2); }
+
+h2 {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+  margin: 0 0 18px;
+}
+
+.marker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--amber-3);
+}
+
+p { max-width: var(--measure); color: var(--ink); }
+.lede { font-size: 16.5px; line-height: 1.65; color: var(--ink); max-width: 60ch; }
+.caption { color: var(--ink-2); font-size: 13px; line-height: 1.6; max-width: var(--measure); }
+a { color: var(--amber-2); }
+
+section.band { padding: 72px 0 0; border-top: 1px solid var(--rule); margin-top: 72px; }
+section.band > .marker { display: block; margin-bottom: 10px; }
+
+/* --------------------------------------------------------------- the hero */
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 32px;
+  align-items: center;
+  padding: 40px 0 24px;
+}
+
+.hero-copy { position: relative; z-index: 2; }
+.said {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--amber-1);
+  border-left: 1px solid var(--amber-4);
+  padding-left: 14px;
+  margin: 0 0 18px;
+  max-width: 46ch;
+}
+.contradiction {
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 46ch;
+  margin: 0 0 26px;
+}
+.contradiction b { color: var(--amber-2); font-weight: 400; }
+
+.install {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--rule);
+  max-width: 46ch;
+}
+.install code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 11px 12px;
+  color: var(--ink);
+  overflow-x: auto;
+  white-space: nowrap;
+  flex: 1;
+}
+.install button {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  color: var(--ink-2);
+  padding: 0 14px;
+  cursor: pointer;
+}
+.install button:hover { color: var(--amber-2); }
+
+/* The stage holds three layers in one grid cell: the corona behind, the map
+ * on top, and a clipped day copy of both over them. */
+.stage {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  isolation: isolate;
+}
+.stage .layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+}
+.stage .layer > * { grid-area: 1 / 1; width: 100%; height: 100%; }
+.stage svg { display: block; width: 100%; height: 100%; }
+
+.stage .layer.scheme-day {
+  /* Clipped from the divider rightwards. At 100 percent the day layer is
+   * fully clipped away, which is the state the page loads in, so nothing
+   * moves before first paint. */
+  clip-path: inset(0 0 0 var(--wipe));
+  background: var(--ground);
+}
+.stage .layer.scheme-day * { transition: none !important; }
+
+.stage .corona { pointer-events: none; }
+
+/* The map paints its own background rectangle in --night, as the spec says it
+ * must, and on this page that rectangle would cover the corona behind it. The
+ * rectangle is made transparent here and the stage carries the ground colour
+ * instead. Nothing in umbra.js changes; a CSS fill outranks the presentation
+ * attribute it sets. */
+.stage .layer > svg > rect:first-of-type { fill: transparent; }
+.stage { background: var(--ground); }
+
+/* The divider. */
+.divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--wipe);
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(to bottom, transparent, var(--amber-4) 12%, var(--amber-2) 50%, var(--amber-4) 88%, transparent);
+  cursor: ew-resize;
+  z-index: 3;
+  touch-action: none;
+}
+.divider::after {
+  content: "";
+  position: absolute;
+  inset: -14px -16px;
+}
+.divider .knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--amber-2);
+  border-radius: 50%;
+  background: var(--ground);
+}
+.divider .knob::before,
+.divider .knob::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--amber-2);
+  border-right: 1px solid var(--amber-2);
+}
+.divider .knob::before { left: 5px; transform: translateY(-50%) rotate(-135deg); }
+.divider .knob::after { right: 5px; transform: translateY(-50%) rotate(45deg); }
+.divider:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+
+.divider-hint {
+  position: absolute;
+  right: 0;
+  bottom: -22px;
+  z-index: 3;
+}
+
+/* ------------------------------------------------------------- the legend */
+
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
+.legend button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  padding: 9px 14px 9px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.legend button:hover { border-color: var(--amber-4); }
+.legend button[aria-pressed="true"] { border-color: var(--amber-2); color: var(--ink); }
+.legend .orb { width: 34px; height: 34px; flex: none; }
+.legend .word {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  color: var(--ink);
+  display: block;
+}
+.legend .plain { font-size: 11.5px; color: var(--ink-2); display: block; margin-top: 3px; }
+
+/* A node the legend filtered out keeps its disc and loses its emphasis, so the
+ * map never claims the node is not there. */
+.node.muted { opacity: 0.22; }
+
+/* --------------------------------------------------------------- the rail */
+
+.beats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--rule);
+  margin-top: 26px;
+}
+.beats button {
+  background: none;
+  border: 0;
+  border-right: 1px solid var(--rule);
+  padding: 16px 16px 18px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink-2);
+  border-top: 1px solid transparent;
+  margin-top: -1px;
+}
+.beats button:last-child { border-right: 0; }
+.beats button[aria-pressed="true"] { border-top-color: var(--amber-2); color: var(--ink); }
+.beats .n { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--amber-3); }
+.beats .w {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  display: block;
+  margin: 6px 0 5px;
+  color: inherit;
+}
+.beats .d { font-size: 12px; line-height: 1.5; display: block; color: var(--ink-2); }
+
+/* ----------------------------------------------------------- second map */
+
+/* Four nodes in a 1200 by 800 frame leaves a lot of empty sky, so the plate is
+ * capped rather than run full width. */
+.plate { position: relative; margin: 8px auto 18px; max-width: 760px; }
+.plate svg { display: block; width: 100%; height: auto; }
+
+/* ------------------------------------------------------------ the sweep */
+
+/* The replay strip is the report's own component. Its behaviour is untouched;
+ * only its voice is brought into line with the rest of this page. */
+.replay { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.replay .replay-label, .replay .counter {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10.5px;
+  color: var(--ink-2);
+}
+.replay .replay-label .sub { text-transform: none; letter-spacing: 0.04em; }
+.replay .replay-controls button {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  padding: 7px 12px;
+}
+.replay .replay-controls button:hover { border-color: var(--amber-4); color: var(--ink); }
+.replay .now { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); }
+
+/* ---------------------------------------------------------------- pieces */
+
+.drop {
+  border: 1px dashed var(--rule);
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--ink-2);
+  margin: 16px 0;
+}
+.drop.over { border-color: var(--amber-2); color: var(--ink); }
+.drop input { margin-top: 10px; color: var(--ink-2); }
+.back { margin-left: 10px; }
+
+table.states { border-collapse: collapse; margin: 12px 0; width: 100%; max-width: var(--measure); }
+table.states td, table.states th {
+  border-bottom: 1px solid var(--rule);
+  padding: 10px 14px 10px 0;
+  text-align: left;
+  vertical-align: top;
+}
+table.states th {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10.5px;
+  color: var(--ink-2);
+  font-weight: 400;
+}
+table.states b { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.14em; font-size: 11.5px; }
+
+pre.block {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  border: 1px solid var(--rule);
+  padding: 14px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  max-width: var(--measure);
+}
+
+ul { max-width: var(--measure); }
+li { margin: 7px 0; }
+
+footer { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); }
+footer p { color: var(--ink-2); font-size: 13px; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1000px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .beats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .beats button:nth-child(2) { border-right: 0; }
+}
+
+@media (max-width: 560px) {
+  main { padding: 0 16px 72px; }
+  .rail { flex-wrap: wrap; gap: 14px; }
+  .rail nav { margin-left: 0; width: 100%; gap: 16px; }
+  .beats { grid-template-columns: minmax(0, 1fr); }
+  .beats button { border-right: 0; border-bottom: 1px solid var(--rule); }
+  .legend button { width: 100%; }
+}
+
+/* --------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .stage .layer *, .beats button, .legend button, .install button { transition: none !important; }
+}
+
+/* ------------------------------------------------------------------ print */
+
+@media print {
+  /* The day scheme, forced. FRONTEND_SPEC.md requires it, and a page that
+   * prints its own black ground is a page nobody prints twice. The values are
+   * the ones .scheme-day carries; CSS has no way to reuse a block, so they are
+   * written out again rather than left to a filter. */
+  :root, body, .scheme-night {
+    --ground: #FFFFFF;
+    --night: #FFFFFF;
+    --ink: #14100C;
+    --ink-2: #5B5148;
+    --ink-3: #7A7068;
+    --rule: #D8D0C4;
+    --amber-1: #8A3D06;
+    --amber-2: #B85C00;
+    --amber-3: #8A3D06;
+    --amber-4: #5A2A04;
+    --amber-5: #3A1604;
+    --lit: #FFFFFF;
+    --lit-glow: #B85C00;
+    --penumbra: #B39A73;
+    --umbra: #14100C;
+    --umbra-edge: #6B6055;
+    --unknown: #9A9088;
+    --fail: #8A3D06;
+    --pass: #14100C;
+    --focus: #8A3D06;
+    --glow-peak: 0.14;
+    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+  body { background: #FFFFFF; color: var(--ink); }
+  .stage { background: #FFFFFF; }
+  .stage .layer.scheme-day, .divider, .divider-hint { display: none; }
+  .beats, .legend, .plate { break-inside: avoid; }
+  .rail nav { display: none; }
+}
+
+/* ------------------------------------------------------------ without JS */
+
+/* The map, the legend orbs and the beats are drawn and driven by script. With
+ * script off they would be blank boxes and dead buttons, so they are not shown
+ * at all and the noscript line explains why. Everything else on the page is
+ * text and reads exactly as it does with script on. */
+.nojs .stage, .nojs .legend, .nojs .beats, .nojs #replay { display: none; }
