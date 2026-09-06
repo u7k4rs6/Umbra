@@ -1226,3 +1226,103 @@ h1 { text-shadow: 0 0 60px rgba(0, 0, 0, 0.9); }
   .card::after, .panel::after { display: none; }
   .corona .corona-field { animation: none; }
 }
+
+/* ------------------------------------------------------------- halftone */
+
+/* The field of dots behind everything. It is drawn by halftone.js into a
+ * canvas, sits under the content and takes no pointer events. The grid is
+ * turned down to a whisper now that the field carries the surface. */
+.halftone {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mask-image: radial-gradient(120% 100% at 68% 42%, #000 20%, rgba(0,0,0,0.5) 55%, transparent 85%);
+  -webkit-mask-image: radial-gradient(120% 100% at 68% 42%, #000 20%, rgba(0,0,0,0.5) 55%, transparent 85%);
+}
+:root { --grid-line: rgba(243, 234, 224, 0.018); }
+.grid-overlay::before { border-color: color-mix(in srgb, var(--ink) 4%, transparent); }
+
+/* The hero sits above the field, and its own corona is the brightest thing. */
+.hero, section.band, .topbar, .ticker, .site-foot { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) { .halftone { opacity: 0.42; } }
+@media print { .halftone { display: none; } }
+
+/* ---------------------------------------------------------- the torch */
+
+/* A dot at the pointer and a ring that trails it, plus a canvas of embers
+ * behind them. All three are decoration: pointer-events none, aria-hidden,
+ * and interact.js does not even create them under reduced motion or on a
+ * device with no fine pointer. The system cursor stays exactly where it is,
+ * because taking somebody's cursor away is a good way to lose them. */
+.torch-dot, .torch-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 95;
+  pointer-events: none;
+  border-radius: 50%;
+  transition: opacity 0.3s var(--ease);
+}
+.torch-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--amber-1);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--amber-2) 80%, transparent);
+}
+.torch-ring {
+  width: 30px;
+  height: 30px;
+  border: 1px solid color-mix(in srgb, var(--amber-2) 55%, transparent);
+  transition: opacity 0.3s var(--ease), border-color 0.35s var(--ease),
+              background-color 0.35s var(--ease);
+}
+.torch-ring.hot {
+  border-color: var(--amber-2);
+  background: color-mix(in srgb, var(--amber-2) 9%, transparent);
+}
+.torch-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 94;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ------------------------------------------------------------- the tilt */
+
+/* Cards lean toward the pointer. The lift and the lean are separate variables
+ * so hover and tilt can both be true at once without one overwriting the
+ * other's transform. */
+.card, .tile, .panel {
+  transform:
+    translateY(var(--lift, 0px))
+    perspective(900px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease),
+              transform 0.35s var(--ease);
+}
+.card:hover, .tile:hover, .panel:hover { --lift: -3px; }
+.has-torch .card:hover, .has-torch .tile:hover, .has-torch .panel:hover {
+  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease),
+              transform 0.12s linear;
+}
+
+/* Magnets: the transform is set inline by interact.js, so all this does is
+ * make the return smooth. */
+.install button, .ghost, .pill a, .replay .replay-controls button, .filters button {
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease),
+              background-color 0.3s var(--ease), transform 0.35s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .tile, .panel { transform: none !important; }
+}
+@media print {
+  .torch-dot, .torch-ring, .torch-trail { display: none; }
+  .card, .tile, .panel { transform: none !important; }
+}
