@@ -302,10 +302,10 @@
     svg.appendChild(g);
   }
 
-  function nodeGroup(n, p) {
+  function nodeGroup(n, p, seqNote) {
     var g = el("g", {
       "class": "node", "data-node": n.id,
-      role: "button", tabindex: -1, "aria-label": nodeLabel(n)
+      role: "button", tabindex: -1, "aria-label": nodeLabel(n, seqNote)
     });
 
     var r = radiusFor(n);
@@ -452,13 +452,28 @@
     return 7;
   }
 
-  function nodeLabel(n) {
+  // nodeLabel is what a screen reader announces for a node.
+  //
+  // During the sweep it has to name the state at the playhead, not the state
+  // at commit, and say which that is. A reader stepping through the session
+  // hears the map change; without the sequence number they have no way to
+  // know they are hearing an earlier moment rather than the final one.
+  function nodeLabel(n, seqNote) {
     var parts = [n.name];
     if (n.is_test) { parts.push("test"); }
     parts.push(n.state);
+    if (n.tier) { parts.push(n.tier); }
     parts.push("depth " + n.depth);
     if (n.result === "fail") { parts.push("failed"); }
+    if (seqNote) { parts.push(seqNote); }
     return parts.join(", ");
+  }
+
+  // seqNoteFor is empty at the end of the sweep, where the map shows the
+  // eclipse and no qualifier is needed.
+  function seqNoteFor(seq, maxSeq) {
+    if (typeof maxSeq !== "number" || seq >= maxSeq) { return ""; }
+    return "as of seq " + seq;
   }
 
   // 7. Labels, placed outward from the ring by the anchor layout.go chose.
@@ -801,7 +816,10 @@
   // Expose the reconstruction for the cross-check test that compares it with
   // the Go classifier. Nothing on the page uses this.
   if (typeof globalThis !== "undefined") {
-    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank, render: render, renderInto: renderInto };
+    globalThis.__umbra = {
+      stateAt: stateAt, tierRank: tierRank, render: render, renderInto: renderInto,
+      nodeLabel: nodeLabel, seqNoteFor: seqNoteFor
+    };
   }
 
   // ---------------------------------------------------------------------
@@ -853,7 +871,7 @@
     track.appendChild(head);
 
     function render() {
-      applyState(svg, data, current, hasAny, reduced);
+      applyState(svg, data, current, hasAny, reduced, maxSeq);
 
       var ev = eventAt(timeline, current);
       headline.textContent = ev ? describe(ev, data) : "";
@@ -973,7 +991,8 @@
 
   // applyState restyles the map for the evidence up to seq. Rendering at a seq
   // is a pure function of the report and that integer.
-  function applyState(svg, data, seq, hasAny, reduced) {
+  function applyState(svg, data, seq, hasAny, reduced, maxSeq) {
+    var seqNote = seqNoteFor(seq, maxSeq);
     (data.nodes || []).forEach(function (n) {
       var st = stateAt(n, n.exposures || [], data.t0, hasAny, seq);
       var g = svg.querySelector('[data-node="' + cssEscape(n.id) + '"]');
@@ -981,7 +1000,7 @@
 
       var place = data.layout.nodes[n.id];
       var shown = Object.assign({}, n, { state: st.state, tier: st.tier });
-      var fresh = nodeGroup(shown, place);
+      var fresh = nodeGroup(shown, place, seqNote);
       fresh.setAttribute("class", g.getAttribute("class"));
       if (reduced) { fresh.style.transition = "none"; }
       g.parentNode.replaceChild(fresh, g);
