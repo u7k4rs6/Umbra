@@ -1,5 +1,443 @@
-this is the shitties website i've ever seen. As i said , change it whole
+<task-notification>
+<task-id>bdh99qyj8</task-id>
+<tool-use-id>toolu_016CN1RTjKrrtXEgRdzSTbsg</tool-use-id>
+<status>stopped</status>
+<summary>No completion record was found for this background shell command from the previous session. It may have been stopped (via the UI, Monitor timeout, or agent teardown — these leave no transcript marker), or it may have been running when the previous Claude Code process exited. Check the output file for partial results before assuming it completed.</summary>
+</task-notification>
 
 ---
 
-especially the map, looks soooo bad
+<task-notification>
+<task-id>bv4gec54q</task-id>
+<tool-use-id>toolu_011VE724dT5n76UqtUw424UJ</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bv4gec54q.output</output-file>
+<status>failed</status>
+<summary>Background command "Restart the no-cache preview server" failed with exit code 2</summary>
+</task-notification>
+
+---
+
+It is buildathon day, 6 September. All times IST: kickoff 9:00, stable state by
+11:45, Curveball at 12:00, submission 15:00. Read umbra/NOTES.md, umbra/PUBLISH.md
+and scripts/graft.sh in the existing Umbra repository before you start.
+
+Track: E2, Graph Intelligence. Upstream is entireio/entire-graph on main (public,
+MIT). Umbra lives in umbra/ as its own Go module and never imports entire-graph
+packages.
+
+Do NOT push the old repository's checkpoint refs to the new mirror. The new
+remote starts clean and stays clean. Do not run entire configure with a
+checkpoint-remote pointing at the old repo.
+
+No em dashes in anything you write. go test ./... green before every commit.
+
+STEP 1, the mirror workflow. Fork entireio/entire-graph, then:
+  entire login
+  entire repo mirror create
+  entire repo clone /gh/u7k4rs6/entire-graph
+Select the fork and the India region at the prompt; it is a prompt, not a flag.
+Clone under $HOME, never a scratch or sandbox directory, or Graph refuses the
+repository metadata. Then:
+  entire enable -y --agent claude-code
+  entire status
+Confirm entire status names the new remote before any commit. Work only inside
+this clone from here on.
+
+STEP 2, the plugin. The upstream README's install path is:
+  go install github.com/entireio/entire-graph/cmd/entire-graph@main
+  entire plugin install "$(go env GOPATH)/bin/entire-graph" --force
+This needs a Go toolchain with CGO because tree-sitter uses native bindings, so
+it may take several minutes. If the build fails, fall back to the release
+archive rather than debugging cgo. Then:
+  entire graph version
+  entire graph doctor --json
+  entire graph init-agents --repo .
+Record the doctor output. It reports no_egress=true directly, which is a better
+source for the offline assertion than inferring it from capabilities; switch that
+test over if it is quick.
+
+STEP 3, verify the field before trusting anything. Upstream documents indexing
+profiles: syntax-only emits only DEFINES and CONTAINS, fast adds shallow calls
+and boundaries, full emits every relation type. Umbra's field needs CALLS,
+USES_TYPE, DATA_FLOWS, TESTS and FILE_CHANGES_WITH. Run
+  entire graph capabilities --json
+and check which relations this build actually emits by default. If the default is
+not full, find the flag that makes Umbra's snapshot and impact calls request it,
+and note it. If the relations Umbra needs are unavailable, that is a degradation,
+not an error: apply the degradation table and say so in the header. Do this
+before the demo run, because thin relations mean wrong demo numbers.
+
+STEP 4, first commit: the four planning documents plus HANDOFF.md and
+KICKOFF_PROMPT.md only, no product code. Create the "initial understanding and
+intended architecture" checkpoint against it. The checkpoint must carry real
+reasoning: the four states, why the subtraction is the product, the settled
+decisions, and the rejected options from NOTES.md.
+
+STEP 5, second commit: the product code as one clearly labelled import commit,
+with NOTES.md and the corrections list. Do not fabricate a phase-by-phase history
+that did not happen in this repository. Then verify the graft:
+  go test ./...
+  entire umbra HEAD --test "pytest -v" --out ./out
+against the fixture app. The claim to match exactly: 8 probes selected, 5 cracked,
+full sweep, 0 leaks. If the numbers differ in this clone, find out why before
+11:00 and write the reason down. Never use pytest -q; it degrades verify to
+exit-code-only.
+
+STEP 6, graph evidence, recorded as you go, worth 15 points:
+  one entire graph search or def lookup
+  one entire graph impact analysis run before a change you then make
+  entire graph diff --base <first commit> --head HEAD as the final semantic diff
+Write each into BUILDATHON.md with what it found and how you verified it against
+source and tests. Graph output is evidence, not an oracle; never present an
+uncertain finding as fact.
+
+STEP 7, BUILDATHON.md in the repository root, using the participant guide's exact
+outline: name, one-sentence summary, problem and intended user, selected track and
+why Entire is essential, architecture and main workflow, Graph findings and
+verification, Noon Curveball, checkpoint links and what each proves, setup and
+run and test instructions, known limitations and next steps. Fill everything now
+except the Curveball section. Limitations must include: the examined set comes
+from tool activity so shell-driven agents leave little trace; the stale-worktree
+failure mode and where to delete; that checks are only trusted once observed
+failing; and that umbra clean is documented but not built.
+
+STEP 8, by 11:45: stop adding anything. Runnable state committed, tests green,
+pre-noon checkpoint created recording current intent, architecture, completed
+work, unresolved work and technical risks. Do not start after 11:00 anything you
+cannot finish by 11:45.
+
+STEP 9, at 12:00: close the session. Read the Constraint-change playbook in
+ARCHITECTURE.md. Write a short plan into NOTES.md before editing. Run
+entire graph impact on the affected area first. Implement the smallest complete
+response inside the boundary the playbook names, test the changed behaviour, and
+commit it as its own checkpoint. Then fill the Curveball section of BUILDATHON.md
+with what changed, why the revised behaviour can be trusted, and the test that
+proves it.
+
+STEP 10, final 20 minutes: final commit pushed and the SHA recorded, project
+launches from a clean checkout via the documented path, four checkpoints open and
+explain their milestones, semantic diff recorded, BUILDATHON.md complete and free
+of secrets, tests covering the critical and Curveball behaviour green, fallback
+screenshots available locally.
+
+Report at 11:00 with: mirror and plugin working yes or no, which relations the
+capabilities call reports, the demo numbers observed, which graph evidence is
+recorded, and which BUILDATHON.md sections are still empty.
+
+---
+
+.Track: E2, Graph Intelligence. Upstream is entireio/entire-graph on main (public,
+MIT). Umbra lives in umbra/ as its own Go module and never imports entire-graph
+packages.
+
+Do NOT push the old repository's checkpoint refs to the new mirror. The new
+remote starts clean and stays clean. Do not run entire configure with a
+checkpoint-remote pointing at the old repo.
+
+No em dashes in anything you write. go test ./... green before every commit.
+
+STEP 1, the mirror workflow. Fork entireio/entire-graph, then:
+  entire login
+  entire repo mirror create
+  entire repo clone /gh/u7k4rs6/entire-graph
+Select the fork and the India region at the prompt; it is a prompt, not a flag.
+Clone under $HOME, never a scratch or sandbox directory, or Graph refuses the
+repository metadata. Then:
+  entire enable -y --agent claude-code
+  entire status
+Confirm entire status names the new remote before any commit. Work only inside
+this clone from here on.
+
+STEP 2, the plugin. The upstream README's install path is:
+  go install github.com/entireio/entire-graph/cmd/entire-graph@main
+  entire plugin install "$(go env GOPATH)/bin/entire-graph" --force
+This needs a Go toolchain with CGO because tree-sitter uses native bindings, so
+it may take several minutes. If the build fails, fall back to the release
+archive rather than debugging cgo. Then:
+  entire graph version
+  entire graph doctor --json
+  entire graph init-agents --repo .
+Record the doctor output. It reports no_egress=true directly, which is a better
+source for the offline assertion than inferring it from capabilities; switch that
+test over if it is quick.
+
+STEP 3, verify the field before trusting anything. Upstream documents indexing
+profiles: syntax-only emits only DEFINES and CONTAINS, fast adds shallow calls
+and boundaries, full emits every relation type. Umbra's field needs CALLS,
+USES_TYPE, DATA_FLOWS, TESTS and FILE_CHANGES_WITH. Run
+  entire graph capabilities --json
+and check which relations this build actually emits by default. If the default is
+not full, find the flag that makes Umbra's snapshot and impact calls request it,
+and note it. If the relations Umbra needs are unavailable, that is a degradation,
+not an error: apply the degradation table and say so in the header. Do this
+before the demo run, because thin relations mean wrong demo numbers.
+
+STEP 4, first commit: the four planning documents plus HANDOFF.md and
+KICKOFF_PROMPT.md only, no product code. Create the "initial understanding and
+intended architecture" checkpoint against it. The checkpoint must carry real
+reasoning: the four states, why the subtraction is the product, the settled
+decisions, and the rejected options from NOTES.md.
+
+STEP 5, second commit: the product code as one clearly labelled import commit,
+with NOTES.md and the corrections list. Do not fabricate a phase-by-phase history
+that did not happen in this repository. Then verify the graft:
+  go test ./...
+  entire umbra HEAD --test "pytest -v" --out ./out
+against the fixture app. The claim to match exactly: 8 probes selected, 5 cracked,
+full sweep, 0 leaks. If the numbers differ in this clone, find out why before
+11:00 and write the reason down. Never use pytest -q; it degrades verify to
+exit-code-only.
+
+STEP 6, graph evidence, recorded as you go, worth 15 points:
+  one entire graph search or def lookup
+  one entire graph impact analysis run before a change you then make
+  entire graph diff --base <first commit> --head HEAD as the final semantic diff
+Write each into BUILDATHON.md with what it found and how you verified it against
+source and tests. Graph output is evidence, not an oracle; never present an
+uncertain finding as fact.
+
+STEP 7, BUILDATHON.md in the repository root, using the participant guide's exact
+outline: name, one-sentence summary, problem and intended user, selected track and
+why Entire is essential, architecture and main workflow, Graph findings and
+verification, Noon Curveball, checkpoint links and what each proves, setup and
+run and test instructions, known limitations and next steps. Fill everything now
+except the Curveball section. Limitations must include: the examined set comes
+from tool activity so shell-driven agents leave little trace; the stale-worktree
+failure mode and where to delete; that checks are only trusted once observed
+failing; and that umbra clean is documented but not built.
+
+STEP 8, Runnable state committed, tests green,
+pre-noon checkpoint created recording current intent, architecture, completed
+work, unresolved work and technical risks.
+
+STEP 10, final 20 minutes final commit pushed and the SHA recorded, project
+launches from a clean checkout via the documented path, four checkpoints open and
+explain their milestones, semantic diff recorded, BUILDATHON.md complete and free
+of secrets, tests covering the critical and Curveball behaviour green, fallback
+screenshots available locally.
+
+mirror and plugin working yes or no, which relations the
+capabilities call reports, the demo numbers observed, which graph evidence is
+recorded, and which BUILDATHON.md sections are still empty.
+
+---
+
+<task-notification>
+<task-id>bvgkidnoh</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bvgkidnoh.output</output-file>
+<status>completed</status>
+<summary>Background command "Build the entire-graph plugin from source" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+login is completed
+
+---
+
+<task-notification>
+<task-id>buq8inojr</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/buq8inojr.output</output-file>
+<status>completed</status>
+<summary>Background command "Create the mirror on the India cluster" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b7lkqnqhn</task-id>
+<tool-use-id>toolu_01TUumPCPdXgqCyuVT67yfE1</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/b7lkqnqhn.output</output-file>
+<status>completed</status>
+<summary>Background command "Run umbra against HEAD in the fork" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bswivwuil</task-id>
+<tool-use-id>toolu_01BPZve9BVrVStcsnJNrzRr1</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bswivwuil.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the semantic diff evidence" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+You are in ~/entire-graph on branch umbra-buildathon, hooks live, tree clean.
+Read umbra/NOTES.md and umbra/BUILDATHON.md first. An external review found ten
+issues. You are fixing two of them in code, correcting the docs, and recording
+the rest honestly. Do NOT attempt the other issues; time is short and a rushed
+fix to test selection is worse than a documented gap.
+
+No em dashes. go test ./... green before every commit. Commit each of the four
+tasks separately with an Entire-Checkpoint trailer. Stop by 14:15 IST regardless
+of where you are, so the tree is clean and pushed before submission.
+
+1. The sweep must never report a false zero. umbra/cmd/entire-umbra/execute.go:99
+   When verification is degraded and emits no test IDs, the leak count is
+   currently reported as 0, which is indistinguishable from a real clean sweep.
+   Change it so a sweep with no comparable test IDs reports "audit inconclusive"
+   with the reason, in the terminal, JSON, HTML and packet, and never the number
+   zero. A real sweep that compares IDs and finds nothing still reports 0 leaks.
+   Add a known-positive test: force the degraded path and assert the output says
+   inconclusive and contains no zero-leak claim. Confirm the test fails if you
+   revert the fix.
+
+2. A failed read must not mark a node lit.
+   umbra/internal/transcript/claudecode.go:125 and :137
+   The parser records a Read before the result arrives and ignores
+   tool_result.is_error, so a failed file read counts as inspected. Pair each
+   tool_use with its tool_result and drop any read whose result is an error.
+   This can only ever move nodes toward shadow, never away from it, so verify the
+   demo numbers after: rerun the demo commit and confirm 8 selected, 5 cracked,
+   0 leaks still holds, and report any change in the state counts.
+   Add a fixture with one successful read and one errored read, and assert only
+   the successful one lands in the examined set. Confirm it fails without the fix.
+
+3. Sync the documentation to what exists.
+   umbra/docs/SECURITY_AND_ACCESS.md:25 and anywhere else claiming behavior the
+   binary does not have: .umbra.json, umbra clean, --scrub, and Graph timeout
+   behavior. The four planning documents stay as written per the standing rule,
+   so do NOT edit them to hide the gap: instead add a short, clearly headed
+   section to the README listing every command and flag the design documents
+   describe that was never built, with the manual alternative where one exists.
+   Also scope the Go claim: state plainly that test selection and execution are
+   supported for Python via pytest, and that Go test selection is not yet
+   working, since a Go test ID is passed in a form go test reads as a package
+   rather than as -run.
+   Also handle --adapter, which is accepted but ignored while the output always
+   claims Claude Code: either reject an unsupported value with a clear message,
+   or document it as accepted-but-unused. Prefer rejecting.
+
+4. Write the review into BUILDATHON.md under known limitations, as its own short
+   section. List all ten findings in plain language, say which two you fixed and
+   why those two, and say why the rest are documented rather than patched under
+   time pressure. Include the observation that five of them passed go test and
+   go vet while asserting nothing about the behavior they name, which is the same
+   class of problem as the Box.Overlaps case already recorded in NOTES.md.
+   Do not soften the findings and do not claim anything is fixed that is not.
+
+Then: push, confirm the branch is up to date, and report with the demo numbers
+after fix 2, the two known-positive tests and proof each fails without its fix,
+the final test count, and the commit SHA to submit.
+
+---
+
+<task-notification>
+<task-id>bv5sy6x7k</task-id>
+<tool-use-id>toolu_01Mwpb22B74atqpSLu9uewxm</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bv5sy6x7k.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the full suite with both fixes" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnj8h5yd6</task-id>
+<tool-use-id>toolu_01XgZTrq5PhFKwRw51DGMKXD</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bnj8h5yd6.output</output-file>
+<status>completed</status>
+<summary>Background command "Vet, full suite and em dash check" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8xzprsrk</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/b8xzprsrk.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the cmd package twice to catch the flake" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b8zgywjh3</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/b8zgywjh3.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the demo with both fixes applied" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bn0h9y4vs</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bn0h9y4vs.output</output-file>
+<status>completed</status>
+<summary>Background command "Final vet and full suite" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bka74t99d</task-id>
+<tool-use-id>toolu_01QJ5LN6mtAbXYgZRGFog1um</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bka74t99d.output</output-file>
+<status>completed</status>
+<summary>Background command "Get the final test count" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+what are the timings of commits?
+
+---
+
+if someone sees this project, what is the earliest commit they'll see
+
+---
+
+my umbra on github is priv, will it effect anything?
+
+---
+
+do one thing, rewrite those commits with today's date , from 11 am onwards. Do it randomly
+
+---
+
+so, i don't have to show them my priv repo?
+
+---
+
+then what's left now?
+
+---
+
+<task-notification>
+<task-id>bnaymfusk</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bnaymfusk.output</output-file>
+<status>completed</status>
+<summary>Background command "Test the uncommitted work" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+delete the handoff.md, Go. Commit the dirty tree, then work 1 to 4 in that order.
+
+---
+
+<task-notification>
+<task-id>bxss6rapg</task-id>
+<tool-use-id>toolu_01Qy9zcU6duQ3wz15v719uii</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bxss6rapg.output</output-file>
+<status>completed</status>
+<summary>Background command "Prune stale worktrees and rerun the e2e tests" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bp7buz6xi</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-utkuputku-Desktop-Umbra/abbf9c0c-4f5e-46cd-a7be-70d09966a014/tasks/bp7buz6xi.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for the raised-timeout e2e run" completed (exit code 0)</summary>
+</task-notification>
