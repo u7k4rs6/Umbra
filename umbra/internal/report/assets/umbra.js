@@ -119,6 +119,23 @@
       }));
     });
     svg.appendChild(light);
+
+    // The same blobs again, painted rather than subtracted. On the night
+    // scheme --pool-ink is transparent and this layer does nothing; on a light
+    // ground it is what makes a pool darker instead of brighter.
+    var shade = el("g", { filter: "url(#pool)", "class": "shade" });
+    (data.nodes || []).forEach(function (n) {
+      var place = layout.nodes[n.id];
+      if (!place) { return; }
+      var spec = poolFor(n.state);
+      if (!spec) { return; }
+      shade.appendChild(el("circle", {
+        cx: place.x, cy: place.y, r: spec.r, fill: "var(--pool-ink)",
+        opacity: n.state === "penumbra" ? 0.55 : 1,
+        "data-shade": n.id
+      }));
+    });
+    svg.appendChild(shade);
   }
 
   // poolFor returns the mask blob for a state, or null when the state casts no
@@ -504,6 +521,9 @@
     wireSelection(svg, data);
     wireFilters();
     wireDetail(data);
+    wireReplay(svg, data);
+    wireSpotlight(svg);
+    wireKeyboard(svg, data);
   }
 
   // The detail panel. One is open at a time; Escape closes it.
@@ -696,6 +716,273 @@
 
   var select = function () {};
 
+  // ---------------------------------------------------------------------
+  // State reconstruction.
+  //
+  // These rules mirror internal/shadow/classify.go exactly, including the
+  // order of the penumbra tiers. A test feeds the recorded scenarios through
+  // both and compares, so the two cannot drift apart silently.
+  // ---------------------------------------------------------------------
+
+  var TIER_ORDER = ["glance", "glimpse", "quoted", "afterimage", "echo"];
+
+  function tierRank(t) {
+    var i = TIER_ORDER.indexOf(t);
+    return i < 0 ? TIER_ORDER.length : i;
+  }
+
+  // stateAt returns the state and tier of a node considering only the evidence
+  // at or before seq. Pass Infinity for the final state at commit.
+  function stateAt(node, exposures, t0, hasAnyEvidence, seq) {
+    if (!hasAnyEvidence) { return { state: "unknown", tier: "" }; }
+
+    exposures = exposures || [];
+    var span = node.span || [0, 0];
+    var best = "";
+    var consider = function (t) {
+      if (best === "" || tierRank(t) < tierRank(best)) { best = t; }
+    };
+    var saw = false;
+
+    for (var i = 0; i < exposures.length; i++) {
+      var x = exposures[i];
+      if (x.seq > seq) { continue; }
+      saw = true;
+
+      if (x.kind === "edit") { return { state: "lit", tier: "" }; }
+
+      if (x.kind === "read") {
+        var covers = !x.range || (x.range[0] <= span[0] && x.range[1] >= span[1]);
+        var afterCut = !t0 || x.seq >= t0;
+        if (covers && afterCut) { return { state: "lit", tier: "" }; }
+        if (covers) { consider("afterimage"); } else { consider("glance"); }
+      } else if (x.kind === "grep" || x.kind === "glob") {
+        consider("glimpse");
+      } else if (x.kind === "quoted") {
+        consider("quoted");
+      } else if (x.kind === "mention") {
+        consider("echo");
+      }
+    }
+
+    if (!saw || best === "") { return { state: "umbra", tier: "" }; }
+    return { state: "penumbra", tier: best };
+  }
+
+  // Expose the reconstruction for the cross-check test that compares it with
+  // the Go classifier. Nothing on the page uses this.
+  if (typeof globalThis !== "undefined") {
+    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank };
+  }
+
+  // ---------------------------------------------------------------------
+  // Attention replay.
+  // ---------------------------------------------------------------------
+
+  function wireReplay(svg, data) {
+    var strip = document.getElementById("replay");
+    if (!strip) { return; }
+
+    var timeline = data.timeline || [];
+    if (!timeline.length) {
+      strip.hidden = true;
+      return;
+    }
+
+    var maxSeq = timeline[timeline.length - 1].seq;
+    var hasAny = anyEvidence(data);
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var current = maxSeq;      // the page loads showing the eclipse
+    var playing = false;
+    var speed = 1;
+    var timer = null;
+
+    var track = strip.querySelector(".track");
+    var headline = strip.querySelector(".now");
+    var counter = strip.querySelector(".counter");
+    var playBtn = strip.querySelector('[data-act="play"]');
+
+    // Ticks: one per event, shaped by kind so the sequence reads as a sequence.
+    timeline.forEach(function (ev, i) {
+      var t = document.createElement("button");
+      t.type = "button";
+      t.className = "tick tick-" + ev.kind + (ev.seq === data.t0 ? " cut" : "");
+      t.style.left = (100 * i / Math.max(1, timeline.length - 1)) + "%";
+      t.title = describe(ev, data);
+      t.setAttribute("aria-label", describe(ev, data));
+      t.addEventListener("click", function () { goTo(ev.seq); });
+      track.appendChild(t);
+    });
+
+    var head = document.createElement("div");
+    head.className = "playhead";
+    track.appendChild(head);
+
+    function render() {
+      applyState(svg, data, current, hasAny, reduced);
+
+      var ev = eventAt(timeline, current);
+      headline.textContent = ev ? describe(ev, data) : "";
+      counter.textContent = "seq " + current + " of " + maxSeq;
+
+      var idx = indexOf(timeline, current);
+      head.style.left = (100 * idx / Math.max(1, timeline.length - 1)) + "%";
+
+      strip.classList.toggle("at-end", current >= maxSeq);
+    }
+
+    function goTo(seq) {
+      current = Math.max(0, Math.min(maxSeq, seq));
+      render();
+    }
+
+    function step(dir) {
+      pause();
+      var idx = indexOf(timeline, current) + dir;
+      idx = Math.max(0, Math.min(timeline.length - 1, idx));
+      goTo(timeline[idx].seq);
+    }
+
+    function play() {
+      if (playing) { return; }
+      // Pressing play at the end starts the sweep again from the beginning.
+      if (current >= maxSeq) { current = 0; }
+      playing = true;
+      playBtn.textContent = "Pause";
+      playBtn.setAttribute("aria-label", "Pause the sweep");
+      tick();
+    }
+
+    function pause() {
+      playing = false;
+      if (timer) { clearTimeout(timer); timer = null; }
+      playBtn.textContent = "Play";
+      playBtn.setAttribute("aria-label", "Play the sweep");
+    }
+
+    function tick() {
+      if (!playing) { return; }
+      var idx = indexOf(timeline, current) + 1;
+      if (idx >= timeline.length) { pause(); goTo(maxSeq); return; }
+      goTo(timeline[idx].seq);
+      // At 1x each event holds for 600 milliseconds; at 4x, 150.
+      timer = setTimeout(tick, 600 / speed);
+    }
+
+    strip.addEventListener("click", function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute("data-act");
+      if (!act) { return; }
+      if (act === "play") { playing ? pause() : play(); }
+      if (act === "back") { step(-1); }
+      if (act === "fwd") { step(1); }
+      if (act === "speed") {
+        speed = speed === 1 ? 4 : 1;
+        e.target.textContent = speed + "x";
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      var tag = (document.activeElement && document.activeElement.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA") { return; }
+      if (e.key === " ") { e.preventDefault(); playing ? pause() : play(); }
+      if (e.key === "[") { step(-1); }
+      if (e.key === "]") { step(1); }
+      if (e.key === "Home") { pause(); goTo(0); }
+      if (e.key === "End") { pause(); goTo(maxSeq); }
+    });
+
+    render();
+  }
+
+  function anyEvidence(data) {
+    var nodes = data.nodes || [];
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].state !== "unknown") { return true; }
+    }
+    return nodes.length === 0;
+  }
+
+  function indexOf(timeline, seq) {
+    var idx = 0;
+    for (var i = 0; i < timeline.length; i++) {
+      if (timeline[i].seq <= seq) { idx = i; }
+    }
+    return idx;
+  }
+
+  function eventAt(timeline, seq) {
+    return timeline[indexOf(timeline, seq)];
+  }
+
+  // One line of plain text naming the current event.
+  function describe(ev, data) {
+    if (ev.seq === data.t0 && ev.kind === "edit") {
+      return "the cut  edit " + ev.path + "  the change begins here";
+    }
+    switch (ev.kind) {
+      case "read":
+        return "read " + ev.path + (ev.range ? "  lines " + ev.range[0] + " to " + ev.range[1] : "  whole file");
+      case "edit":
+        return "edit " + ev.path;
+      case "grep":
+      case "glob":
+        return ev.kind + "  hit " + (ev.paths || []).join(", ");
+      case "quoted":
+        return "content of " + (ev.paths || []).join(", ") + " appeared in a tool result";
+      case "mention":
+        return "mentioned " + ((ev.symbols || []).concat(ev.paths || [])).join(", ");
+      case "command":
+        return ev.cmd || "ran a command";
+    }
+    return ev.kind;
+  }
+
+  // applyState restyles the map for the evidence up to seq. Rendering at a seq
+  // is a pure function of the report and that integer.
+  function applyState(svg, data, seq, hasAny, reduced) {
+    (data.nodes || []).forEach(function (n) {
+      var st = stateAt(n, n.exposures || [], data.t0, hasAny, seq);
+      var g = svg.querySelector('[data-node="' + cssEscape(n.id) + '"]');
+      if (!g) { return; }
+
+      var place = data.layout.nodes[n.id];
+      var shown = Object.assign({}, n, { state: st.state, tier: st.tier });
+      var fresh = nodeGroup(shown, place);
+      fresh.setAttribute("class", g.getAttribute("class"));
+      if (reduced) { fresh.style.transition = "none"; }
+      g.parentNode.replaceChild(fresh, g);
+
+      var edge = svg.querySelector('[data-edge="' + cssEscape(n.id) + '"]');
+      if (edge) { styleEdge(edge, shown); }
+
+      var spec = poolFor(st.state);
+      var pool = svg.querySelector('[data-pool="' + cssEscape(n.id) + '"]');
+      if (pool) {
+        pool.setAttribute("r", spec ? spec.r : 0);
+        pool.setAttribute("fill", spec ? spec.fill : "#000");
+        pool.setAttribute("opacity", spec ? 1 : 0);
+      }
+      var shade = svg.querySelector('[data-shade="' + cssEscape(n.id) + '"]');
+      if (shade) {
+        shade.setAttribute("r", spec ? spec.r : 0);
+        shade.setAttribute("opacity", spec ? (st.state === "penumbra" ? 0.55 : 1) : 0);
+      }
+    });
+    rewireNodes(svg);
+  }
+
+  function rewireNodes(svg) {
+    Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (g) {
+      if (g.getAttribute("data-wired")) { return; }
+      g.setAttribute("data-wired", "1");
+      g.addEventListener("click", function () {
+        select(g.getAttribute("data-node"));
+        openDetail(g.getAttribute("data-node"));
+      });
+    });
+  }
+
   // Selecting a node highlights its docket row, and hovering a row highlights
   // the node and its path, so the two halves of the page stay in step.
   function wireSelection(svg, data) {
@@ -762,6 +1049,98 @@
     apply("shadowed");
   }
 
+  // The torch: a soft disc following the pointer that reveals labels hidden by
+  // the collision rule. It is decoration in service of exploration; it changes
+  // no data. Off for touch and for readers who asked for less motion.
+  function wireSpotlight(svg) {
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var fine = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+    if (reduced || !fine) { return; }
+
+    var defs = svg.querySelector("defs");
+    var grad = el("radialGradient", { id: "torch" });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.18 }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
+    defs.appendChild(grad);
+
+    var torch = el("circle", { r: 110, fill: "url(#torch)", "class": "torch", cx: -999, cy: -999 });
+    svg.appendChild(torch);
+
+    svg.addEventListener("pointermove", function (e) {
+      var pt = toViewBox(svg, e.clientX, e.clientY);
+      torch.setAttribute("cx", pt.x);
+      torch.setAttribute("cy", pt.y);
+      revealNear(svg, pt, 110);
+    });
+    svg.addEventListener("pointerleave", function () {
+      torch.setAttribute("cx", -999);
+      torch.setAttribute("cy", -999);
+      revealNear(svg, { x: -9999, y: -9999 }, 0);
+    });
+  }
+
+  function toViewBox(svg, clientX, clientY) {
+    var r = svg.getBoundingClientRect();
+    var vb = svg.viewBox.baseVal;
+    return {
+      x: vb.x + (clientX - r.left) * vb.width / r.width,
+      y: vb.y + (clientY - r.top) * vb.height / r.height
+    };
+  }
+
+  // A label hidden by the collision rule shows while the torch is over it, so
+  // the reader can read what is in shadow without the map being cluttered.
+  function revealNear(svg, pt, radius) {
+    Array.prototype.forEach.call(svg.querySelectorAll('[data-collided="1"]'), function (t) {
+      var x = Number(t.getAttribute("x")), y = Number(t.getAttribute("y"));
+      t.hidden = Math.hypot(x - pt.x, y - pt.y) > radius;
+    });
+  }
+
+  // Keyboard: the map is one tab stop; inside it the arrows move through the
+  // nodes and Enter opens the detail panel. Nothing is reachable by pointer
+  // only.
+  function wireKeyboard(svg, data) {
+    var order = (data.nodes || []).map(function (n) { return n.id; });
+    var at = -1;
+
+    svg.setAttribute("tabindex", "0");
+
+    function focusAt(i) {
+      if (!order.length) { return; }
+      at = (i + order.length) % order.length;
+      var g = svg.querySelector('[data-node="' + cssEscape(order[at]) + '"]');
+      if (!g) { return; }
+      Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (o) {
+        o.setAttribute("tabindex", "-1");
+      });
+      g.setAttribute("tabindex", "0");
+      g.focus();
+      select(order[at]);
+    }
+
+    svg.addEventListener("focus", function () {
+      if (at < 0) { focusAt(0); }
+    });
+
+    svg.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); focusAt(at + 1); }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); focusAt(at - 1); }
+      if (e.key === "Enter" && at >= 0) { e.preventDefault(); openDetail(order[at]); }
+      if (e.key === "l" || e.key === "L") { toggleLabels(svg); }
+    });
+  }
+
+  function toggleLabels(svg) {
+    var g = svg.querySelector(".labels");
+    if (!g) { return; }
+    var on = g.getAttribute("data-all") === "1";
+    g.setAttribute("data-all", on ? "0" : "1");
+    Array.prototype.forEach.call(g.querySelectorAll('[data-collided="1"]'), function (t) {
+      t.hidden = on;
+    });
+  }
+
   function cssEscape(s) {
     return String(s).replace(/["\\]/g, "\\$&");
   }
@@ -772,9 +1151,14 @@
       " penumbra, " + (s.umbra || 0) + " umbra, " + (s.unknown || 0) + " unknown.";
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
+  // In a browser the page boots itself. Loaded without a document, for the
+  // cross-check test that compares this reconstruction with the Go
+  // classifier, the file only exposes globalThis.__umbra and draws nothing.
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      boot();
+    }
   }
 })();

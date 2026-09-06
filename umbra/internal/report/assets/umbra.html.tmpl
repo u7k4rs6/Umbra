@@ -109,6 +109,19 @@
   </div>
 </div>
 
+<section id="replay" class="replay" aria-label="Attention replay">
+  <div class="replay-controls">
+    <span class="replay-label">Sweep <span class="sub">replay the session's attention</span></span>
+    <button type="button" data-act="play" aria-label="Play the sweep">Play</button>
+    <button type="button" data-act="back" aria-label="Step back">&#9664;&#9664;</button>
+    <button type="button" data-act="fwd" aria-label="Step forward">&#9654;&#9654;</button>
+    <button type="button" data-act="speed" aria-label="Playback speed">1x</button>
+    <span class="counter" aria-live="off"></span>
+  </div>
+  <div class="track"></div>
+  <p class="now" aria-live="polite"></p>
+</section>
+
 <footer>
   <p>{{range .A.Limitations}}{{.}}. {{end}}</p>
   <p>Reproduce: <code>{{.Reproduce}}</code></p>
