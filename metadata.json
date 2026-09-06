@@ -3,29 +3,12 @@
   "checkpoint_id": "01M1T2WDGG1B92FV2S7K2JDE1D",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 13,
+  "checkpoints_count": 1,
   "files_touched": [
-    "README.md",
-    "umbra/NOTES.md",
-    "umbra/cmd/entire-umbra/failon_e2e_test.go",
-    "umbra/docs/ARCHITECTURE.md",
-    "umbra/docs/renders/README.md",
-    "umbra/docs/renders/paper-build.png",
-    "umbra/docs/renders/paper-how.png",
-    "umbra/docs/renders/paper-index.png",
-    "umbra/docs/renders/paper-install.png",
-    "umbra/docs/renders/paper-limits.png",
-    "umbra/docs/renders/paper-map.png",
-    "umbra/fixtures/app/runner_test_note.md",
-    "umbra/fixtures/app/setup.sh",
-    "umbra/site/build.html",
-    "umbra/site/how.html",
-    "umbra/site/index.html",
-    "umbra/site/install.html",
-    "umbra/site/landing.css",
-    "umbra/site/limits.html",
-    "umbra/site/map.html",
-    "umbra/site/sample/umbra.json"
+    "umbra/PUBLISH.md",
+    "umbra/site/self/umbra.html",
+    "umbra/site/self/umbra.json",
+    "umbra/site/self/umbra.packet.md"
   ],
   "sessions": [
     {
@@ -37,10 +20,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 680,
-    "cache_creation_tokens": 1792273,
-    "cache_read_tokens": 180209557,
-    "output_tokens": 169700,
-    "api_call_count": 240
+    "input_tokens": 32,
+    "cache_creation_tokens": 12403,
+    "cache_read_tokens": 1239759,
+    "output_tokens": 8383,
+    "api_call_count": 16
   }
 }
