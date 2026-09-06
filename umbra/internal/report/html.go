@@ -130,7 +130,7 @@ func probeText(a *Analysis) string {
 	if len(a.Execution.Selected) == 0 {
 		return "no probe reaches the shadow"
 	}
-	return fmt.Sprintf("%d probes, %d cracked", len(a.Execution.Selected), len(a.Execution.NewFailures))
+	return fmt.Sprintf("%d probes, %d cracked", len(a.Execution.Selected), len(a.Execution.CrackedProbes()))
 }
 
 func sweepText(a *Analysis) string {

@@ -16,7 +16,7 @@ No test here starts a process, reaches the network or needs an agent.
 | `pre-change` | A caller read in full, but only before the cut, which is the afterimage tier |
 | `no-reads` | No tool activity at all, so every node is unknown rather than judged |
 | `echo` | The agent names a symbol it never opened, which is the weakest tier |
-| `leak` | A test the sweep found that the selection missed, with its reason |
+| `leak` | A test four hops from the change that the selection missed, with its reason |
 | `beacon` | A caller under a `SAFETY` comment inside an `except` block, pinned to the top |
 
 ## Full Runner recordings

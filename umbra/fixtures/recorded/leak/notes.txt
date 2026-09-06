@@ -1,1 +1,6 @@
-A test four hops away changes state and was not selected, so the sweep reports it as a leak.
+A test four hops away changes state and was not selected, so the sweep reports
+it as a leak with the reason the selection missed it.
+
+The chain is real and lives in the fixture: tests/test_report.py::test_receipt_total
+calls render_lines, which calls line_text, which calls line_total, which calls
+compute_total. A search capped at two hops never reaches the test.

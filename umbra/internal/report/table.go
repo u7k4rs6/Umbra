@@ -195,12 +195,16 @@ func writeExecution(b *strings.Builder, a *Analysis, o TableOptions) {
 	case len(e.Selected) == 0:
 		fmt.Fprintf(b, "probes  %s\n", dim(o, "no test reaches the shadow"))
 	default:
-		cracked := len(e.NewFailures)
-		line := fmt.Sprintf("probes  %d selected  %d cracked", len(e.Selected), cracked)
-		if cracked > 0 {
-			line += "  " + strings.Join(e.NewFailures, "  ")
+		cracked := e.CrackedProbes()
+		line := fmt.Sprintf("probes  %d selected  %d cracked", len(e.Selected), len(cracked))
+		if len(cracked) > 0 {
+			line += "  " + strings.Join(cracked, "  ")
 		}
 		b.WriteString(line + "\n")
+		if extra := e.SweepOnlyFailures(); len(extra) > 0 {
+			fmt.Fprintf(b, "        %s\n", dim(o, fmt.Sprintf(
+				"%d further test(s) failed that no probe covered; they are listed as leaks below", len(extra))))
+		}
 		if e.Degraded {
 			fmt.Fprintf(b, "        %s\n", dim(o, "the runner printed no per-test ids, so the verdict is suite level; add -v"))
 		}

@@ -92,6 +92,42 @@ type Leak struct {
 	Reason string `json:"reason"`
 }
 
+// CrackedProbes are the selected probes that newly failed.
+//
+// NewFailures holds every test the run found newly failing, including ones the
+// sweep turned up that selection never chose. Those are leaks, and reporting
+// one as a cracked probe names a test that was not among the probes. The
+// distinction only shows when a leak actually fails, which is what the leak
+// scenario now produces.
+func (e Execution) CrackedProbes() []string {
+	selected := map[string]bool{}
+	for _, id := range e.Selected {
+		selected[id] = true
+	}
+	var out []string
+	for _, id := range e.NewFailures {
+		if selected[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// SweepOnlyFailures are the newly failing tests that selection never ran.
+func (e Execution) SweepOnlyFailures() []string {
+	selected := map[string]bool{}
+	for _, id := range e.Selected {
+		selected[id] = true
+	}
+	var out []string
+	for _, id := range e.NewFailures {
+		if !selected[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 // Shadowed returns the nodes that are not lit, in docket order.
 func (a *Analysis) Shadowed() []*shadow.Node {
 	var out []*shadow.Node

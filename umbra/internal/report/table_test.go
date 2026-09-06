@@ -213,3 +213,51 @@ func TestTableWarnsWhenTheRunnerWasNotVerbose(t *testing.T) {
 		t.Fatalf("expected the guidance to add -v:\n%s", out)
 	}
 }
+
+// A test the sweep turned up is a leak, not a cracked probe. Counting it as
+// one names a test that was never among the probes, which the four-hop leak
+// scenario makes happen for real.
+func TestCrackedCountsOnlySelectedProbes(t *testing.T) {
+	a := mkAnalysis()
+	a.Run = "shadow"
+	a.Audit = true
+	a.Execution.Selected = []string{"tests/test_service.py::test_rounding"}
+	a.Execution.NewFailures = []string{
+		"tests/test_service.py::test_rounding",
+		"tests/test_report.py::test_receipt_total",
+	}
+	a.Execution.Sweep = true
+	a.Execution.Leaks = []Leak{{
+		Test:   "tests/test_report.py::test_receipt_total",
+		Reason: "path exists at depth 4 via render_lines",
+	}}
+
+	if got := a.Execution.CrackedProbes(); len(got) != 1 || got[0] != "tests/test_service.py::test_rounding" {
+		t.Fatalf("cracked probes = %v, want only the selected one", got)
+	}
+	if got := a.Execution.SweepOnlyFailures(); len(got) != 1 || got[0] != "tests/test_report.py::test_receipt_total" {
+		t.Fatalf("sweep-only failures = %v", got)
+	}
+
+	out := render(t, a, TableOptions{UTF8: true})
+	if !strings.Contains(out, "1 selected  1 cracked") {
+		t.Fatalf("expected one probe and one crack:\n%s", out)
+	}
+	// The leak must not be listed on the probes line as though it were a probe.
+	probes := ""
+	for _, line := range strings.Split(out, "\n") {
+		if strings.HasPrefix(line, "probes") {
+			probes = line
+		}
+	}
+	if strings.Contains(probes, "test_receipt_total") {
+		t.Fatalf("a leak was listed as a cracked probe: %q", probes)
+	}
+	// It still has to be visible, as a leak with its reason.
+	if !strings.Contains(out, "path exists at depth 4 via render_lines") {
+		t.Fatalf("the leak and its reason must still appear:\n%s", out)
+	}
+	if !strings.Contains(out, "no probe covered") {
+		t.Fatalf("the reader should be told a failure fell outside the probes:\n%s", out)
+	}
+}

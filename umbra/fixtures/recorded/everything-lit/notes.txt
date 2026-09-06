@@ -1,1 +1,3 @@
-The session read every caller in full after the change began, so nothing is in shadow.
+The session read every caller in full after the change began, including the
+receipt module that reaches compute_total four hops away, so nothing is in
+shadow.
