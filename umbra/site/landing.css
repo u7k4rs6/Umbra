@@ -43,6 +43,27 @@
 
   --measure: 68ch;
   --wipe: 100%;
+  /* The page gutter, shared by main and by the bar that bleeds through it. */
+  --pad: 24px;
+
+  /* Surfaces. Nothing on this page is a filled card. These are the smallest
+   * amount of light that still separates a panel from the ground, and they are
+   * the page ink at very low alpha rather than a grey, so the single hue rule
+   * holds all the way down. */
+  --surface: rgba(243, 234, 224, 0.020);
+  --surface-2: rgba(243, 234, 224, 0.045);
+  --hairline: rgba(243, 234, 224, 0.075);
+  --grid-line: rgba(243, 234, 224, 0.040);
+
+  /* One easing for everything that moves. Expo out: fast departure, long
+   * settle, which is what makes a reveal read as arriving rather than as
+   * sliding. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --reveal-y: 20px;
+  --reveal-blur: 12px;
+
+  /* How far the hero has scrolled away, 0 to 1. Set by motion.js. */
+  --hero-p: 0;
 }
 
 /* The map tokens, so the eclipse map wears this page's palette rather than the
@@ -93,13 +114,95 @@
 
 /* ------------------------------------------------------------------- page */
 
+/* umbra.css sets overflow-x: hidden on html and body, which is right for the
+ * report and fatal here: an overflow on either of them makes them a scrolling
+ * box, and position: sticky then sticks to that box rather than to the
+ * viewport, so the top bar scrolled away. This page is checked for horizontal
+ * overflow at six widths instead, which is the honest way to not have any. */
+html, body { overflow-x: visible; }
+
 body {
   background: var(--ground);
   color: var(--ink);
   padding: 0;
+  /* The prose is the serif, not a UI sans. Two families carry the whole page:
+   * the serif for anything a person reads in sentences, the monospace for
+   * anything the machine named. There is no third. */
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.62;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-main { max-width: 1340px; margin: 0 auto; padding: 0 24px 96px; }
+code, pre, kbd, samp, input, button, .mono, .marker { font-variant-numeric: tabular-nums; }
+
+main { max-width: 1340px; margin: 0 auto; padding: 0 var(--pad) 120px; position: relative; z-index: 1; }
+
+/* ------------------------------------------------------------- the sheet */
+
+/* A drafting grid, fixed behind everything, faded at the top and bottom so it
+ * never terminates in a visible line. It is the only ornament on the page and
+ * it is doing a job: it gives the columns a rhythm to sit on and it makes the
+ * black read as a surface rather than as nothing. */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 92%, transparent);
+}
+/* Twelve columns across the content measure, and a stronger rule down each
+ * edge of it, so the grid is the page's own column structure rather than
+ * wallpaper at an arbitrary pitch. */
+.grid-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1340px, 100% - 2 * var(--pad));
+  border-left: 1px solid color-mix(in srgb, var(--ink) 7%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--ink) 7%, transparent);
+  background-image: linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+}
+
+/* The section rail is real navigation and stays reachable, but it put seven
+ * links between the top of the page and its content. This is the first tab
+ * stop and it jumps over all of them. */
+.skip {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 60;
+  padding: 10px 16px;
+  background: var(--ground);
+  border: 1px solid var(--amber-2);
+  color: var(--ink);
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.25s var(--ease);
+}
+.skip:focus-visible { transform: none; }
+
+/* Scroll progress. One hairline, the width of what you have read. */
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  z-index: 40;
+  pointer-events: none;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  width: var(--read, 0%);
+  background: linear-gradient(90deg, var(--amber-4), var(--amber-2));
+}
 
 /* Every label, nav item, legend word and section marker is monospace,
  * uppercase, widely tracked. FRONTEND_SPEC.md forbids this for the report and
@@ -112,13 +215,66 @@ main { max-width: 1340px; margin: 0 auto; padding: 0 24px 96px; }
   color: var(--ink-2);
 }
 
+/* The bar condenses on scroll: it loses height, gains a ground and a hairline,
+ * and the tagline drops out. Height and opacity only. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: 0 calc(-1 * var(--pad));
+  padding: 0 var(--pad);
+  background: color-mix(in srgb, var(--ground) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s var(--ease), background-color 0.4s var(--ease);
+}
+.topbar.stuck { border-bottom-color: var(--rule); }
+
 .rail {
   display: flex;
   align-items: baseline;
   gap: 28px;
-  padding: 20px 0 14px;
-  border-bottom: 1px solid var(--rule);
+  padding: 22px 0 16px;
+  transition: padding 0.45s var(--ease);
 }
+.topbar.stuck .rail { padding: 12px 0 10px; }
+.rail .tagline { transition: opacity 0.35s var(--ease); }
+.topbar.stuck .rail .tagline { opacity: 0; }
+
+/* The section rail. It tracks where you are rather than where you clicked. */
+.spy {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 12px;
+  max-height: 44px;
+  opacity: 1;
+  transition: max-height 0.45s var(--ease), opacity 0.35s var(--ease), padding 0.45s var(--ease);
+}
+.spy::-webkit-scrollbar { display: none; }
+.spy a {
+  position: relative;
+  color: var(--ink-3);
+  text-decoration: none;
+  padding: 0 18px 0 0;
+  margin-right: 14px;
+  white-space: nowrap;
+  transition: color 0.3s var(--ease);
+}
+.spy a::after {
+  content: "\203A";
+  position: absolute;
+  right: 0;
+  color: var(--ink-3);
+  opacity: 0.5;
+  letter-spacing: 0;
+}
+.spy a:last-child { margin-right: 0; }
+.spy a:last-child::after { content: none; }
+.spy a:hover { color: var(--ink-2); }
+.spy a.on { color: var(--amber-2); }
 .rail .wordmark { color: var(--ink); letter-spacing: 0.3em; }
 .rail nav { display: flex; gap: 22px; margin-left: auto; }
 .rail a { color: var(--ink-2); text-decoration: none; }
@@ -127,15 +283,18 @@ main { max-width: 1340px; margin: 0 auto; padding: 0 24px 96px; }
 h1 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(36px, 5.2vw, 72px);
-  line-height: 0.98;
-  letter-spacing: -0.015em;
-  margin: 0 0 18px;
+  font-size: clamp(38px, 5.4vw, 78px);
+  line-height: 0.95;
+  letter-spacing: -0.032em;
+  margin: 0 0 22px;
   color: var(--ink);
   text-wrap: balance;
 }
 h1 em { font-style: italic; color: var(--amber-2); }
 
+/* A section heading is a mono label with a rule running out of it to the edge
+ * of the column, which is what makes the page read as a sheet of drawings
+ * rather than as a stack of blog posts. */
 h2 {
   font-family: var(--mono);
   text-transform: uppercase;
@@ -143,7 +302,16 @@ h2 {
   font-size: 12px;
   font-weight: 400;
   color: var(--ink-2);
-  margin: 0 0 18px;
+  margin: 0 0 26px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--rule), transparent);
 }
 
 .marker {
@@ -158,8 +326,82 @@ p { max-width: var(--measure); color: var(--ink); }
 .caption { color: var(--ink-2); font-size: 13px; line-height: 1.6; max-width: var(--measure); }
 a { color: var(--amber-2); }
 
-section.band { padding: 72px 0 0; border-top: 1px solid var(--rule); margin-top: 72px; }
+section.band { padding: 96px 0 0; border-top: 1px solid var(--rule); margin-top: 96px; }
+
+/* The sweep section reads as one block: the strip, then its caption beside the
+ * space the strip leaves rather than under it. */
+@media (min-width: 1100px) {
+  #sweep .caption { max-width: 60ch; }
+  #sweep { padding-bottom: 8px; }
+}
 section.band > .marker { display: block; margin-bottom: 10px; }
+
+/* ---------------------------------------------------------------- reveals */
+
+/* Content arrives out of shadow: blurred, dim and low, resolving to sharp and
+ * lit. It is the page performing its own vocabulary, penumbra to lit, and it
+ * is the one piece of motion here that is not driven by a control.
+ *
+ * Everything is gated on .js. With script off, none of these rules apply and
+ * the page is simply visible, which is also what happens under reduced motion.
+ * Only opacity, transform and filter are animated. */
+.js [data-reveal],
+.js [data-stage] {
+  opacity: 0;
+  transform: translateY(var(--reveal-y));
+  filter: blur(var(--reveal-blur));
+  transition:
+    opacity 0.9s var(--ease) var(--d, 0s),
+    transform 1s var(--ease) var(--d, 0s),
+    filter 0.8s var(--ease) var(--d, 0s);
+  will-change: opacity, transform;
+}
+.js [data-reveal].in,
+.js [data-stage].in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  will-change: auto;
+}
+
+/* --------------------------------------------------------------- the torch */
+
+/* The spec calls the pointer a torch: a soft warm disc that reveals what is in
+ * shadow without changing any data. It is on the map already. This is the same
+ * idea applied to the panels, so the page answers the pointer everywhere
+ * rather than only over the eclipse. */
+[data-torch] { position: relative; isolation: isolate; }
+[data-torch]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+  background: radial-gradient(
+    220px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--amber-2) 12%, transparent),
+    transparent 68%);
+}
+[data-torch]:hover::before { opacity: 1; }
+@media (hover: none) { [data-torch]::before { display: none; } }
+
+/* A panel is a hairline and the least light that still separates it from the
+ * ground. No fill, no shadow, no radius beyond two pixels. */
+.panel {
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  border-radius: 2px;
+  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease);
+}
+.panel {
+  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease),
+              transform 0.45s var(--ease);
+}
+.panel:hover {
+  border-color: color-mix(in srgb, var(--amber-4) 60%, var(--hairline));
+  transform: translateY(-2px);
+}
 
 /* --------------------------------------------------------------- the hero */
 
@@ -189,14 +431,24 @@ section.band > .marker { display: block; margin-bottom: 10px; }
   max-width: 46ch;
   margin: 0 0 26px;
 }
-.contradiction b { color: var(--amber-2); font-weight: 400; }
+.contradiction b {
+  color: var(--amber-2);
+  font-weight: 400;
+  font-family: var(--mono);
+  font-size: 0.94em;
+  font-variant-numeric: tabular-nums;
+}
 
 .install {
   display: flex;
   align-items: stretch;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--surface);
   max-width: 46ch;
+  transition: border-color 0.4s var(--ease);
 }
+.install:hover { border-color: color-mix(in srgb, var(--amber-4) 70%, var(--hairline)); }
 .install code {
   font-family: var(--mono);
   font-size: 12.5px;
@@ -226,6 +478,12 @@ section.band > .marker { display: block; margin-bottom: 10px; }
   position: relative;
   aspect-ratio: 3 / 2;
   isolation: isolate;
+  /* The light recedes as the hero leaves. hero-p is 0 at rest and 1 when the
+   * hero has scrolled away, and motion.js is the only thing that sets it. */
+  transform: scale(calc(1 - 0.06 * var(--hero-p)));
+  opacity: calc(1 - 0.55 * var(--hero-p));
+  transform-origin: 50% 40%;
+  will-change: transform, opacity;
 }
 .stage .layer {
   position: absolute;
@@ -251,7 +509,8 @@ section.band > .marker { display: block; margin-bottom: 10px; }
  * rectangle is made transparent here and the stage carries the ground colour
  * instead. Nothing in umbra.js changes; a CSS fill outranks the presentation
  * attribute it sets. */
-.stage .layer > svg > rect:first-of-type { fill: transparent; }
+.stage .layer > svg > rect:first-of-type,
+.plate > svg > rect:first-of-type { fill: transparent; }
 .stage { background: var(--ground); }
 
 /* The divider. */
@@ -310,15 +569,34 @@ section.band > .marker { display: block; margin-bottom: 10px; }
 .legend button {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: none;
-  border: 1px solid var(--rule);
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
   color: var(--ink-2);
-  padding: 9px 14px 9px 10px;
+  padding: 12px 16px 12px 12px;
   cursor: pointer;
   text-align: left;
+  position: relative;
+  isolation: isolate;
+  transition: border-color 0.4s var(--ease), transform 0.4s var(--ease),
+              background-color 0.4s var(--ease);
 }
-.legend button:hover { border-color: var(--amber-4); }
+.legend button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--amber-2) 13%, transparent), transparent 70%);
+}
+.legend button:hover::before { opacity: 1; }
+.legend button:hover {
+  border-color: color-mix(in srgb, var(--amber-4) 70%, var(--hairline));
+  transform: translateY(-2px);
+}
 .legend button[aria-pressed="true"] { border-color: var(--amber-2); color: var(--ink); }
 .legend .orb { width: 34px; height: 34px; flex: none; }
 .legend .word {
@@ -348,13 +626,29 @@ section.band > .marker { display: block; margin-bottom: 10px; }
   background: none;
   border: 0;
   border-right: 1px solid var(--rule);
-  padding: 16px 16px 18px;
+  padding: 18px 18px 20px;
   text-align: left;
   cursor: pointer;
   color: var(--ink-2);
   border-top: 1px solid transparent;
   margin-top: -1px;
+  position: relative;
+  isolation: isolate;
+  transition: color 0.4s var(--ease), border-top-color 0.4s var(--ease);
 }
+.beats button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--amber-2) 9%, transparent), transparent 70%);
+}
+.beats button:hover::before,
+.beats button[aria-pressed="true"]::before { opacity: 1; }
+.beats button:hover { color: var(--ink); }
 .beats button:last-child { border-right: 0; }
 .beats button[aria-pressed="true"] { border-top-color: var(--amber-2); color: var(--ink); }
 .beats .n { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--amber-3); }
@@ -373,7 +667,7 @@ section.band > .marker { display: block; margin-bottom: 10px; }
 
 /* Four nodes in a 1200 by 800 frame leaves a lot of empty sky, so the plate is
  * capped rather than run full width. */
-.plate { position: relative; margin: 8px auto 18px; max-width: 760px; }
+.plate { position: relative; margin: 8px auto 18px; max-width: 760px; padding: 18px; }
 .plate svg { display: block; width: 100%; height: auto; }
 
 /* ------------------------------------------------------------ the sweep */
@@ -415,13 +709,24 @@ section.band > .marker { display: block; margin-bottom: 10px; }
 .drop input { margin-top: 10px; color: var(--ink-2); }
 .back { margin-left: 10px; }
 
-table.states { border-collapse: collapse; margin: 12px 0; width: 100%; max-width: var(--measure); }
+table.states {
+  border-collapse: collapse;
+  margin: 12px 0 28px;
+  width: 100%;
+  max-width: var(--measure);
+}
 table.states td, table.states th {
   border-bottom: 1px solid var(--rule);
-  padding: 10px 14px 10px 0;
+  padding: 16px 18px 16px 14px;
   text-align: left;
   vertical-align: top;
 }
+table.states tbody tr {
+  transition: background-color 0.4s var(--ease);
+}
+table.states tbody tr:hover { background: var(--surface-2); }
+table.states tbody tr:hover td { color: var(--ink); }
+table.states tbody td:first-child { white-space: nowrap; }
 table.states th {
   font-family: var(--mono);
   text-transform: uppercase;
@@ -435,16 +740,78 @@ table.states b { font-family: var(--mono); text-transform: uppercase; letter-spa
 pre.block {
   font-family: var(--mono);
   font-size: 12.5px;
-  border: 1px solid var(--rule);
-  padding: 14px;
+  padding: 18px;
   overflow-x: auto;
   white-space: pre;
   color: var(--ink);
   max-width: var(--measure);
+  line-height: 1.75;
 }
 
 ul { max-width: var(--measure); }
 li { margin: 7px 0; }
+
+#limits ul {
+  list-style: none;
+  padding: 0;
+  counter-reset: limit;
+  max-width: 76ch;
+}
+#limits ul > li {
+  counter-increment: limit;
+  position: relative;
+  margin: 0;
+  padding: 20px 0 20px 58px;
+  border-top: 1px solid var(--rule);
+  transition: color 0.4s var(--ease);
+}
+#limits ul > li::before {
+  content: counter(limit, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 21px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--amber-4);
+  transition: color 0.4s var(--ease);
+}
+#limits ul > li:hover { color: var(--ink); }
+#limits ul > li:hover::before { color: var(--amber-2); }
+#limits ul > li pre.block { margin: 14px 0 6px; }
+
+/* The six ranking factors read one at a time as you pass them, which is the
+ * page saying the same thing the map says: what is in the light right now is
+ * one thing, and the rest are still there. */
+.factors { list-style: none; padding: 0; max-width: 72ch; }
+.factors li {
+  margin: 0;
+  padding: 16px 0 16px 28px;
+  border-top: 1px solid var(--rule);
+  position: relative;
+  color: var(--ink-3);
+  transition: color 0.5s var(--ease), opacity 0.5s var(--ease);
+}
+.factors li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 24px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--umbra-edge);
+  border-radius: 50%;
+  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease),
+              box-shadow 0.5s var(--ease);
+}
+.factors li b { color: inherit; font-weight: 400; transition: color 0.5s var(--ease); }
+.factors li.lit { color: var(--ink); }
+.factors li.lit b { color: var(--amber-2); }
+.factors li.lit::before {
+  background: var(--amber-1);
+  border-color: var(--amber-2);
+  box-shadow: 0 0 16px 2px color-mix(in srgb, var(--amber-2) 45%, transparent);
+}
 
 footer { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); }
 footer p { color: var(--ink-2); font-size: 13px; }
@@ -453,6 +820,12 @@ footer p { color: var(--ink-2); font-size: 13px; }
 
 /* ------------------------------------------------------------- responsive */
 
+/* Below this the sticky bar would be three rows tall and eat a third of a
+ * phone screen. The section rail goes; the nav that duplicates it stays. */
+@media (max-width: 760px) {
+  .spy { display: none; }
+}
+
 @media (max-width: 1000px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 26px; }
   .beats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -460,7 +833,8 @@ footer p { color: var(--ink-2); font-size: 13px; }
 }
 
 @media (max-width: 560px) {
-  main { padding: 0 16px 72px; }
+  :root { --pad: 16px; }
+  main { padding: 0 var(--pad) 72px; }
   .rail { flex-wrap: wrap; gap: 14px; }
   .rail nav { margin-left: 0; width: 100%; gap: 16px; }
   .beats { grid-template-columns: minmax(0, 1fr); }
@@ -472,6 +846,19 @@ footer p { color: var(--ink-2); font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) {
   .stage .layer *, .beats button, .legend button, .install button { transition: none !important; }
+
+  /* Nothing arrives and nothing recedes. The reveals resolve to their finished
+   * state with no transition at all, rather than running faster. */
+  .js [data-reveal],
+  .js [data-stage] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .stage { transform: none !important; opacity: 1 !important; }
+  [data-torch]::before { display: none; }
+  .topbar, .rail, .spy, .factors li, .factors li::before { transition: none !important; }
 }
 
 /* ------------------------------------------------------------------ print */
@@ -509,7 +896,19 @@ footer p { color: var(--ink-2); font-size: 13px; }
   .stage { background: #FFFFFF; }
   .stage .layer.scheme-day, .divider, .divider-hint { display: none; }
   .beats, .legend, .plate { break-inside: avoid; }
-  .rail nav { display: none; }
+  .rail nav, .spy, .grid-overlay, .progress { display: none; }
+  .topbar { position: static; background: none; backdrop-filter: none; }
+  .stage { transform: none; opacity: 1; }
+  /* No transition, or a print can catch a section part way through its
+   * arrival and put a half faded paragraph on paper. */
+  .js [data-reveal], .js [data-stage] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .panel { border-color: #D8D0C4; background: none; }
+  .factors li { color: var(--ink); }
 }
 
 /* ------------------------------------------------------------ without JS */
@@ -519,3 +918,5 @@ footer p { color: var(--ink-2); font-size: 13px; }
  * at all and the noscript line explains why. Everything else on the page is
  * text and reads exactly as it does with script on. */
 .nojs .stage, .nojs .legend, .nojs .beats, .nojs #replay { display: none; }
+.nojs .grid-overlay, .nojs .progress, .nojs .spy { display: none; }
+.nojs .topbar { position: static; }

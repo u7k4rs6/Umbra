@@ -966,6 +966,102 @@ breaks the one-hue rule on purpose, and it puts the spec's value back. A focus
 ring the same colour as the control it marks is not a focus ring, and this page
 is the only place where the two rules could not both hold.
 
+## Phase 18: the motion layer
+
+The landing page was asked to feel like designcode.io: dynamic, interactive,
+alive. The site was opened in Playwright and read rather than recalled, and
+what was taken from it is the interaction vocabulary, not the surface.
+
+What it is actually made of, from its own computed styles: Inter and Geist
+Sans, a near-black `#020202` ground, a blue and violet gradient beam, rounded
+glass cards, and one easing everywhere,
+`cubic-bezier(0.16, 1, 0.3, 1)`, on transitions like
+`opacity 1s, transform 1s, filter 0.9s`. That last line is the whole trick: a
+blur-and-rise reveal on an expo-out curve.
+
+**Taken:** the blur reveal and its easing, a persistent hairline grid, a sticky
+bar that condenses on scroll, a section rail that tracks where you are, a
+pointer-tracked highlight inside panels, and the pattern where one item in a
+list is bright and its siblings sit back.
+
+**Refused:** its fonts and its colours, which is what the brief said was wrong
+with it. Inter and Geist are the default of every developer landing page
+shipped this year, and the blue-violet gradient is the same. The page keeps its
+own single warm hue and gains a stronger type position rather than a borrowed
+one.
+
+### Type: two families, no sans
+
+The body was a UI sans inherited from the report's stylesheet. It is now the
+serif, the same one the display uses. Two families carry the whole page: the
+serif for anything a person reads in sentences, the monospace for anything the
+machine named. There is no third, and there is no sans anywhere. That is the
+answer to "generic fonts" that does not need a font file, which the spec
+forbids fetching: distinctiveness from the pairing and the setting rather than
+from the download. The display is tracked to -0.032em and set at 0.95 leading,
+which is tight enough to read as a masthead rather than as a heading.
+
+### The reveal is the vocabulary
+
+Content arrives blurred, dim and low, and resolves to sharp and lit. That is
+not a borrowed effect on this page: it is penumbra to lit, the same transition
+the map performs, applied to the prose. The hero is staged rather than
+revealed, five pieces a beat apart in reading order, so it assembles rather
+than appears.
+
+Only opacity, transform and filter are animated, so nothing here forces a
+layout. The scroll handler is rAF-throttled and writes two custom properties.
+
+### What the screenshots caught that reading would not have
+
+**The sticky bar was not sticky.** `umbra.css` sets `overflow-x: hidden` on
+`html, body`, which is right for the report and fatal here: an overflow on
+either makes it a scrolling box, and `position: sticky` then sticks to that box
+rather than to the viewport. The bar scrolled away with a `getBoundingClientRect
+().top` of -2984. The overflow is now cleared on this page and horizontal
+overflow is checked at six widths instead, which is the honest way to not have
+any.
+
+**Clearing it exposed an 8px overflow** at every width below 900, previously
+swallowed by that same `overflow-x: hidden`. The bar bleeds through the page
+gutter with a negative margin of 24px while the gutter at narrow widths is
+16px. Both now read one `--pad`.
+
+**The second map was a black box in a frame.** The plate became a panel with a
+surface, and the map's own background rectangle is opaque, so the panel framed
+it. Same fix as the hero: the rectangle is transparent on this page.
+
+**Print caught a section mid-fade.** The print block set the reveals to
+`opacity: 1` but left the transition running, so a print taken in the first
+second put a half faded paragraph on paper. Transitions are off in print.
+
+**The section rail put seven links before the content.** Eleven tab stops
+before the install command. There is now a skip link as the first stop.
+
+### Accessibility and the fallbacks
+
+- `prefers-reduced-motion: reduce`: nothing arrives, nothing recedes, the
+  torch is off, and every reveal resolves to its finished state with no
+  transition rather than a faster one. Verified: zero elements left below
+  opacity 1 after load, `transform: none` on the stage.
+- Script off: the reveal rules are gated on a `js` class set in the head before
+  first paint, so the page is simply visible. The grid, the progress line and
+  the section rail are hidden rather than left as dead furniture.
+- Print: day scheme, no grid, no rail, no progress, static bar.
+- Six widths from 360 to 1600 with no horizontal overflow. The section rail is
+  dropped below 760px, where the bar would otherwise be three rows tall and eat
+  a third of a phone screen.
+- Seven requests on load, all `file://`. No console errors.
+
+### Where this goes further from FRONTEND_SPEC.md
+
+Two additions to the table in phase 16, both landing page only.
+
+| Spec says | This page does | How it is resolved |
+|---|---|---|
+| "Nothing moves on load. The page renders in its final state." | The hero stages itself in over about a second | The report still does not move on load and that rule is untouched there. This is the landing page, which phase 16 already established may use scroll and hover motion. It is off entirely under reduced motion, and the page is fully readable with script off |
+| "There are no cards, no panels with drop shadows, no gradients as decoration" | Panels with a hairline, a 2 percent surface and a 2px radius | Still no fills, no shadows and no radius worth the name. The one gradient that is decoration is the drafting grid, and it is doing a job: it gives the columns a rhythm and makes the black read as a surface rather than as nothing |
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that

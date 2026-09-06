@@ -74,3 +74,15 @@ not at its centre, which is identical in both. NOTES.md carries the luminance
 samples. The three focus renders were taken after the ring was moved back out
 of the warm ramp; the version that prompted the change had a ring the same
 colour as the divider it surrounded.
+
+## Phase 18: the motion layer
+
+| File | What it shows |
+|---|---|
+| `motion-night-hero.png` | the hero with the drafting grid, the sticky bar and the section rail |
+| `motion-night-factors.png` | the ranking factors, one lit and the rest sitting back |
+| `motion-night-limits.png` | the limitations as a numbered docket |
+| `motion-narrow-390.png` | 390px, section rail dropped |
+| `motion-reduced-motion.png` | prefers-reduced-motion: nothing arrives, nothing recedes |
+| `motion-no-javascript.png` | script off: readable, with no dead chrome |
+| `motion-print-day.png` | print, day scheme, no grid and no rail |
