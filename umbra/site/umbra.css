@@ -271,7 +271,11 @@ details pre {
 
 .node { cursor: pointer; }
 .node .hit { fill: transparent; }
-.label { font-family: var(--mono); font-size: 12px; pointer-events: none; }
+/* Label sizes are viewBox units, not screen pixels: the map scales to its
+   column, and a name set at 12 units was legible in a wide column and too
+   small once the map shrank on a narrow screen. */
+.label { font-family: var(--mono); font-size: 14px; pointer-events: none; }
+.ring-label { font-family: var(--ui); font-size: 12px; pointer-events: none; }
 .label.lit { fill: var(--ink); }
 .label.dim { fill: var(--ink-2); paint-order: stroke; stroke: var(--night); stroke-width: 3px; stroke-linejoin: round; }
 .label[hidden] { display: none; }

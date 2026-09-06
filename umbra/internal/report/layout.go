@@ -35,6 +35,42 @@ type Ring struct {
 	Radius float64 `json:"radius"`
 	Dashed bool    `json:"dashed"`
 	Label  string  `json:"label"`
+	// LabelAt is where the ring's label sits. The top of the ring is
+	// preferred; when a node label already occupies that arc the label slides
+	// around the ring to the first free one.
+	LabelAt Point `json:"label_at"`
+	// LabelAngle is the angle it slid to, in degrees clockwise from the top.
+	LabelAngle float64 `json:"label_angle"`
+	// LabelBox is the space it takes, so a reader of the JSON can check the
+	// placement without re-deriving the text metrics.
+	LabelBox Box `json:"label_box"`
+}
+
+// Box is a rectangle in viewBox units.
+type Box struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+	W float64 `json:"w"`
+	H float64 `json:"h"`
+}
+
+// Overlaps reports whether two boxes intersect, with a small gap so labels
+// that merely touch still read as separate.
+func (b Box) Overlaps(o Box) bool {
+	const gap = 2
+	return !(b.X+b.W+gap < o.X || o.X+o.W+gap < b.X ||
+		b.Y+b.H+gap < o.Y || o.Y+o.H+gap < b.Y)
+}
+
+// Label is where a node's name is drawn and whether it is drawn at all.
+type Label struct {
+	Point
+	// Anchor is the SVG text-anchor: start, middle or end.
+	Anchor string `json:"anchor"`
+	Box    Box    `json:"box"`
+	// Visible is false when a higher scoring label already occupies the space.
+	// The disc is still drawn; only the name waits for interaction.
+	Visible bool `json:"visible"`
 }
 
 // NodePlace is where one node sits and which way it faces.
@@ -47,6 +83,8 @@ type NodePlace struct {
 	Depth int     `json:"depth"`
 	// Anchor is where the label goes: left, right, above or below.
 	Anchor string `json:"anchor"`
+	// Label is the placed name, with the space it occupies.
+	Label Label `json:"label"`
 	// Toward is the point the node's lit half faces, which is its source or
 	// the origin.
 	Toward Point `json:"toward"`
@@ -58,7 +96,48 @@ const (
 	innerRing  = 56.0
 	groupGapDe = 6.0
 	minPerNode = 12.0
+
+	// Text sizes in viewBox units. The map scales to its column, so these are
+	// map units and not screen pixels: a name set at 12 was legible in the
+	// column and too small once the map was scaled down on a narrow screen.
+	NodeLabelSize   = 14.0
+	FileLabelSize   = 12.0
+	SourceLabelSize = 22.0
+	// SourceKindOffset is how far the change kind sits below the source name.
+	SourceKindOffset = 18.0
+
+	// monoAdvance is the width of one character as a fraction of the font
+	// size in a monospace face. Labels are monospace, so a box can be
+	// computed without measuring, which is what lets the placement be decided
+	// here and tested.
+	monoAdvance = 0.6
+
+	// The centre carries the source name and its change kind. Nothing else
+	// may sit inside this box, or a dependent lands on top of the label that
+	// says what changed.
+	centreKeepW = 140.0
+	centreKeepH = 44.0
+
+	// ringLabelStep is how far a ring label slides when the top of its ring
+	// is already taken.
+	ringLabelStep = 20.0
 )
+
+// textBox returns the space a piece of monospace text occupies, given where it
+// is anchored.
+func textBox(at Point, anchor string, text string, size float64) Box {
+	w := float64(len([]rune(text))) * size * monoAdvance
+	h := size
+	x := at.X
+	switch anchor {
+	case "middle":
+		x -= w / 2
+	case "end":
+		x -= w
+	}
+	// SVG text sits on its baseline, so the box rises above the y given.
+	return Box{X: round2(x), Y: round2(at.Y - h*0.78), W: round2(w), H: round2(h)}
+}
 
 // ringRadius is the radius for a depth. Co-change sits outside depth 3.
 func ringRadius(depth int, coChange bool) float64 {
@@ -146,7 +225,142 @@ func BuildLayout(a *Analysis) *Layout {
 	for radius, nodes := range byRing {
 		place(l, centre, radius, nodes)
 	}
+
+	clearCentre(l, centre)
+	placeLabels(l, a)
+	placeRingLabels(l, centre)
 	return l
+}
+
+// clearCentre pushes any node out of the box the source name and its change
+// kind occupy, along its own angle so the ring order is not disturbed.
+func clearCentre(l *Layout, centre Point) {
+	keep := Box{
+		X: centre.X - centreKeepW/2, Y: centre.Y - centreKeepH/2,
+		W: centreKeepW, H: centreKeepH,
+	}
+	for id, p := range l.Nodes {
+		disc := Box{X: p.X - 12, Y: p.Y - 12, W: 24, H: 24}
+		if !disc.Overlaps(keep) {
+			continue
+		}
+		// Step outward along the node's own angle until the disc is clear.
+		for step := 0; step < 40 && disc.Overlaps(keep); step++ {
+			p.Ring += 10
+			np := polar(centre, p.Ring, p.Angle)
+			p.X, p.Y = np.X, np.Y
+			disc = Box{X: p.X - 12, Y: p.Y - 12, W: 24, H: 24}
+		}
+		l.Nodes[id] = p
+	}
+}
+
+// placeLabels puts every node's name beside its disc and then hides the ones
+// that would collide.
+//
+// The order is by score, highest first, so the label that survives a collision
+// is the one the reader most needs. Ties break on the id, so the same report
+// always hides the same label.
+func placeLabels(l *Layout, a *Analysis) {
+	type entry struct {
+		id    string
+		score float64
+		name  string
+	}
+	var order []entry
+	for _, n := range a.Nodes {
+		if _, ok := l.Nodes[n.Symbol.ID]; !ok {
+			continue
+		}
+		order = append(order, entry{id: n.Symbol.ID, score: n.Score, name: n.Symbol.Name})
+	}
+	sort.Slice(order, func(i, j int) bool {
+		if order[i].score != order[j].score {
+			return order[i].score > order[j].score
+		}
+		return order[i].id < order[j].id
+	})
+
+	var taken []Box
+	for _, e := range order {
+		p := l.Nodes[e.id]
+		at, anchor := labelPoint(p)
+		box := textBox(at, anchor, e.name, NodeLabelSize)
+
+		visible := true
+		for _, t := range taken {
+			if box.Overlaps(t) {
+				visible = false
+				break
+			}
+		}
+		if visible {
+			taken = append(taken, box)
+		}
+		p.Label = Label{Point: at, Anchor: anchor, Box: box, Visible: visible}
+		l.Nodes[e.id] = p
+	}
+}
+
+// labelPoint is where a node's name sits, given the side of the map it is on.
+func labelPoint(p NodePlace) (Point, string) {
+	const pad = 13
+	switch p.Anchor {
+	case "right":
+		return Point{X: round2(p.X + pad), Y: round2(p.Y + 4)}, "start"
+	case "left":
+		return Point{X: round2(p.X - pad), Y: round2(p.Y + 4)}, "end"
+	case "above":
+		return Point{X: p.X, Y: round2(p.Y - pad - 6)}, "middle"
+	default:
+		return Point{X: p.X, Y: round2(p.Y + pad + 12)}, "middle"
+	}
+}
+
+// placeRingLabels puts each ring's label at the top of its ring, or slides it
+// around the ring to the first arc where it does not land on a node label.
+func placeRingLabels(l *Layout, centre Point) {
+	var taken []Box
+	for _, p := range l.Nodes {
+		if p.Label.Visible {
+			taken = append(taken, p.Label.Box)
+		}
+	}
+
+	for i := range l.Rings {
+		r := &l.Rings[i]
+		if r.Label == "" {
+			continue
+		}
+		for step := 0; step < int(360/ringLabelStep); step++ {
+			angle := math.Mod(float64(step)*ringLabelStep, 360)
+			at := polar(centre, r.Radius+12, angle)
+			box := textBox(at, "middle", r.Label, FileLabelSize)
+
+			clash := false
+			for _, t := range taken {
+				if box.Overlaps(t) {
+					clash = true
+					break
+				}
+			}
+			// Ring labels must not land on each other either.
+			if !clash {
+				for j := 0; j < i; j++ {
+					if l.Rings[j].Label != "" && box.Overlaps(l.Rings[j].LabelBox) {
+						clash = true
+						break
+					}
+				}
+			}
+			if !clash || step == int(360/ringLabelStep)-1 {
+				r.LabelAt = at
+				r.LabelAngle = angle
+				r.LabelBox = box
+				break
+			}
+		}
+	}
 }
 
 func ringLabel(d int) string {
