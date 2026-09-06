@@ -73,16 +73,16 @@ func TestIsTestFromConventions(t *testing.T) {
 
 func TestIsTestFile(t *testing.T) {
 	cases := map[string]bool{
-		"tests/test_service.py":  true,
-		"app/test_helpers.py":    true,
-		"pkg/thing_test.go":      true,
-		"src/thing_test.py":      true,
-		"web/button.test.tsx":    true,
-		"web/button.spec.ts":     true,
-		"tests/helpers.py":       true,
-		"app/service.py":         false,
-		"app/latest.py":          false,
-		"":                       false,
+		"tests/test_service.py": true,
+		"app/test_helpers.py":   true,
+		"pkg/thing_test.go":     true,
+		"src/thing_test.py":     true,
+		"web/button.test.tsx":   true,
+		"web/button.spec.ts":    true,
+		"tests/helpers.py":      true,
+		"app/service.py":        false,
+		"app/latest.py":         false,
+		"":                      false,
 	}
 	for p, want := range cases {
 		if got := IsTestFile(p); got != want {

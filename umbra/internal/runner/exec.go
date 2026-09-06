@@ -12,11 +12,11 @@ import (
 // Timeouts from SECURITY_AND_ACCESS.md. A caller may override per call by
 // passing a context with an earlier deadline.
 const (
-	GraphTimeout    = 60 * time.Second
-	VerifyTimeout   = 10 * time.Minute
-	SweepTimeout    = 20 * time.Minute
-	SnapshotWarnAt  = 30 * time.Second
-	DefaultTimeout  = 2 * time.Minute
+	GraphTimeout   = 60 * time.Second
+	VerifyTimeout  = 10 * time.Minute
+	SweepTimeout   = 20 * time.Minute
+	SnapshotWarnAt = 30 * time.Second
+	DefaultTimeout = 2 * time.Minute
 )
 
 // Exec runs real processes. It is the only implementation that touches the

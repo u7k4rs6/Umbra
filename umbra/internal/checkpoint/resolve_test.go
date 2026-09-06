@@ -15,7 +15,7 @@ func TestParseTrailer(t *testing.T) {
 		want string
 	}{
 		{"present", "fix the thing\n\nEntire-Checkpoint: a1b2c3d4e5f6\n", "a1b2c3d4e5f6"},
-		{"uppercase is lowered", "x\n\nEntire-Checkpoint: A1B2C3D4E5F6\n", "a1b2c3d4e5f6"},
+		{"case is preserved so git log can grep the exact text", "x\n\nEntire-Checkpoint: A1B2C3D4E5F6\n", "A1B2C3D4E5F6"},
 		{"absent", "make the tax rate explicit on compute_total\n\nChecked the callers.\n", ""},
 		{"not at line start", "see Entire-Checkpoint: a1b2c3d4e5f6 inline\n", ""},
 		{"too short", "x\n\nEntire-Checkpoint: abc\n", ""},
@@ -214,6 +214,64 @@ func TestResolveByCheckpointIDPrefix(t *testing.T) {
 		t.Fatalf("route = %q, want %q", res.Route, RouteID)
 	}
 	if res.CheckpointID != "b20f84567474" {
+		t.Fatalf("checkpoint = %q", res.CheckpointID)
+	}
+}
+
+// ARCHITECTURE.md described the trailer as 12 hex characters. The installed
+// CLI writes a 26 character ULID. Matching only hex silently missed every real
+// trailer, so this pins the shapes that actually occur.
+func TestParseTrailerAcceptsRealIDShapes(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+		want string
+	}{
+		{"ULID from the git hook", "phase 4\n\nEntire-Checkpoint: 01M1PTJGEYNGRB6R0H85Z29FKM\n", "01M1PTJGEYNGRB6R0H85Z29FKM"},
+		{"twelve hex from import", "x\n\nEntire-Checkpoint: b20f84567474\n", "b20f84567474"},
+		{"forty hex carry forward", "x\n\nEntire-Checkpoint: 041f789767de4d1180666bbf8346548f4481f996\n", "041f789767de4d1180666bbf8346548f4481f996"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := ParseTrailer(c.body); got != c.want {
+				t.Fatalf("ParseTrailer = %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+func TestLooksLikeCheckpointIDAcceptsULID(t *testing.T) {
+	if !LooksLikeCheckpointID("01M1PTJGEYNGRB6R0H85Z29FKM") {
+		t.Fatal("a ULID is a valid checkpoint id")
+	}
+	if !LooksLikeCheckpointID("b20f84567474") {
+		t.Fatal("a hex id is a valid checkpoint id")
+	}
+	if LooksLikeCheckpointID("HEAD") {
+		t.Fatal("HEAD is too short to be a checkpoint id")
+	}
+	if LooksLikeCheckpointID("feature/my-branch") {
+		t.Fatal("a branch name is not a checkpoint id")
+	}
+}
+
+// A ULID trailer must survive the whole resolve path, not just the regex.
+func TestResolveByULIDTrailer(t *testing.T) {
+	f := runner.NewFake()
+	f.Set("entire", []string{"checkpoint", "list", "--json"}, runner.Result{Stdout: "[]"})
+	f.Set("git", []string{"-C", "/repo", "rev-parse", "--verify", "HEAD^{commit}"}, runner.Result{Stdout: "ecb6388\n"})
+	f.Set("git", []string{"-C", "/repo", "rev-list", "--parents", "-n", "1", "ecb6388"}, runner.Result{Stdout: "ecb6388 cfc38e2\n"})
+	f.Set("git", []string{"-C", "/repo", "log", "-1", "--format=%B", "ecb6388"},
+		runner.Result{Stdout: "umbra: phase 4\n\nEntire-Checkpoint: 01M1PTJGEYNGRB6R0H85Z29FKM\n"})
+
+	res, err := newResolver(f).Resolve(context.Background(), "HEAD")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if res.Route != RouteTrailer {
+		t.Fatalf("route = %q, want %q", res.Route, RouteTrailer)
+	}
+	if res.CheckpointID != "01M1PTJGEYNGRB6R0H85Z29FKM" {
 		t.Fatalf("checkpoint = %q", res.CheckpointID)
 	}
 }
