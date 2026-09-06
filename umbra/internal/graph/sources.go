@@ -79,8 +79,15 @@ type SourceResult struct {
 // "has no associated commit in this repository" for a checkpoint created by
 // `entire import`, so `graph commit <sha> --json` is the fallback, exactly as
 // the degradation table says.
-func LoadSources(ctx context.Context, run runner.Runner, repo, checkpointID, commitish string) (*SourceResult, error) {
-	if checkpointID != "" {
+//
+// It is only safe when the checkpoint and the commit are the same piece of
+// work. A commit paired with a checkpoint by session time is not: the
+// checkpoint belongs to a commit of its own, and asking Graph about it returns
+// that commit's changes while the header still names the one the reader asked
+// for. checkpointOwnsCommit says whether the pairing is tight enough to trust,
+// and the caller decides it from how the reference resolved.
+func LoadSources(ctx context.Context, run runner.Runner, repo, checkpointID, commitish string, checkpointOwnsCommit bool) (*SourceResult, error) {
+	if checkpointID != "" && checkpointOwnsCommit {
 		stdout, _, exit, err := run.Run(ctx, "entire", []string{"graph", "checkpoint", checkpointID, "--json"}, nil)
 		if err == nil && exit == 0 {
 			if srcs, perr := ParseCommitJSON(stdout); perr == nil && len(srcs) > 0 {
@@ -102,7 +109,10 @@ func LoadSources(ctx context.Context, run runner.Runner, repo, checkpointID, com
 		return nil, err
 	}
 	res := &SourceResult{Sources: srcs, Route: "graph commit"}
-	if checkpointID != "" {
+	switch {
+	case checkpointID != "" && !checkpointOwnsCommit:
+		res.Note = "the checkpoint was paired with this commit by session time and owns a commit of its own, so the change came from graph commit"
+	case checkpointID != "":
 		res.Note = "graph checkpoint had no commit for this checkpoint, so the change came from graph commit"
 	}
 	return res, nil

@@ -75,7 +75,12 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	}
 
 	// Step 2: the sources.
-	sr, err := graph.LoadSources(ctx, run, head, res.CheckpointID, res.Commit)
+	// The checkpoint only owns this commit when the reference resolved through
+	// the trailer or through the checkpoint id itself. A session-window
+	// pairing is a guess about which session produced the commit; it says
+	// nothing about which commit the checkpoint belongs to.
+	ownsCommit := res.Route == checkpoint.RouteTrailer || res.Route == checkpoint.RouteID
+	sr, err := graph.LoadSources(ctx, run, head, res.CheckpointID, res.Commit, ownsCommit)
 	if err != nil {
 		return nil, nil, fmt.Errorf("asking Graph what changed: %w", err)
 	}
