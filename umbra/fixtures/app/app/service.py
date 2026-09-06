@@ -17,20 +17,22 @@ def apply_tax(amount: float) -> float:
     return round_money(amount * (1.0 + TAX_RATE))
 
 
-def compute_total(items: Iterable[LineItem], tax_rate: float) -> float:
-    """Total a collection of line items at an explicit tax rate.
+def compute_total(items: Iterable[LineItem], tax_rate: float, currency: str) -> float:
+    """Total a collection of line items at an explicit tax rate and currency.
 
-    The rate is now required so callers cannot silently inherit the module
-    default. It is called from app/api.py, app/refunds.py and
-    tests/test_service.py.
+    The currency is now required because rounding differs per currency. It is
+    called from app/api.py, app/refunds.py and tests/test_service.py.
     """
     subtotal = 0.0
     for item in items:
         subtotal += item.subtotal()
-    return round_money(subtotal * (1.0 + tax_rate))
+    total = subtotal * (1.0 + tax_rate)
+    if currency == "JPY":
+        return float(round(total))
+    return round_money(total)
 
 
 def summarize(items: List[LineItem]) -> str:
     """A short human readable total line."""
-    total = compute_total(items, TAX_RATE)
+    total = compute_total(items, TAX_RATE, "USD")
     return "{0} items, {1:.2f}".format(len(items), total)
