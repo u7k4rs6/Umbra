@@ -1245,7 +1245,11 @@ h1 { text-shadow: 0 0 60px rgba(0, 0, 0, 0.9); }
 .grid-overlay::before { border-color: color-mix(in srgb, var(--ink) 4%, transparent); }
 
 /* The hero sits above the field, and its own corona is the brightest thing. */
-.hero, section.band, .topbar, .ticker, .site-foot { position: relative; z-index: 1; }
+/* The content sits above the field. The bar is left out of this on purpose:
+ * it is position sticky, and relative here would quietly override it, which is
+ * exactly how the bar stopped sticking the first time. */
+.hero, section.band, .ticker, .site-foot { position: relative; z-index: 1; }
+.topbar { z-index: 30; }
 
 @media (prefers-reduced-motion: reduce) { .halftone { opacity: 0.42; } }
 @media print { .halftone { display: none; } }
@@ -1326,3 +1330,79 @@ h1 { text-shadow: 0 0 60px rgba(0, 0, 0, 0.9); }
   .torch-dot, .torch-ring, .torch-trail { display: none; }
   .card, .tile, .panel { transform: none !important; }
 }
+
+/* ---------------------------------------------------- readable grounds */
+
+/* The halftone shows through anything translucent, which is right behind the
+ * page and wrong behind a paragraph. Every surface that carries text gets a
+ * dark ground under its warm tint, so the field reads as being behind the
+ * page rather than through it. */
+.card, .tile, .panel, .install, .replay, .dropzone, pre.block {
+  background-color: rgba(6, 5, 4, 0.72);
+  background-image: linear-gradient(var(--surface), var(--surface));
+}
+.card[aria-pressed="true"] {
+  background-color: rgba(10, 8, 5, 0.8);
+  background-image: linear-gradient(var(--surface-2), var(--surface-2));
+}
+pre.block { background-color: rgba(0, 0, 0, 0.6); }
+
+/* The field is quieter now that it is not the only thing giving the page a
+ * surface. */
+.halftone { opacity: 0.44; }
+
+.scheme-day .card, .scheme-day .panel {
+  background-color: rgba(255, 255, 255, 0.72);
+}
+
+@media print {
+  .card, .tile, .panel, .install, .replay, .dropzone, pre.block {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+}
+
+/* A scrim behind every section heading, so the field never competes with the
+ * one sentence the section is trying to say. It is a soft ellipse of the
+ * ground colour, not a box. */
+.head, .pane-head { position: relative; }
+.head::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  /* 118 percent of a full width head is wider than the viewport at 390, which
+   * is where this first showed. The bleed is kept and the section clips it.
+   * clip rather than hidden, because hidden would make the section a scroll
+   * container and break the sticky bar again. */
+  width: min(880px, 118%);
+  max-width: 100vw;
+  height: calc(100% + 76px);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--ground) 42%, color-mix(in srgb, var(--ground) 70%, transparent) 68%, transparent);
+  z-index: -1;
+  pointer-events: none;
+}
+.head > * { position: relative; }
+
+/* The long rows carry text too, so they get the same ground as the cards.
+ * A row is not a card, so the ground is flat and the hairlines still do the
+ * separating. */
+.phases, .flags, ul.limits, .factors, table.states {
+  position: relative;
+  background: rgba(6, 5, 4, 0.7);
+  border-radius: 3px;
+}
+/* border-box, or the padding is added to the max-width and the row runs 14px
+ * wider than the viewport at 390. Caught by the overflow check, not by eye. */
+.phases, .flags, ul.limits, .factors, table.states { box-sizing: border-box; }
+.phases, .flags, ul.limits { padding-left: 18px; padding-right: 18px; }
+.prow, .flag { padding-left: 6px; padding-right: 6px; }
+.factors li, ul.limits > li { padding-right: 14px; }
+
+@media print {
+  .phases, .flags, ul.limits, .factors, table.states { background: none; }
+}
+
+section.band, .hero { overflow: clip; }
