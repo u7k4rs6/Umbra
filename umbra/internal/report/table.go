@@ -194,6 +194,10 @@ func writeExecution(b *strings.Builder, a *Analysis, o TableOptions) {
 		if e.Degraded {
 			fmt.Fprintf(b, "        %s\n", dim(o, "the runner printed no per-test ids, so the verdict is suite level; add -v"))
 		}
+		if len(e.PreExisting) > 0 {
+			fmt.Fprintf(b, "        %s\n", dim(o, fmt.Sprintf(
+				"%d test(s) were already failing before this change and are not counted as cracks", len(e.PreExisting))))
+		}
 		if len(e.NotRunnable) > 0 {
 			fmt.Fprintf(b, "        %s\n", dim(o, fmt.Sprintf("%d test id(s) not runnable and dropped", len(e.NotRunnable))))
 		}
