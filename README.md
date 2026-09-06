@@ -114,9 +114,24 @@ test is named. That looks exactly like the `pytest -q` failure and has a
 different cause. Activating the venv, or giving an absolute path to the
 interpreter, avoids both.
 
+`entire umbra` has to be installed first, from the Install section above. The
+clone also has to sit somewhere Graph will run: Graph refuses git subprocesses
+against repository metadata it considers unsafe, which in practice means a
+clone under a shared temporary directory fails before any analysis happens.
+A clone under your home directory works. This was checked from a fresh clone
+rather than assumed, and both readings are in the limitations below.
+
 The fixture is seeded. It is built to produce lit, penumbra and umbra nodes and
 a signature change that breaks tests in two files the session never opened. The
 report says so and so does this README.
+
+The states you get will not match the example at the top of this README, and
+that is correct. Node states come from the examined set, which comes from
+whichever checkpoint the reference pairs with, and imported checkpoint history
+is local to a machine and is not pushed. The same commit reports two lit and
+six umbra nodes in the repository it was built in, and eleven penumbra in a
+fresh clone that has no checkpoints at all. The probes, the cracks and the
+sweep are the same in both.
 
 ## How the ranking works
 
@@ -191,6 +206,39 @@ skips it and the header says the selection is unaudited.
   tool records gets the unknown state.
 - A destructive `--test` runner does what it says. The echo before execution is
   the only guard.
+- **Worktrees are keyed by commit in a shared directory, so two checkouts of
+  one repository collide on one worktree.** They are removed on exit unless
+  `--keep-worktrees` was passed, but a run that died before its cleanup, or a
+  checkout that has since been deleted, leaves one behind. A leftover is now
+  reused only when it is a healthy checkout sitting at the wanted commit, and
+  otherwise removed and pruned first, which covers the deleted-checkout case.
+  What it does not cover is a healthy worktree belonging to a different
+  checkout of the same repository: that one is reused, and it carries the other
+  checkout's `.git` link with it, so if that checkout sits somewhere Graph
+  refuses to run the failure lands in the run that did nothing wrong. There is
+  no `umbra clean` command; `SECURITY_AND_ACCESS.md` describes one and it was
+  never built. Delete them by hand:
+
+  ```
+  rm -rf "$ENTIRE_PLUGIN_DATA_DIR/wt"                  # managed install
+  rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/umbra/wt"    # otherwise
+  ```
+
+  Under a managed install that first path is usually
+  `~/.local/share/entire/plugins/data/umbra/wt`.
+- **A check that has never been observed to fail is not yet a check.** Four
+  verifications in this build returned a confident pass that was wrong: local
+  tests green on a repository a clone could not build, a cracked-probe count
+  that named a test outside the selection, a commit check that counted `ok`
+  lines instead of looking for `FAIL`, and a refs audit that reported thirty
+  refs of zero bytes because `git ls-tree` is scoped to the working directory.
+  The clearest case had no symptom at all: all four label-placement tests are
+  built on `Box.Overlaps`, and making it return false for every pair left every
+  one of them passing, across all eight scenarios. They had been proving
+  determinism, not collision. Every check named in this README now has a test
+  that plants what the check is for and asserts it fires, and each of those was
+  proved by mutating the code it checks until it failed. That is the standard;
+  it is not a guarantee that nothing else here is passing for the wrong reason.
 - The examined set is built from the session's tool activity. An agent that
   reads and edits through shell commands rather than through file tools leaves
   no read or edit event, so its work looks unexamined. Umbra found this in its
@@ -221,9 +269,70 @@ provides it). Coverage deltas (needs coverage tooling in the target
 repository). Trend dashboards. Cross-repository dependents. And Umbra never
 writes code: it shows the shadow, it does not fix it.
 
+## Corrections to the design documents
+
+Five places where the four planning documents in `umbra/docs/` describe
+something the installed tools do not do. All five were forced by real output,
+none by preference. The documents are the original design and are left as
+written; these are the corrections the code carries.
+
+1. **The checkpoint trailer is not hexadecimal.** ARCHITECTURE.md section 1
+   describes `Entire-Checkpoint: <12 hex>`. The installed CLI writes a 26
+   character ULID, for example `01M1PVD1WBK1J1J8GWDNJJR7XZ`. A hex-only pattern
+   matched nothing, so every commit fell through to the session-window fallback
+   while reporting, wrongly, that it carried no trailer. The pattern now takes
+   alphanumeric ids of 6 to 40 characters, which covers the ULID, the 12 hex id
+   of imported history and the 40 hex id of a carry-forward entry.
+
+2. **`pytest -q` cannot be verified.** PRD.md uses it in the command surface
+   and in the demo. Quiet mode prints no per-test ids, so `graph verify`
+   answers `output format not recognised` and records zero results. The default
+   is now `pytest -v`, and the table says `add -v` when a baseline comes back
+   exit-code only.
+
+3. **Flags after the reference were silently dropped.** The surface in PRD.md
+   is `entire umbra <ref> [flags]`, but Go's flag package stops parsing at the
+   first non-flag argument, so `entire umbra HEAD --run none` ignored
+   `--run none` and then failed asking for a test runner. Argv is reordered
+   before parsing, with boolean flags handled so they do not swallow the
+   reference.
+
+4. **`graph checkpoint` answers about the wrong commit when the pairing was a
+   guess.** ARCHITECTURE.md calls it the documented bridge between Graph and
+   Checkpoints, and `LoadSources` tried it first. It returns the changes of the
+   commit *that checkpoint belongs to*. When a reference is paired with a
+   checkpoint by session window, that is a guess about which session produced
+   the commit and says nothing about which commit the checkpoint owns. This
+   never showed here, because the pairing happens to choose an imported
+   checkpoint that owns no commit and the fallback runs. In a clone it chose a
+   hook-written checkpoint that does own one, and the report described that
+   commit's changes under the header of the one the reader asked for: the
+   header said `0063443` while the sources were the transcript package from
+   phase 3. The bridge is now used only when the reference resolved through the
+   trailer or through the checkpoint id, where the two are the same work.
+
+5. **A stale worktree poisoned every later run.** Worktrees are keyed by commit
+   under a shared data directory, so two checkouts of one repository, or a run
+   that died before its cleanup, collide on one path. The code reused anything
+   with a `.git` in it. A worktree left behind by a checkout that had since
+   been deleted made git unable to read its metadata and Graph refuse to run
+   there, for every subsequent run against that commit from any checkout. A
+   leftover is now reused only when it is a healthy checkout sitting at the
+   wanted commit, and otherwise removed and pruned first. The residual case is
+   in the limitations above.
+
+Corrections 4 and 5 were both found by the end-to-end tests failing in a fresh
+clone after passing here, which is the same lesson as the `.gitignore` below.
+
+Two smaller ones, for completeness. Entire has more than one wording for an
+absent summary, so any fully italicised summary block is treated as absent. And
+`graph impact --format json` carries `call_site.line` and `additional_sites`
+directly, so it is the primary path and the text parser the design sketched is
+the fallback, still tested.
+
 ## The final review
 
-The last step of the build was a semantic-diff review of the whole thing,
+Phase 11 was a semantic-diff review of the whole build to that point,
 comparing the first commit against the last:
 
 ```
@@ -232,7 +341,8 @@ entire graph diff --base 6e0dff8e92417fc25e28f07c4950753bd1701966 --head HEAD --
 
 The diff itself is unremarkable: 1014 added entities, no signature changes, and
 no function without an incoming edge, which is what a build that only ever added
-code should look like. The interesting part was what the diff did not contain.
+code should look like. The interesting part was what the diff did not contain,
+and it is the single most useful thing Graph did in this build.
 
 ### The .gitignore that hid the command package
 
@@ -322,11 +432,33 @@ paths, which is exactly the text a reader needs in order to check a line.
 Umbra was built in a standalone repository, `u7k4rs6/Umbra`, rather than inside
 a fork of `entireio/entire-graph`. The `umbra/` layout from ARCHITECTURE.md was
 preserved exactly so the module can be grafted into a fork without moving a
-file, and `scripts/graft.sh` does that graft. The build's own checkpoint trail
-lives in this repository, under `refs/entire/checkpoints/`, and the phase by
-phase record is the table at the top of [umbra/NOTES.md](umbra/NOTES.md), which
-also carries what each phase found and where the design documents turned out to
-be wrong.
+file, and `scripts/graft.sh` does that graft, with a dry run, without pushing.
+The build's own checkpoint trail lives in this repository under
+`refs/entire/checkpoints/`, and the phase by phase record is the table at the
+top of [umbra/NOTES.md](umbra/NOTES.md), which covers all seventeen phases and
+carries what each one found and where the design documents turned out to be
+wrong.
+
+Seventeen phases, of which the first thirteen built the product. The last four
+were not features:
+
+- **14** replaced the landing page's scripted sample with a real run, added a
+  second map from an imported session in another project, and prepared two
+  scripts that were deliberately not executed: the graft, and a read-only audit
+  of what the checkpoint refs on the remote contain.
+- **15** made the scrubber the only exit. Five leaks had been the same bug five
+  times, an output path that wrote without scrubbing, so the renderers now take
+  a value that only the scrubbing path can produce. It also gave every check in
+  the project a test that proves the check can fail.
+- **16** restyled the landing page around a drawn eclipse. No raster asset and
+  no request for one: the corona is inline SVG built deterministically from the
+  report's own numbers.
+- **17** is this pass: two visual checks decided from screenshots rather than
+  from the CSS, [umbra/PUBLISH.md](umbra/PUBLISH.md), and the verification of
+  this README against the repository.
+
+[umbra/PUBLISH.md](umbra/PUBLISH.md) is a checklist for the sitting in which
+this repository is made public. Nothing in it has been run.
 
 **Which maps are which.** The landing page shows two, and they are not the same
 kind of thing.
@@ -360,11 +492,23 @@ was committed.
 No code was reused. The idea of subtracting the examined set from a blast
 radius was developed in planning for this event.
 
-All product code was written during the build with an AI coding agent, captured
-in Entire checkpoints. The four planning documents in `umbra/docs/` were written
-before the build with AI assistance and are the first commit. `umbra/NOTES.md`
-records what the probe found, which degradations are in effect, and the places
-the design documents turned out to be wrong about the installed tools.
+All product code across all seventeen phases was written during the build with
+an AI coding agent, captured in Entire checkpoints. That includes the tests, the
+landing page, the corona renderer and every document in this repository except
+the four planning documents in `umbra/docs/`, which were written before the
+build with AI assistance and are the first commit.
+
+What came from the human rather than the agent: the problem, the four settled
+decisions in the kickoff, the scope of each phase, the decision to keep the
+repository private, and the visual direction for the landing page in phase 16,
+which was specified before it was built and not proposed by the agent. Every
+phase was reviewed and accepted by hand before the next one started.
+
+`umbra/NOTES.md` records what the probe found, which degradations are in
+effect, the places the design documents turned out to be wrong about the
+installed tools, and the mistakes: the four confident wrong answers, the five
+scrubbing leaks, and the label tests that were proving nothing. Those are in
+there because a build record that only lists what worked is not a record.
 
 ## Layout
 
@@ -378,9 +522,12 @@ umbra/
   internal/shadow/      examined set, classifier, ranker, selection, forensics
   internal/report/      table, json, layout, html, packet
   fixtures/app/         the seeded Python service
-  fixtures/recorded/    the eight scenarios the replay tests drive
-  site/                 landing page and the drop-in viewer
-  docs/                 the four planning documents
+  fixtures/recorded/    the eight scenarios, plus one real minimal recording
+  scripts/              the graft and the read-only checkpoint refs audit
+  site/                 landing page, the corona renderer, the drop-in viewer
+  docs/                 the four planning documents, and docs/renders/
+  NOTES.md              the phase by phase build record
+  PUBLISH.md            the checklist for making this repository public
 ```
 
 Built during Bengaluru Tech Week on the Entire ecosystem.

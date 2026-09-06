@@ -7,9 +7,10 @@ answered questions at the bottom of `docs/ARCHITECTURE.md` carry the detail.
 
 ## Where the build stands
 
-All thirteen phases are done and committed. `go test ./...` is green at every
+All seventeen phases are done and committed. `go test ./...` is green at every
 commit, and a fresh clone was checked to build and test green after phase 11
-found that it would not have.
+found that it would not have. The reproduce block in the README was re-run from
+a fresh clone in phase 17.
 
 The repository stays **private**. That decision was taken after the phase 12
 scrub pass, and it is what settles the one blocker that pass found: see
@@ -31,6 +32,10 @@ scrub pass, and it is what settles the one blocker that pass found: see
 | 11 | Semantic-diff review, the self report, scrubber fixes | 249 |
 | 12 | Coverage line, runner check, minimal record, scrub pass | 274 |
 | 13 | Exit-code tests end to end, the real four-hop leak chain | 286 |
+| 14 | A real sample on the landing page, the imported map, light field, labels, two prepared scripts | 298 |
+| 15 | The scrubber becomes the only exit; a known-positive for every check | 316 |
+| 16 | The eclipse hero: a drawn corona, the four beats, the day and night divider | 316 |
+| 17 | Ground and focus checked from screenshots, PUBLISH.md, the README submission pass | 316 |
 
 Nothing in the code pretends to do what it does not: the table prints
 `probes not run` when tests were skipped, `sweep skipped` when the audit was
