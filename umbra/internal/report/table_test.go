@@ -261,3 +261,47 @@ func TestCrackedCountsOnlySelectedProbes(t *testing.T) {
 		t.Fatalf("the reader should be told a failure fell outside the probes:\n%s", out)
 	}
 }
+
+// The kind was printed with " changed" appended, which is right for a body or
+// a signature and wrong for the rest: a symbol that was added read as "added
+// changed". One label, used by the table, the packet and the map.
+func TestChangeKindReadsAsASentence(t *testing.T) {
+	cases := []struct {
+		change string
+		want   string
+	}{
+		{"added", "added"},
+		{"removed", "removed"},
+		{"renamed", "renamed"},
+		{"signature", "signature changed"},
+		{"body", "body changed"},
+	}
+	for _, c := range cases {
+		a := mkAnalysis()
+		a.Sources = []graph.Source{{
+			Name: "compute_total", File: "app/service.py", Span: [2]int{20, 30}, Change: c.change,
+		}}
+		out := render(t, a, TableOptions{UTF8: true})
+		want := "compute_total  " + c.want + "  app/service.py:20"
+		if !strings.Contains(out, want) {
+			t.Errorf("change %q: table is missing %q\n%s", c.change, want, firstLines(out, 6))
+		}
+		if strings.Contains(out, c.change+" changed changed") {
+			t.Errorf("change %q: doubled wording", c.change)
+		}
+	}
+	// The one that used to be wrong, checked as a whole line.
+	a := mkAnalysis()
+	a.Sources = []graph.Source{{Name: "jsNode", File: "x.go", Span: [2]int{1, 2}, Change: "added"}}
+	if strings.Contains(render(t, a, TableOptions{UTF8: true}), "added changed") {
+		t.Error("an added symbol still reads as \"added changed\"")
+	}
+}
+
+func firstLines(s string, n int) string {
+	lines := strings.Split(s, "\n")
+	if len(lines) > n {
+		lines = lines[:n]
+	}
+	return strings.Join(lines, "\n")
+}

@@ -14,6 +14,7 @@ import (
 type Source struct {
 	Symbol string
 	Name   string
+	Kind   string
 	File   string
 	Span   [2]int
 	Change string
@@ -91,7 +92,7 @@ func LoadSources(ctx context.Context, run runner.Runner, repo, checkpointID, com
 		stdout, _, exit, err := run.Run(ctx, "entire", []string{"graph", "checkpoint", checkpointID, "--json"}, nil)
 		if err == nil && exit == 0 {
 			if srcs, perr := ParseCommitJSON(stdout); perr == nil && len(srcs) > 0 {
-				return &SourceResult{Sources: srcs, Route: "graph checkpoint"}, nil
+				return &SourceResult{Sources: FoldFields(srcs), Route: "graph checkpoint"}, nil
 			}
 		}
 	}
@@ -108,6 +109,7 @@ func LoadSources(ctx context.Context, run runner.Runner, repo, checkpointID, com
 	if err != nil {
 		return nil, err
 	}
+	srcs = FoldFields(srcs)
 	res := &SourceResult{Sources: srcs, Route: "graph commit"}
 	switch {
 	case checkpointID != "" && !checkpointOwnsCommit:
@@ -143,6 +145,7 @@ func ParseCommitJSON(blob []byte) ([]Source, error) {
 			}
 			out = append(out, Source{
 				Name:         ch.Name,
+				Kind:         ch.Kind,
 				File:         f.Path,
 				Span:         [2]int{line, line},
 				Change:       kind,
@@ -176,6 +179,90 @@ func normalizeChange(t string) string {
 		return "renamed"
 	}
 	return strings.TrimSuffix(t, "_changed")
+}
+
+// KindLabel is how a change kind reads in a sentence.
+//
+// The kind was being printed with " changed" appended, which is right for a
+// body or a signature and wrong for the rest: a symbol that was added reads as
+// "added changed". The label is built in one place so the table, the packet
+// and the map cannot word it differently.
+func (s Source) KindLabel() string {
+	switch s.Change {
+	case "signature":
+		return "signature changed"
+	case "body":
+		return "body changed"
+	case "added", "removed", "renamed":
+		return s.Change
+	}
+	if s.Change == "" {
+		return "changed"
+	}
+	return s.Change
+}
+
+// FoldFields collapses a struct field into the type it belongs to.
+//
+// `graph commit` reports a field as a changed entity of its own, and a field's
+// dependent count is every use of the type it sits in: adding one struct in a
+// test file put jsNode.ID in a report as a source with 46 dependents, beside
+// jsNode itself. A field is not a thing a caller calls. When its type is
+// already a source the field is dropped, and when it is not the field is
+// folded into one entry for the type so it is still counted, once.
+func FoldFields(sources []Source) []Source {
+	isSource := map[string]bool{}
+	for _, s := range sources {
+		if s.Kind != "field" {
+			isSource[s.File+"\x00"+s.Name] = true
+		}
+	}
+
+	var out []Source
+	folded := map[string]bool{}
+	for _, s := range sources {
+		if s.Kind != "field" {
+			out = append(out, s)
+			continue
+		}
+		parent, ok := parentOf(s.Name)
+		if !ok {
+			// A field with no qualified name says nothing on its own.
+			continue
+		}
+		key := s.File + "\x00" + parent
+		if isSource[key] || folded[key] {
+			continue
+		}
+		folded[key] = true
+
+		// The type is not itself in the change list, so stand in for it once.
+		p := s
+		p.Name = parent
+		p.Kind = "type"
+		p.Symbol = ""
+		out = append(out, p)
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].File != out[j].File {
+			return out[i].File < out[j].File
+		}
+		if out[i].Span[0] != out[j].Span[0] {
+			return out[i].Span[0] < out[j].Span[0]
+		}
+		return out[i].Name < out[j].Name
+	})
+	return out
+}
+
+// parentOf splits a qualified field name into the type that holds it.
+func parentOf(name string) (string, bool) {
+	i := strings.LastIndex(name, ".")
+	if i <= 0 || i == len(name)-1 {
+		return "", false
+	}
+	return name[:i], true
 }
 
 // Bind attaches each source to its symbol in the field, filling the identity

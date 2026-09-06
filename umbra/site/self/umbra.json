@@ -81,6 +81,7 @@
         139
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 1
     },
@@ -93,6 +94,7 @@
         527
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 0
     },
@@ -105,6 +107,7 @@
         732
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -117,6 +120,7 @@
         770
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -129,6 +133,7 @@
         744
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -141,6 +146,7 @@
         896
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -153,6 +159,7 @@
         833
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 16
     },
@@ -165,6 +172,7 @@
         838
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
     },
@@ -177,6 +185,7 @@
         845
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 4
     },
@@ -189,6 +198,7 @@
         855
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -201,6 +211,7 @@
         862
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
     },
@@ -213,6 +224,7 @@
         871
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 6
     },
@@ -225,6 +237,7 @@
         904
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -237,6 +250,7 @@
         912
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 8
     },
@@ -249,6 +263,7 @@
         916
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -261,6 +276,7 @@
         939
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -273,6 +289,7 @@
         973
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -285,6 +302,7 @@
         984
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -297,6 +315,7 @@
         1080
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -309,6 +328,7 @@
         1089
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -321,6 +341,7 @@
         1098
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -333,6 +354,7 @@
         1132
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -345,6 +367,7 @@
         1120
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -357,6 +380,7 @@
         1142
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -369,6 +393,7 @@
         91
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 4
     },
@@ -381,6 +406,7 @@
         150
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 0
     },
@@ -393,6 +419,7 @@
         196
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -405,44 +432,9 @@
         24
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
-    },
-    {
-      "id": "",
-      "name": "jsNode.ID",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        21,
-        21
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 46
-    },
-    {
-      "id": "",
-      "name": "jsNode.Name",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        22,
-        22
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 84
-    },
-    {
-      "id": "",
-      "name": "jsNode.Span",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        23,
-        23
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 26
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsExposure",
@@ -453,44 +445,9 @@
         30
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Seq",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        27,
-        27
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 33
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Kind",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        28,
-        28
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 67
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Range",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        29,
-        29
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 20
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsCase",
@@ -501,80 +458,9 @@
         39
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
-    },
-    {
-      "id": "",
-      "name": "jsCase.Node",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        33,
-        33
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 51
-    },
-    {
-      "id": "",
-      "name": "jsCase.Exposures",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        34,
-        34
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 9
-    },
-    {
-      "id": "",
-      "name": "jsCase.T0",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        35,
-        35
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 4
-    },
-    {
-      "id": "",
-      "name": "jsCase.HasAny",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        36,
-        36
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
-    },
-    {
-      "id": "",
-      "name": "jsCase.WantState",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        37,
-        37
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
-    },
-    {
-      "id": "",
-      "name": "jsCase.WantTier",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        38,
-        38
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:function:TestJavaScriptMirrorsTheGoClassifier",
@@ -585,6 +471,7 @@
         154
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 0
     }
@@ -4152,13 +4039,35 @@
         "depth": 1,
         "radius": 170,
         "dashed": false,
-        "label": "1 hop"
+        "label": "1 hop",
+        "label_at": {
+          "x": 600,
+          "y": 218
+        },
+        "label_angle": 0,
+        "label_box": {
+          "x": 582,
+          "y": 208.64,
+          "w": 36,
+          "h": 12
+        }
       },
       {
         "depth": 2,
         "radius": 280,
         "dashed": false,
-        "label": "2 hops"
+        "label": "2 hops",
+        "label_at": {
+          "x": 600,
+          "y": 108
+        },
+        "label_angle": 0,
+        "label_box": {
+          "x": 578.4,
+          "y": 98.64,
+          "w": 43.2,
+          "h": 12
+        }
       }
     ],
     "sources": {
@@ -4295,6 +4204,18 @@
         "ring": 170,
         "depth": 1,
         "anchor": "below",
+        "label": {
+          "x": 617.77,
+          "y": 594.07,
+          "anchor": "middle",
+          "box": {
+            "x": 542.17,
+            "y": 583.15,
+            "w": 151.2,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4307,6 +4228,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 787.94,
+          "y": 622.62,
+          "anchor": "start",
+          "box": {
+            "x": 787.94,
+            "y": 611.7,
+            "w": 159.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4319,6 +4252,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 335.34,
+          "y": 281.26,
+          "anchor": "end",
+          "box": {
+            "x": 200.94,
+            "y": 270.34,
+            "w": 134.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4331,6 +4276,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 886.19,
+          "y": 465.4,
+          "anchor": "start",
+          "box": {
+            "x": 886.19,
+            "y": 454.48,
+            "w": 210,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4343,6 +4300,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 467.19,
+          "y": 150.93,
+          "anchor": "end",
+          "box": {
+            "x": 332.79,
+            "y": 140.01,
+            "w": 134.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4355,6 +4324,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 313.81,
+          "y": 465.4,
+          "anchor": "end",
+          "box": {
+            "x": 154.21,
+            "y": 454.48,
+            "w": 159.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4367,6 +4348,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "below",
+        "label": {
+          "x": 600,
+          "y": 705,
+          "anchor": "middle",
+          "box": {
+            "x": 503.4,
+            "y": 694.08,
+            "w": 193.2,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4379,6 +4372,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 412.06,
+          "y": 622.62,
+          "anchor": "end",
+          "box": {
+            "x": 235.66,
+            "y": 611.7,
+            "w": 176.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4391,6 +4396,18 @@
         "ring": 170,
         "depth": 1,
         "anchor": "right",
+        "label": {
+          "x": 757.17,
+          "y": 313.91,
+          "anchor": "start",
+          "box": {
+            "x": 757.17,
+            "y": 302.99,
+            "w": 92.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4403,6 +4420,18 @@
         "ring": 170,
         "depth": 1,
         "anchor": "left",
+        "label": {
+          "x": 434.21,
+          "y": 329.48,
+          "anchor": "end",
+          "box": {
+            "x": 383.81,
+            "y": 318.56,
+            "w": 50.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4415,6 +4444,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 850.45,
+          "y": 255.62,
+          "anchor": "start",
+          "box": {
+            "x": 850.45,
+            "y": 244.7,
+            "w": 75.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4427,6 +4468,18 @@
         "ring": 280,
         "depth": 2,
         "anchor": "above",
+        "label": {
+          "x": 692.7,
+          "y": 116.79,
+          "anchor": "middle",
+          "box": {
+            "x": 654.9,
+            "y": 105.87,
+            "w": 75.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -4447,42 +4500,45 @@
     "git -C \u003crepo\u003e rev-parse --verify 13adcdd^{commit}",
     "git -C \u003crepo\u003e rev-list --parents -n 1 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
     "git -C \u003crepo\u003e log -1 --format=%B 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/base 31fa246c254c447e3672286112684632bd7a657b",
+    "git -C \u003crepo\u003e config --get user.name",
+    "git -C \u003crepo\u003e config --get author.name",
+    "git -C \u003crepo\u003e config --get committer.name",
     "entire graph capabilities --json",
-    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/h...",
+    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format ndjson",
     "entire graph checkpoint 01M1PY8KZ28HS7TG95ZVKQSZ2W --json",
-    "entire graph impact --symbol drawField --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
-    "entire graph impact --symbol boot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol tierRank --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol stateAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol consider --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol wireReplay --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol render --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol goTo --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol step --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol play --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol pause --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
-    "entire graph impact --symbol tick --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol anyEvidence --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol indexOf --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol eventAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol describe --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol applyState --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol rewireNodes --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol wireSpotlight --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df5...",
-    "entire graph impact --symbol toViewBox --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
-    "entire graph impact --symbol revealNear --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol wireKeyboard --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol focusAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol toggleLabels --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol Build --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
-    "entire graph impact --symbol AddCoChange --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol exposuresFor --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol jsNode --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol jsExposure --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol jsCase --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/w...",
+    "entire graph impact --symbol drawField --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 36",
+    "entire graph impact --symbol boot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 508",
+    "entire graph impact --symbol tierRank --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 729",
+    "entire graph impact --symbol stateAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 736",
+    "entire graph impact --symbol consider --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 742",
+    "entire graph impact --symbol wireReplay --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 782",
+    "entire graph impact --symbol render --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 822",
+    "entire graph impact --symbol goTo --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 835",
+    "entire graph impact --symbol step --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 840",
+    "entire graph impact --symbol play --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 847",
+    "entire graph impact --symbol pause --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 857",
+    "entire graph impact --symbol tick --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 864",
+    "entire graph impact --symbol anyEvidence --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 898",
+    "entire graph impact --symbol indexOf --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 906",
+    "entire graph impact --symbol eventAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 914",
+    "entire graph impact --symbol describe --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 919",
+    "entire graph impact --symbol applyState --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 943",
+    "entire graph impact --symbol rewireNodes --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 975",
+    "entire graph impact --symbol wireSpotlight --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1055",
+    "entire graph impact --symbol toViewBox --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1082",
+    "entire graph impact --symbol revealNear --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1093",
+    "entire graph impact --symbol wireKeyboard --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1103",
+    "entire graph impact --symbol focusAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1109",
+    "entire graph impact --symbol toggleLabels --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1134",
+    "entire graph impact --symbol Build --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 27",
+    "entire graph impact --symbol AddCoChange --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 96",
+    "entire graph impact --symbol exposuresFor --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 185",
+    "entire graph impact --symbol jsNode --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 20",
+    "entire graph impact --symbol jsExposure --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 26",
+    "entire graph impact --symbol jsCase --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 32",
+    "entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 51",
     "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --raw-transcript",
     "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --short"
   ]

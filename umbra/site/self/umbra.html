@@ -24,6 +24,10 @@
   /* On the night scheme a pool is simply the absence of glow, so nothing is
      painted over it. */
   --pool-ink: transparent;
+  /* The peak opacity of the light field. Every gradient stop is a fraction of
+     this, so a scheme dims the whole field by changing one number and the
+     falloff keeps its shape. */
+  --glow-peak: 0.32;
 
   --ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -46,8 +50,13 @@
     --focus: #1A4F9C;
     /* On a light ground, removing the warm glow makes a pool brighter than
        its surroundings, which reads as more light rather than less. The pools
-       are painted instead, so shadow means the same thing in both schemes. */
-    --pool-ink: rgba(28, 31, 38, 0.17);
+       are painted instead, so shadow means the same thing in both schemes.
+       The tone is the page's own ink, not a neutral grey: a grey pool on a
+       warm ground reads as dirt rather than as shade. */
+    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+    /* Half the night peak. The same opacity that reads as a soft glow on a
+       dark ground reads as a wash on a light one. */
+    --glow-peak: 0.15;
   }
 }
 
@@ -269,7 +278,11 @@ details pre {
 
 .node { cursor: pointer; }
 .node .hit { fill: transparent; }
-.label { font-family: var(--mono); font-size: 12px; pointer-events: none; }
+/* Label sizes are viewBox units, not screen pixels: the map scales to its
+   column, and a name set at 12 units was legible in a wide column and too
+   small once the map shrank on a narrow screen. */
+.label { font-family: var(--mono); font-size: 14px; pointer-events: none; }
+.ring-label { font-family: var(--ui); font-size: 12px; pointer-events: none; }
 .label.lit { fill: var(--ink); }
 .label.dim { fill: var(--ink-2); paint-order: stroke; stroke: var(--night); stroke-width: 3px; stroke-linejoin: round; }
 .label[hidden] { display: none; }
@@ -435,10 +448,11 @@ button.tick.cut {
 
 /* Motion happens only in response to an action, and never on load. */
 .node circle, .node path, .node polyline { transition: fill 240ms ease-out, opacity 240ms ease-out, r 240ms ease-out; }
-.pools circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
+.pools circle,
+.shade circle { transition: r 240ms ease-out, opacity 240ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .node circle, .node path, .node polyline, .pools circle { transition: none; }
+  .node circle, .node path, .node polyline, .pools circle, .shade circle { transition: none; }
   .torch { display: none; }
 }
 
@@ -458,7 +472,8 @@ button.tick.cut {
     --fail: #B3452F;
     --pass: #3E8A5C;
     --focus: #1A4F9C;
-    --pool-ink: rgba(28, 31, 38, 0.17);
+    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
+    --glow-peak: 0.15;
   }
   .replay, .filters, .detail, .torch { display: none !important; }
   .label[hidden] { display: block !important; }
@@ -1027,6 +1042,7 @@ button.tick.cut {
         139
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 1
     },
@@ -1039,6 +1055,7 @@ button.tick.cut {
         527
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 0
     },
@@ -1051,6 +1068,7 @@ button.tick.cut {
         732
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1063,6 +1081,7 @@ button.tick.cut {
         770
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1075,6 +1094,7 @@ button.tick.cut {
         744
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1087,6 +1107,7 @@ button.tick.cut {
         896
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1099,6 +1120,7 @@ button.tick.cut {
         833
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 16
     },
@@ -1111,6 +1133,7 @@ button.tick.cut {
         838
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
     },
@@ -1123,6 +1146,7 @@ button.tick.cut {
         845
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 4
     },
@@ -1135,6 +1159,7 @@ button.tick.cut {
         855
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1147,6 +1172,7 @@ button.tick.cut {
         862
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
     },
@@ -1159,6 +1185,7 @@ button.tick.cut {
         871
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 6
     },
@@ -1171,6 +1198,7 @@ button.tick.cut {
         904
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1183,6 +1211,7 @@ button.tick.cut {
         912
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 8
     },
@@ -1195,6 +1224,7 @@ button.tick.cut {
         916
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1207,6 +1237,7 @@ button.tick.cut {
         939
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1219,6 +1250,7 @@ button.tick.cut {
         973
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1231,6 +1263,7 @@ button.tick.cut {
         984
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1243,6 +1276,7 @@ button.tick.cut {
         1080
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1255,6 +1289,7 @@ button.tick.cut {
         1089
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1267,6 +1302,7 @@ button.tick.cut {
         1098
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1279,6 +1315,7 @@ button.tick.cut {
         1132
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1291,6 +1328,7 @@ button.tick.cut {
         1120
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1303,6 +1341,7 @@ button.tick.cut {
         1142
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
     },
@@ -1315,6 +1354,7 @@ button.tick.cut {
         91
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 4
     },
@@ -1327,6 +1367,7 @@ button.tick.cut {
         150
       ],
       "change": "body",
+      "kind_label": "body changed",
       "weight": 0.6,
       "dependents": 0
     },
@@ -1339,6 +1380,7 @@ button.tick.cut {
         196
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 2
     },
@@ -1351,44 +1393,9 @@ button.tick.cut {
         24
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
-    },
-    {
-      "id": "",
-      "name": "jsNode.ID",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        21,
-        21
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 46
-    },
-    {
-      "id": "",
-      "name": "jsNode.Name",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        22,
-        22
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 84
-    },
-    {
-      "id": "",
-      "name": "jsNode.Span",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        23,
-        23
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 26
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsExposure",
@@ -1399,44 +1406,9 @@ button.tick.cut {
         30
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 3
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Seq",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        27,
-        27
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 33
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Kind",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        28,
-        28
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 67
-    },
-    {
-      "id": "",
-      "name": "jsExposure.Range",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        29,
-        29
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 20
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:type:jsCase",
@@ -1447,80 +1419,9 @@ button.tick.cut {
         39
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 1
-    },
-    {
-      "id": "",
-      "name": "jsCase.Node",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        33,
-        33
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 51
-    },
-    {
-      "id": "",
-      "name": "jsCase.Exposures",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        34,
-        34
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 9
-    },
-    {
-      "id": "",
-      "name": "jsCase.T0",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        35,
-        35
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 4
-    },
-    {
-      "id": "",
-      "name": "jsCase.HasAny",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        36,
-        36
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
-    },
-    {
-      "id": "",
-      "name": "jsCase.WantState",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        37,
-        37
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
-    },
-    {
-      "id": "",
-      "name": "jsCase.WantTier",
-      "file": "umbra/internal/shadow/jsmirror_test.go",
-      "span": [
-        38,
-        38
-      ],
-      "change": "added",
-      "weight": 0.3,
-      "dependents": 2
     },
     {
       "id": "gh/u7k4rs6/Umbra:Go:umbra/internal/shadow/jsmirror_test.go:function:TestJavaScriptMirrorsTheGoClassifier",
@@ -1531,6 +1432,7 @@ button.tick.cut {
         154
       ],
       "change": "added",
+      "kind_label": "added",
       "weight": 0.3,
       "dependents": 0
     }
@@ -5098,13 +5000,35 @@ button.tick.cut {
         "depth": 1,
         "radius": 170,
         "dashed": false,
-        "label": "1 hop"
+        "label": "1 hop",
+        "label_at": {
+          "x": 600,
+          "y": 218
+        },
+        "label_angle": 0,
+        "label_box": {
+          "x": 582,
+          "y": 208.64,
+          "w": 36,
+          "h": 12
+        }
       },
       {
         "depth": 2,
         "radius": 280,
         "dashed": false,
-        "label": "2 hops"
+        "label": "2 hops",
+        "label_at": {
+          "x": 600,
+          "y": 108
+        },
+        "label_angle": 0,
+        "label_box": {
+          "x": 578.4,
+          "y": 98.64,
+          "w": 43.2,
+          "h": 12
+        }
       }
     ],
     "sources": {
@@ -5241,6 +5165,18 @@ button.tick.cut {
         "ring": 170,
         "depth": 1,
         "anchor": "below",
+        "label": {
+          "x": 617.77,
+          "y": 594.07,
+          "anchor": "middle",
+          "box": {
+            "x": 542.17,
+            "y": 583.15,
+            "w": 151.2,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5253,6 +5189,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 787.94,
+          "y": 622.62,
+          "anchor": "start",
+          "box": {
+            "x": 787.94,
+            "y": 611.7,
+            "w": 159.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5265,6 +5213,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 335.34,
+          "y": 281.26,
+          "anchor": "end",
+          "box": {
+            "x": 200.94,
+            "y": 270.34,
+            "w": 134.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5277,6 +5237,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 886.19,
+          "y": 465.4,
+          "anchor": "start",
+          "box": {
+            "x": 886.19,
+            "y": 454.48,
+            "w": 210,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5289,6 +5261,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 467.19,
+          "y": 150.93,
+          "anchor": "end",
+          "box": {
+            "x": 332.79,
+            "y": 140.01,
+            "w": 134.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5301,6 +5285,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 313.81,
+          "y": 465.4,
+          "anchor": "end",
+          "box": {
+            "x": 154.21,
+            "y": 454.48,
+            "w": 159.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5313,6 +5309,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "below",
+        "label": {
+          "x": 600,
+          "y": 705,
+          "anchor": "middle",
+          "box": {
+            "x": 503.4,
+            "y": 694.08,
+            "w": 193.2,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5325,6 +5333,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "left",
+        "label": {
+          "x": 412.06,
+          "y": 622.62,
+          "anchor": "end",
+          "box": {
+            "x": 235.66,
+            "y": 611.7,
+            "w": 176.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5337,6 +5357,18 @@ button.tick.cut {
         "ring": 170,
         "depth": 1,
         "anchor": "right",
+        "label": {
+          "x": 757.17,
+          "y": 313.91,
+          "anchor": "start",
+          "box": {
+            "x": 757.17,
+            "y": 302.99,
+            "w": 92.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5349,6 +5381,18 @@ button.tick.cut {
         "ring": 170,
         "depth": 1,
         "anchor": "left",
+        "label": {
+          "x": 434.21,
+          "y": 329.48,
+          "anchor": "end",
+          "box": {
+            "x": 383.81,
+            "y": 318.56,
+            "w": 50.4,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5361,6 +5405,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "right",
+        "label": {
+          "x": 850.45,
+          "y": 255.62,
+          "anchor": "start",
+          "box": {
+            "x": 850.45,
+            "y": 244.7,
+            "w": 75.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5373,6 +5429,18 @@ button.tick.cut {
         "ring": 280,
         "depth": 2,
         "anchor": "above",
+        "label": {
+          "x": 692.7,
+          "y": 116.79,
+          "anchor": "middle",
+          "box": {
+            "x": 654.9,
+            "y": 105.87,
+            "w": 75.6,
+            "h": 14
+          },
+          "visible": true
+        },
         "toward": {
           "x": 600,
           "y": 400
@@ -5393,42 +5461,45 @@ button.tick.cut {
     "git -C \u003crepo\u003e rev-parse --verify 13adcdd^{commit}",
     "git -C \u003crepo\u003e rev-list --parents -n 1 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
     "git -C \u003crepo\u003e log -1 --format=%B 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be39...",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head 13adcddaa88b36e7b6df56bb0d5f183be3957a30",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/base 31fa246c254c447e3672286112684632bd7a657b",
+    "git -C \u003crepo\u003e config --get user.name",
+    "git -C \u003crepo\u003e config --get author.name",
+    "git -C \u003crepo\u003e config --get committer.name",
     "entire graph capabilities --json",
-    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/h...",
+    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format ndjson",
     "entire graph checkpoint 01M1PY8KZ28HS7TG95ZVKQSZ2W --json",
-    "entire graph impact --symbol drawField --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
-    "entire graph impact --symbol boot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol tierRank --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol stateAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol consider --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol wireReplay --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol render --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol goTo --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol step --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol play --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol pause --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
-    "entire graph impact --symbol tick --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f18...",
-    "entire graph impact --symbol anyEvidence --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol indexOf --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol eventAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol describe --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d...",
-    "entire graph impact --symbol applyState --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol rewireNodes --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol wireSpotlight --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df5...",
-    "entire graph impact --symbol toViewBox --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0...",
-    "entire graph impact --symbol revealNear --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol wireKeyboard --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol focusAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5...",
-    "entire graph impact --symbol toggleLabels --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol Build --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f1...",
-    "entire graph impact --symbol AddCoChange --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56b...",
-    "entire graph impact --symbol exposuresFor --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56...",
-    "entire graph impact --symbol jsNode --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol jsExposure --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb...",
-    "entire graph impact --symbol jsCase --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f...",
-    "entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/w...",
+    "entire graph impact --symbol drawField --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 36",
+    "entire graph impact --symbol boot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 508",
+    "entire graph impact --symbol tierRank --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 729",
+    "entire graph impact --symbol stateAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 736",
+    "entire graph impact --symbol consider --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 742",
+    "entire graph impact --symbol wireReplay --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 782",
+    "entire graph impact --symbol render --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 822",
+    "entire graph impact --symbol goTo --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 835",
+    "entire graph impact --symbol step --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 840",
+    "entire graph impact --symbol play --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 847",
+    "entire graph impact --symbol pause --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 857",
+    "entire graph impact --symbol tick --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 864",
+    "entire graph impact --symbol anyEvidence --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 898",
+    "entire graph impact --symbol indexOf --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 906",
+    "entire graph impact --symbol eventAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 914",
+    "entire graph impact --symbol describe --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 919",
+    "entire graph impact --symbol applyState --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 943",
+    "entire graph impact --symbol rewireNodes --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 975",
+    "entire graph impact --symbol wireSpotlight --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1055",
+    "entire graph impact --symbol toViewBox --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1082",
+    "entire graph impact --symbol revealNear --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1093",
+    "entire graph impact --symbol wireKeyboard --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1103",
+    "entire graph impact --symbol focusAt --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1109",
+    "entire graph impact --symbol toggleLabels --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1134",
+    "entire graph impact --symbol Build --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 27",
+    "entire graph impact --symbol AddCoChange --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 96",
+    "entire graph impact --symbol exposuresFor --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 185",
+    "entire graph impact --symbol jsNode --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 20",
+    "entire graph impact --symbol jsExposure --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 26",
+    "entire graph impact --symbol jsCase --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 32",
+    "entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 51",
     "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --raw-transcript",
     "entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --short"
   ]
@@ -5493,10 +5564,10 @@ button.tick.cut {
       rings.appendChild(c);
 
       if (r.label) {
+        var at = r.label_at || { x: layout.centre.x, y: layout.centre.y - r.radius - 12 };
         var t = el("text", {
-          x: layout.centre.x, y: layout.centre.y - r.radius - 6,
-          "text-anchor": "middle", fill: "var(--ink-2)", "font-size": 10.5,
-          "font-family": "var(--ui)"
+          x: at.x, y: at.y, "text-anchor": "middle",
+          fill: "var(--ink-2)", "class": "ring-label"
         });
         t.textContent = r.label;
         rings.appendChild(t);
@@ -5508,10 +5579,7 @@ button.tick.cut {
     if (allUnknown(data)) { return; }
 
     // 3. The radial glow around each source, masked by the shadow blobs.
-    var grad = el("radialGradient", { id: "glow" });
-    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.32 }));
-    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
-    defs.appendChild(grad);
+    defs.appendChild(glowGradient("glow", 1));
 
     // 4. The shadow mask. White lets light through; the blurred black blobs
     // subtract it, so several umbra nodes close together merge into one pool.
@@ -5521,14 +5589,22 @@ button.tick.cut {
       x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: "#fff"
     }));
 
+    // Every node gets a blob, including the ones that are lit at the end.
+    // The sweep replays earlier states, and a node that finishes lit was in
+    // shadow before the session reached it: without a blob of its own it
+    // cannot show that, and the pool it should have cast never appears.
+    // The blob is keyed by node id and its radius is set from the state,
+    // here and again in applyState.
     var blobs = el("g", { filter: "url(#pool)", "class": "pools" });
     (data.nodes || []).forEach(function (n) {
       var place = layout.nodes[n.id];
       if (!place) { return; }
       var spec = poolFor(n.state);
-      if (!spec) { return; }
       blobs.appendChild(el("circle", {
-        cx: place.x, cy: place.y, r: spec.r, fill: spec.fill,
+        cx: place.x, cy: place.y,
+        r: spec ? spec.r : 0,
+        fill: spec ? spec.fill : "#000",
+        opacity: spec ? 1 : 0,
         "data-pool": n.id
       }));
     });
@@ -5547,10 +5623,11 @@ button.tick.cut {
     // point near the single-source value however many lights there are.
     var ids = Object.keys(layout.sources || {});
     var share = ids.length > 1 ? 1 / Math.sqrt(ids.length) : 1;
+    var radius = glowRadius(ids.length);
     ids.forEach(function (id) {
       var p = layout.sources[id];
       light.appendChild(el("circle", {
-        cx: p.x, cy: p.y, r: 500, fill: "url(#glow)", opacity: share
+        cx: p.x, cy: p.y, r: radius, fill: "url(#glow)", opacity: share
       }));
     });
     svg.appendChild(light);
@@ -5563,14 +5640,60 @@ button.tick.cut {
       var place = layout.nodes[n.id];
       if (!place) { return; }
       var spec = poolFor(n.state);
-      if (!spec) { return; }
       shade.appendChild(el("circle", {
-        cx: place.x, cy: place.y, r: spec.r, fill: "var(--pool-ink)",
-        opacity: n.state === "penumbra" ? 0.55 : 1,
+        cx: place.x, cy: place.y,
+        r: spec ? spec.r : 0,
+        fill: "var(--pool-ink)",
+        opacity: spec ? (n.state === "penumbra" ? 0.55 : 1) : 0,
         "data-shade": n.id
       }));
     });
     svg.appendChild(shade);
+  }
+
+  // GLOW_STOPS is how many stops the light falls through. Two stops draw a
+  // straight ramp, which the eye reads as banded rings and leaves a visible
+  // edge where the circle ends. These fall on an ease-out curve and reach zero
+  // opacity at GLOW_ZERO_AT of the radius, so the circle has no rim: by the
+  // time the geometry ends there has been nothing to see for a while.
+  // The change kind sits this far below the source name.
+  var SOURCE_KIND_OFFSET = 18;
+
+  var GLOW_STOPS = 10;
+  var GLOW_ZERO_AT = 85;
+
+  // glowGradient builds the falloff. Every stop is expressed against the
+  // --glow-peak custom property rather than a number, so a scheme can dim the
+  // whole field by redefining one value and the curve keeps its shape.
+  function glowGradient(id, scale) {
+    var grad = el("radialGradient", { id: id });
+    for (var i = 0; i < GLOW_STOPS; i++) {
+      var t = i / (GLOW_STOPS - 1);
+      var ease = (1 - t) * (1 - t) * (1 - t);
+      var stop = el("stop", {
+        offset: (t * GLOW_ZERO_AT).toFixed(2) + "%",
+        "stop-color": "var(--lit-glow)"
+      });
+      stop.style.stopOpacity = "calc(var(--glow-peak) * " + (ease * scale).toFixed(4) + ")";
+      grad.appendChild(stop);
+    }
+    // Held at zero from the curve's end to the geometry's edge.
+    var last = el("stop", { offset: "100%", "stop-color": "var(--lit-glow)" });
+    last.style.stopOpacity = "0";
+    grad.appendChild(last);
+    return grad;
+  }
+
+  // glowRadius is how far one source's light reaches.
+  //
+  // Several sources share the field, and their gradients add. Dimming each one
+  // is not enough on its own: the lit area still grows with the number of
+  // sources until the middle of the map is uniformly bright and the pools stop
+  // reading as pools. The radius comes down as well, so more lights means more
+  // smaller pools of light rather than one larger wash.
+  function glowRadius(count) {
+    if (count < 2) { return 500; }
+    return Math.round(500 / Math.pow(count, 0.25));
   }
 
   // poolFor returns the mask blob for a state, or null when the state casts no
@@ -5685,10 +5808,10 @@ button.tick.cut {
     svg.appendChild(g);
   }
 
-  function nodeGroup(n, p) {
+  function nodeGroup(n, p, seqNote) {
     var g = el("g", {
       "class": "node", "data-node": n.id,
-      role: "button", tabindex: -1, "aria-label": nodeLabel(n)
+      role: "button", tabindex: -1, "aria-label": nodeLabel(n, seqNote)
     });
 
     var r = radiusFor(n);
@@ -5835,13 +5958,28 @@ button.tick.cut {
     return 7;
   }
 
-  function nodeLabel(n) {
+  // nodeLabel is what a screen reader announces for a node.
+  //
+  // During the sweep it has to name the state at the playhead, not the state
+  // at commit, and say which that is. A reader stepping through the session
+  // hears the map change; without the sequence number they have no way to
+  // know they are hearing an earlier moment rather than the final one.
+  function nodeLabel(n, seqNote) {
     var parts = [n.name];
     if (n.is_test) { parts.push("test"); }
     parts.push(n.state);
+    if (n.tier) { parts.push(n.tier); }
     parts.push("depth " + n.depth);
     if (n.result === "fail") { parts.push("failed"); }
+    if (seqNote) { parts.push(seqNote); }
     return parts.join(", ");
+  }
+
+  // seqNoteFor is empty at the end of the sweep, where the map shows the
+  // eclipse and no qualifier is needed.
+  function seqNoteFor(seq, maxSeq) {
+    if (typeof maxSeq !== "number" || seq >= maxSeq) { return ""; }
+    return "as of seq " + seq;
   }
 
   // 7. Labels, placed outward from the ring by the anchor layout.go chose.
@@ -5876,68 +6014,33 @@ button.tick.cut {
       g.appendChild(name);
 
       var kind = el("text", {
-        x: lx, y: ly + (multi ? 13 : 16), "text-anchor": anchor, "class": "src-kind"
+        x: lx, y: ly + SOURCE_KIND_OFFSET, "text-anchor": anchor, "class": "src-kind"
       });
-      kind.textContent = s.change + " changed";
+      // The wording comes from the report, so the map cannot say it
+      // differently from the table and the packet.
+      kind.textContent = s.kind_label || s.change;
       g.appendChild(kind);
     });
 
+    // Positions and visibility both come from the layout. The collision pass
+    // runs in Go, where it is deterministic and can be tested against every
+    // scenario, rather than here against whatever the browser measures.
     (data.nodes || []).forEach(function (n) {
       var p = layout.nodes[n.id];
-      if (!p) { return; }
+      if (!p || !p.label) { return; }
       var t = el("text", {
         "class": "label " + (n.state === "lit" ? "lit" : "dim"),
-        "data-label": n.id
+        "data-label": n.id,
+        x: p.label.x, y: p.label.y, "text-anchor": p.label.anchor
       });
-      var r = radiusFor(n) + 6;
-      if (p.anchor === "right") {
-        t.setAttribute("x", p.x + r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "start");
-      } else if (p.anchor === "left") {
-        t.setAttribute("x", p.x - r); t.setAttribute("y", p.y + 4); t.setAttribute("text-anchor", "end");
-      } else if (p.anchor === "above") {
-        t.setAttribute("x", p.x); t.setAttribute("y", p.y - r - 6); t.setAttribute("text-anchor", "middle");
-      } else {
-        t.setAttribute("x", p.x); t.setAttribute("y", p.y + r + 12); t.setAttribute("text-anchor", "middle");
-      }
       t.textContent = n.name;
-      t.setAttribute("data-score", n.score || 0);
+      if (!p.label.visible) {
+        t.hidden = true;
+        t.setAttribute("data-collided", "1");
+      }
       g.appendChild(t);
     });
     svg.appendChild(g);
-    hideCollidingLabels(g);
-  }
-
-  // Labels never overlap. When two would collide the lower-scored one is
-  // hidden until the reader interacts, so the map stays readable without
-  // pretending the node is not there: its disc is still drawn.
-  function hideCollidingLabels(g) {
-    var labels = Array.prototype.slice.call(g.querySelectorAll(".label"));
-    labels.sort(function (a, b) {
-      return Number(b.getAttribute("data-score")) - Number(a.getAttribute("data-score"));
-    });
-
-    var kept = [];
-    labels.forEach(function (t) {
-      var box;
-      try {
-        box = t.getBBox();
-      } catch (e) {
-        return;
-      }
-      var clash = kept.some(function (b) { return overlaps(box, b); });
-      if (clash) {
-        t.hidden = true;
-        t.setAttribute("data-collided", "1");
-      } else {
-        kept.push(box);
-      }
-    });
-  }
-
-  function overlaps(a, b) {
-    var pad = 2;
-    return !(a.x + a.width + pad < b.x || b.x + b.width + pad < a.x ||
-             a.y + a.height + pad < b.y || b.y + b.height + pad < a.y);
   }
 
   function boot() {
@@ -5947,7 +6050,13 @@ button.tick.cut {
   // render draws a whole report. The page calls it once on load; the
   // landing-page viewer calls it again with a report the reader dropped in.
   function render(data) {
-    var svg = document.getElementById("map");
+    return renderInto(document.getElementById("map"), data, true);
+  }
+
+  // renderInto draws a report into a given element. The landing page uses it
+  // for a second, static map: a report from another project, drawn once with
+  // no replay strip and no interaction wiring of its own.
+  function renderInto(svg, data, interactive) {
     if (!data || !data.layout || !svg) { return false; }
     svg.textContent = "";
 
@@ -5958,6 +6067,8 @@ button.tick.cut {
     drawLabels(svg, data);
 
     svg.setAttribute("aria-label", mapLabel(data));
+    if (!interactive) { return true; }
+
     wireSelection(svg, data);
     wireFilters();
     wireDetail(data);
@@ -6213,7 +6324,10 @@ button.tick.cut {
   // Expose the reconstruction for the cross-check test that compares it with
   // the Go classifier. Nothing on the page uses this.
   if (typeof globalThis !== "undefined") {
-    globalThis.__umbra = { stateAt: stateAt, tierRank: tierRank, render: render };
+    globalThis.__umbra = {
+      stateAt: stateAt, tierRank: tierRank, render: render, renderInto: renderInto,
+      nodeLabel: nodeLabel, seqNoteFor: seqNoteFor
+    };
   }
 
   // ---------------------------------------------------------------------
@@ -6265,7 +6379,7 @@ button.tick.cut {
     track.appendChild(head);
 
     function render() {
-      applyState(svg, data, current, hasAny, reduced);
+      applyState(svg, data, current, hasAny, reduced, maxSeq);
 
       var ev = eventAt(timeline, current);
       headline.textContent = ev ? describe(ev, data) : "";
@@ -6385,7 +6499,8 @@ button.tick.cut {
 
   // applyState restyles the map for the evidence up to seq. Rendering at a seq
   // is a pure function of the report and that integer.
-  function applyState(svg, data, seq, hasAny, reduced) {
+  function applyState(svg, data, seq, hasAny, reduced, maxSeq) {
+    var seqNote = seqNoteFor(seq, maxSeq);
     (data.nodes || []).forEach(function (n) {
       var st = stateAt(n, n.exposures || [], data.t0, hasAny, seq);
       var g = svg.querySelector('[data-node="' + cssEscape(n.id) + '"]');
@@ -6393,7 +6508,7 @@ button.tick.cut {
 
       var place = data.layout.nodes[n.id];
       var shown = Object.assign({}, n, { state: st.state, tier: st.tier });
-      var fresh = nodeGroup(shown, place);
+      var fresh = nodeGroup(shown, place, seqNote);
       fresh.setAttribute("class", g.getAttribute("class"));
       if (reduced) { fresh.style.transition = "none"; }
       g.parentNode.replaceChild(fresh, g);
@@ -6503,10 +6618,7 @@ button.tick.cut {
     if (reduced || !fine) { return; }
 
     var defs = svg.querySelector("defs");
-    var grad = el("radialGradient", { id: "torch" });
-    grad.appendChild(el("stop", { offset: "0%", "stop-color": "var(--lit-glow)", "stop-opacity": 0.18 }));
-    grad.appendChild(el("stop", { offset: "100%", "stop-color": "var(--lit-glow)", "stop-opacity": 0 }));
-    defs.appendChild(grad);
+    defs.appendChild(glowGradient("torch", 0.56));
 
     var torch = el("circle", { r: 110, fill: "url(#torch)", "class": "torch", cx: -999, cy: -999 });
     svg.appendChild(torch);
