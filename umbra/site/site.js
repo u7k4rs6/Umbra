@@ -440,35 +440,10 @@
     reader.readAsText(file);
   }
 
-  // The second map is a report from a session in another project. It is drawn
-  // once, without the replay controls, and never replaced by a dropped file.
-  function drawImported() {
-    var tag = document.getElementById("umbra-imported");
-    var svg = document.getElementById("map-imported");
-    if (!tag || !svg || !globalThis.__umbra || !globalThis.__umbra.renderInto) { return; }
-    var data;
-    try {
-      data = JSON.parse(tag.textContent);
-    } catch (e) {
-      return;
-    }
-    if (!data || !data.layout) { return; }
-    globalThis.__umbra.renderInto(svg, data);
-
-    var said = document.getElementById("said-imported");
-    if (said) {
-      said.textContent = data.session_said
-        ? "\u201C" + data.session_said + "\u201D"
-        : "The session left no account of this change that Entire could store.";
-    }
-  }
-
   function boot() {
     reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
     drawOrbs();
-    drawImported();
-
     var tag = document.getElementById("umbra-data");
     try {
       original = JSON.parse(tag.textContent);

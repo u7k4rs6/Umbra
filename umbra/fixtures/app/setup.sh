@@ -18,7 +18,7 @@ echo "  cd $here && ./.venv/bin/python -m pytest -v"
 echo
 echo "to run Umbra over this fixture, put the runner on PATH first:"
 echo "  . $here/.venv/bin/activate"
-echo "  entire umbra 0063443 --test \"pytest -v\""
+echo "  entire umbra 1c2cf29 --test \"pytest -v\""
 echo
 echo "use -v, not -q: quiet mode prints no per-test names, so entire graph"
 echo "verify cannot name which test broke and falls back to a suite-level"

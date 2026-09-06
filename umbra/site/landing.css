@@ -1,200 +1,112 @@
-/* Landing page only.
+/* Umbra, on paper.
  *
- * The report's own stylesheet is umbra.css, copied here by gen-site so the two
- * surfaces cannot drift. This file sits on top of it and restyles the landing
- * page alone. It never changes the report, the report template or the drop-in
- * viewer's behaviour.
+ * The report's own stylesheet is umbra.css, copied here by gen-site. This file
+ * sits on top of it and restyles the site alone. It never changes the report,
+ * the report template or the drop-in viewer's behaviour.
  *
- * Where this file departs from docs/FRONTEND_SPEC.md, the departure is listed
- * in NOTES.md with the reason.
+ * The subject is light and shadow, so the site is ink on paper: shadow is the
+ * ink, the page is the light, and there is no glow anywhere. FRONTEND_SPEC.md
+ * calls the light scheme a first-class rendering, "paper with ink shadows",
+ * and this is the site taking it at its word.
  */
 
 /* ------------------------------------------------------------------ tokens */
 
 :root {
-  /* One hue. Everything warm on this page is 28 degrees, and nothing else has
-   * a hue at all. The ramp runs from the corona's hottest inner light to the
-   * cold ash at its edge. */
-  --amber-1: #FFE2B4;
-  --amber-2: #FFA33C;
-  --amber-3: #E5661B;
-  --amber-4: #7A2F08;
-  --amber-5: #3A1604;
+  /* Paper, ink, and one red. Nothing else has a hue. */
+  --paper: #F2EFE7;
+  --paper-2: #EAE6DC;
+  --paper-3: #E1DCD0;
+  --ink: #16150F;
+  --ink-2: #55524A;
+  --ink-3: #8A867C;
+  --rule: #CFC9BB;
+  --rule-2: #16150F;
+  --red: #C8341B;
+  --red-deep: #8E2312;
 
-  /* The focus ring is the one thing on this page that is not in the warm ramp.
-   * A ring the same colour as the control it marks is not a ring. This is
-   * FRONTEND_SPEC.md's own focus colour. */
-  --focus-ring: #9CC4FF;
-
-  --ground: #000000;
-  --ink: #F3EAE0;
-  --ink-2: #9A8F84;
-  --ink-3: #5E564E;
-  --rule: #241E18;
-
-  /* Two families carry the page: the serif for anything a person reads in
-   * sentences, the monospace for anything the machine named. There is no
-   * third, and no font file is fetched. */
-  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
-
-  --measure: 68ch;
-  --wipe: 100%;
-  --pad: 28px;
-  --maxw: 1360px;
-
-  /* Surfaces. Nothing here is a filled card. These are the smallest amount of
-   * light that still separates a panel from the ground, built from the page
-   * ink rather than from grey, so the single hue rule holds all the way down. */
-  --surface: rgba(243, 234, 224, 0.022);
-  --surface-2: rgba(243, 234, 224, 0.05);
-  --hairline: rgba(243, 234, 224, 0.08);
-  --grid-line: rgba(243, 234, 224, 0.04);
-
+  --serif: ui-serif, "Iowan Old Style", Georgia, "Palatino Linotype", "Times New Roman", serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --reveal-y: 22px;
-  --reveal-blur: 12px;
-  --hero-p: 0;
+  --pad: 30px;
+  --maxw: 1440px;
+  --measure: 66ch;
+  --wipe: 100%;
 }
 
-/* The map tokens, so the eclipse wears this page's palette rather than the
- * report's. umbra.css keeps its own values. */
-.scheme-night {
-  --night: #000000;
-  --ink: #F3EAE0;
-  --ink-2: #9A8F84;
-  --rule: #241E18;
-  --lit: #FFF3DC;
-  --lit-glow: var(--amber-2);
-  --penumbra: #7A5B33;
-  --umbra: #14110D;
-  --umbra-edge: #5C5044;
-  --unknown: #5E564E;
-  --fail: var(--amber-3);
-  --pass: var(--ink);
-  --focus: var(--focus-ring);
-  /* The corona is the light on this page, so the map's own field is turned
-   * down to keep the two from adding into a haze. */
-  --glow-peak: 0.16;
-  --pool-ink: transparent;
-}
-
-/* The day scheme is a real inversion: paper ground, ink text, and pools that
- * are darker than the paper rather than a lightened negative. */
-.scheme-day {
-  --night: #F7F3ED;
-  --ink: #14100C;
-  --ink-2: #5B5148;
-  --rule: #E0D8CC;
+/* The map wears the paper palette. These are FRONTEND_SPEC.md's day values,
+ * with the accent pulled to the red so the whole page holds one hue. */
+.scheme-day, body {
+  --night: #F2EFE7;
   --lit: #FFFFFF;
-  --lit-glow: #B85C00;
-  --penumbra: #B39A73;
-  --umbra: #14100C;
-  --umbra-edge: #6B6055;
-  --unknown: #9A9088;
-  --fail: #8A3D06;
-  --pass: #14100C;
+  --lit-glow: #B08347;
+  --penumbra: #B0A38A;
+  --umbra: #16150F;
+  --umbra-edge: #55524A;
+  --unknown: #8A867C;
+  --fail: var(--red);
+  --pass: #16150F;
   --focus: #1A4F9C;
-  --glow-peak: 0.14;
-  --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
-  --ground: #F7F3ED;
-  --amber-2: #B85C00;
-  --amber-3: #8A3D06;
+  --glow-peak: 0.13;
+  --pool-ink: color-mix(in srgb, var(--ink) 20%, transparent);
 }
 
-/* ------------------------------------------------------------------- page */
+/* ------------------------------------------------------------------- base */
 
-/* umbra.css sets overflow-x: hidden on html and body, which is right for the
- * report and fatal here: an overflow on either makes it a scrolling box, and
- * position: sticky then sticks to that box rather than to the viewport. This
- * page is checked for horizontal overflow at six widths instead. */
 html, body { overflow-x: visible; }
 
 body {
-  background: var(--ground);
+  background: var(--paper);
   color: var(--ink);
   padding: 0;
   font-family: var(--serif);
-  font-size: 16.5px;
-  line-height: 1.62;
-  font-synthesis: none;
+  font-size: 17px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
-code, pre, kbd, samp, input, button, .mono, .marker { font-variant-numeric: tabular-nums; }
+::selection { background: var(--ink); color: var(--paper); }
 
 .mono {
   font-family: var(--mono);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-size: 10.5px;
   color: var(--ink-2);
 }
 
-.wrap, section.band, .foot-grid, .foot-note {
+code, pre, kbd, input, button, .mono { font-variant-numeric: tabular-nums; }
+
+.wrap, section.band, .topbar-inner, .hero-grid, .stats, .hero-foot, .foot-grid, .foot-note, .ticker-inner {
   max-width: var(--maxw);
   margin-left: auto;
   margin-right: auto;
   padding-left: var(--pad);
   padding-right: var(--pad);
-  position: relative;
-  z-index: 1;
+  box-sizing: border-box;
 }
 
 p { max-width: var(--measure); }
-a { color: var(--amber-2); }
-.caption { color: var(--ink-2); font-size: 14px; line-height: 1.62; max-width: var(--measure); }
-.caption.wide { max-width: 82ch; }
-.plain { color: var(--ink-2); font-size: 14.5px; line-height: 1.6; }
+a { color: var(--ink); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+a:hover { color: var(--red); text-decoration-color: var(--red); }
 
-/* ------------------------------------------------------------- the sheet */
-
-/* A drafting grid, fixed behind everything, faded top and bottom so it never
- * terminates in a line. It gives the columns a rhythm and makes the black read
- * as a surface rather than as nothing. */
-.grid-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 92%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%, #000 92%, transparent);
-}
-.grid-overlay::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(var(--maxw), 100% - 2 * var(--pad));
-  border-left: 1px solid color-mix(in srgb, var(--ink) 7%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--ink) 7%, transparent);
-  background-image: linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: calc(100% / 12) 100%;
-}
-
-.progress { position: fixed; top: 0; left: 0; right: 0; height: 1px; z-index: 40; pointer-events: none; }
-.progress span {
-  display: block;
-  height: 100%;
-  width: var(--read, 0%);
-  background: linear-gradient(90deg, var(--amber-4), var(--amber-2));
-}
+.grain, .halftone, .torch-dot, .torch-ring, .torch-trail, .grid-overlay { display: none !important; }
 
 .skip {
   position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 60;
+  top: 10px; left: 10px;
+  z-index: 100;
   padding: 10px 16px;
-  background: var(--ground);
-  border: 1px solid var(--amber-2);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
   text-decoration: none;
-  transform: translateY(-160%);
+  transform: translateY(-200%);
   transition: transform 0.25s var(--ease);
 }
 .skip:focus-visible { transform: none; }
+
+.progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none; }
+.progress span { display: block; height: 100%; width: var(--read, 0%); background: var(--red); }
 
 /* ----------------------------------------------------------------- topbar */
 
@@ -202,201 +114,114 @@ a { color: var(--amber-2); }
   position: sticky;
   top: 0;
   z-index: 30;
-  background: color-mix(in srgb, var(--ground) 76%, transparent);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.4s var(--ease);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule-2);
 }
-.topbar.stuck { border-bottom-color: var(--rule); }
-
-.bar {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 16px var(--pad);
+/* Not .bar: umbra.css already owns that name for the report's score factor
+ * bar, at a fixed 22px, and the header inherited it. The header was 32px tall
+ * with its own nav overflowing out the bottom, which is what put a rule
+ * through the middle of the words. */
+.topbar-inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 20px;
-  transition: padding 0.4s var(--ease);
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
-.topbar.stuck .bar { padding: 10px var(--pad); }
-
 .wordmark {
-  color: var(--ink);
-  letter-spacing: 0.34em;
-  text-decoration: none;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
   font-size: 12px;
+  color: var(--ink);
+  text-decoration: none;
 }
-
-/* A centred pill of section links, which is the one piece of chrome that says
- * this is a page rather than a document. */
-.pill {
-  display: flex;
-  gap: 4px;
-  justify-self: center;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  padding: 5px;
-  background: var(--surface);
-}
+.pill { display: flex; gap: 26px; justify-self: center; }
 .pill a {
   color: var(--ink-2);
   text-decoration: none;
-  padding: 7px 15px;
-  border-radius: 999px;
-  transition: color 0.3s var(--ease), background-color 0.3s var(--ease);
+  padding: 2px 0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
 }
-.pill a:hover { color: var(--ink); }
-.pill a.on { color: var(--ground); background: var(--amber-2); }
-
+.pill a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.pill a.on { color: var(--red); border-bottom-color: var(--red); }
 .ghost {
   justify-self: end;
-  color: var(--ink-2);
+  color: var(--ink);
   text-decoration: none;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
+  border: 1px solid var(--rule-2);
   padding: 8px 16px;
   background: none;
   cursor: pointer;
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
 }
-.ghost:hover { color: var(--ink); border-color: var(--amber-4); }
+.ghost:hover { background: var(--ink); color: var(--paper); }
 
 /* ------------------------------------------------------------------- hero */
 
-/* Full bleed. The eclipse fills the section and the copy sits over it, which
- * is the change that matters: the map is the page rather than an illustration
- * in a column beside it. */
-.hero {
-  position: relative;
-  min-height: 88vh;
+.hero { position: relative; border-bottom: 1px solid var(--rule-2); overflow: clip; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+}
+.hero-copy {
+  padding: 74px 56px 60px 0;
+  border-right: 1px solid var(--rule-2);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 108px 0 36px;
-  overflow: hidden;
 }
-
-.hero-stage {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 0;
-}
-
-.stage {
-  position: relative;
-  width: min(980px, 96%);
-  aspect-ratio: 3 / 2;
-  isolation: isolate;
-  /* The light recedes as the hero leaves. hero-p is set only by motion.js. */
-  transform: translateX(18%) scale(calc(1 - 0.06 * var(--hero-p)));
-  opacity: calc(1 - 0.5 * var(--hero-p));
-  transform-origin: 50% 45%;
-  will-change: transform, opacity;
-}
-.stage .layer { position: absolute; inset: 0; display: grid; }
-.stage .layer > * { grid-area: 1 / 1; width: 100%; height: 100%; }
-.stage svg { display: block; width: 100%; height: 100%; }
-
-.stage .layer.scheme-day {
-  clip-path: inset(0 0 0 var(--wipe));
-  background: var(--ground);
-}
-.stage .layer.scheme-day * { transition: none !important; }
-.stage .corona { pointer-events: none; }
-
-/* The map paints its own background rectangle in --night, as the spec says it
- * must, and here that rectangle would cover the corona. Nothing in umbra.js
- * changes; a CSS fill outranks the presentation attribute it sets. */
-.stage .layer > svg > rect:first-of-type,
-.plate > svg > rect:first-of-type { fill: transparent; }
-
-.hero-grid {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--pad);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-}
-
-.hero-copy { max-width: 40ch; }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  padding: 7px 15px;
-  background: var(--surface);
-  margin-bottom: 26px;
+  gap: 10px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
   color: var(--ink-2);
+  margin-bottom: 30px;
 }
-.badge i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--amber-2);
-  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--amber-2) 60%, transparent);
-}
+.badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
 
 h1 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(38px, 4.4vw, 66px);
-  line-height: 0.96;
-  letter-spacing: -0.032em;
-  margin: 0 0 24px;
+  font-size: clamp(42px, 5.6vw, 88px);
+  line-height: 0.92;
+  letter-spacing: -0.038em;
+  margin: 0 0 30px;
   color: var(--ink);
-  max-width: 14ch;
-  text-wrap: balance;
+  max-width: 13ch;
 }
-h1 em { font-style: italic; color: var(--amber-2); }
+h1 em { font-style: italic; color: var(--red); }
 
 .said {
   font-family: var(--mono);
-  font-size: 13.5px;
-  line-height: 1.65;
+  font-size: 12.5px;
+  line-height: 1.7;
   letter-spacing: 0.01em;
-  color: var(--amber-1);
-  border-left: 1px solid var(--amber-4);
-  padding-left: 15px;
-  margin: 0 0 20px;
-  max-width: 44ch;
   text-transform: none;
+  color: var(--ink-2);
+  border-left: 2px solid var(--red);
+  padding-left: 16px;
+  margin: 0 0 24px;
+  max-width: 44ch;
 }
-.said.small { font-size: 12.5px; }
-.said .mono { display: block; margin-top: 8px; }
+.said .mono { display: block; margin-top: 9px; color: var(--ink-3); }
 
-.contradiction { font-size: 16.5px; line-height: 1.55; max-width: 42ch; margin: 0 0 30px; }
-.contradiction b {
-  color: var(--amber-2);
-  font-weight: 400;
-  font-family: var(--mono);
-  font-size: 0.92em;
-}
+.contradiction { font-size: 19px; line-height: 1.45; max-width: 34ch; margin: 0 0 32px; }
+.contradiction b { font-weight: 400; color: var(--red); font-family: var(--mono); font-size: 0.86em; }
 
-.install {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid var(--hairline);
-  border-radius: 3px;
-  background: var(--surface);
-  max-width: 46ch;
-  transition: border-color 0.4s var(--ease);
-}
-.install:hover { border-color: color-mix(in srgb, var(--amber-4) 70%, var(--hairline)); }
+.install { display: flex; border: 1px solid var(--rule-2); max-width: 46ch; }
 .install code {
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 12px;
   padding: 13px 14px;
   color: var(--ink);
   overflow-x: auto;
@@ -407,1036 +232,389 @@ h1 em { font-style: italic; color: var(--amber-2); }
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  font-size: 10.5px;
-  background: none;
+  font-size: 10px;
+  background: var(--ink);
   border: 0;
-  border-left: 1px solid var(--hairline);
-  color: var(--ink-2);
-  padding: 0 16px;
+  color: var(--paper);
+  padding: 0 18px;
   cursor: pointer;
-  transition: color 0.3s var(--ease);
 }
-.install button:hover { color: var(--amber-2); }
+.install button:hover { background: var(--red); }
 
-/* Four numbers off the report, which is the only thing on this page that
- * looks like a marketing statistic and is not one. */
+/* The plate: the map sits in the right column, on paper, with nothing behind
+ * it but its own rules. */
+.hero-stage { position: relative; display: grid; place-items: center; padding: 40px 0 40px 56px; }
+/* 3 by 2, the same as the map's viewBox. A square box letterboxes it and the
+ * chart comes out smaller than its own column for no reason. */
+.stage { position: relative; width: 100%; aspect-ratio: 3 / 2; }
+.stage .layer { position: absolute; inset: 0; display: grid; }
+.stage .layer > * { grid-area: 1 / 1; width: 100%; height: 100%; }
+.stage svg { display: block; width: 100%; height: 100%; }
+.stage .corona, .stage .layer.scheme-day, .divider, .divider-hint, .hero-foot .drag-hint { display: none; }
+.stage .layer > svg > rect:first-of-type, .plate > svg > rect:first-of-type { fill: transparent; }
+
+/* ========================================================== the ink chart
+
+   The map, drawn as a chart rather than as a light. Every glow layer is off:
+   the light field, the pools and the shade blobs are what made it read as a
+   screensaver. What is left is a plate: hairline orbits, precise marks, and
+   labels in monospace.
+   ======================================================================= */
+
+#map .light, #map .pools, #map .shade,
+#map-imported .light, #map-imported .pools, #map-imported .shade { display: none; }
+
+#map .rings circle, #map-imported .rings circle {
+  stroke: var(--rule);
+  stroke-width: 0.8;
+  opacity: 1;
+}
+#map .ring-label, #map-imported .ring-label {
+  fill: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#map .edge, #map-imported .edge {
+  stroke: var(--ink-3) !important;
+  stroke-width: 0.7 !important;
+  opacity: 0.75 !important;
+}
+
+/* Marks. Lit is a filled disc, penumbra a half, umbra a hollow ring: the four
+ * states stay separable with no colour at all, which is the point. */
+#map .node circle, #map-imported .node circle { filter: none !important; }
+#map .node circle[fill="var(--lit)"], #map-imported .node circle[fill="var(--lit)"] {
+  fill: var(--ink) !important;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+#map .node circle[opacity="0.6"], #map-imported .node circle[opacity="0.6"] { display: none; }
+#map .node circle[fill="url(#hatch)"], #map-imported .node circle[fill="url(#hatch)"] {
+  fill: var(--paper) !important;
+  stroke: var(--ink) !important;
+  stroke-width: 1.1 !important;
+}
+#map .source circle, #map-imported .source circle { fill: var(--red) !important; }
+
+#map .label, #map-imported .label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  fill: var(--ink);
+  stroke: none !important;
+  paint-order: normal;
+}
+#map .label.dim, #map-imported .label.dim { fill: var(--ink-2); }
+#map .src-label, #map-imported .src-label {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  fill: var(--ink);
+}
+#map .src-kind, #map-imported .src-kind { fill: var(--red); font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; }
+#map .torch, #map-imported .torch { display: none; }
+
+/* ------------------------------------------------------------------ stats */
+
 .stats {
   display: grid;
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: var(--maxw);
-  margin: 64px auto 0;
-  padding: 26px var(--pad) 0;
-  border-top: 1px solid var(--rule);
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
+  border-top: 1px solid var(--rule-2);
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
-.stats .stat + .stat { box-shadow: -1px 0 0 var(--hairline); }
-.stat { padding: 22px 4px 0 0; }
+.stat {
+  padding: 22px 20px 24px 0;
+  border-right: 1px solid var(--rule);
+}
+.stat:last-child { border-right: 0; }
 .stat dd {
   margin: 0;
-  font-family: var(--mono);
-  font-size: 34px;
-  line-height: 1;
-  color: var(--amber-2);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--serif);
+  font-size: clamp(38px, 4vw, 62px);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--ink);
 }
-.stat dt { margin-top: 8px; font-size: 10px; }
+.stat dt { margin-top: 12px; font-size: 9.5px; color: var(--ink-3); }
 
-.hero-foot {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: var(--maxw);
-  margin: 34px auto 0;
-  padding: 0 var(--pad);
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
+.hero-foot { display: flex; justify-content: space-between; padding-top: 16px; padding-bottom: 22px; }
 .scroll-cue { display: inline-flex; align-items: center; gap: 10px; }
-.scroll-cue i {
-  width: 1px;
-  height: 22px;
-  background: linear-gradient(to bottom, var(--amber-2), transparent);
-}
+.scroll-cue i { width: 22px; height: 1px; background: var(--ink-3); }
 
-.divider {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--wipe);
-  width: 2px;
-  margin-left: -1px;
-  background: linear-gradient(to bottom, transparent, var(--amber-4) 12%, var(--amber-2) 50%, var(--amber-4) 88%, transparent);
-  cursor: ew-resize;
-  z-index: 3;
-  touch-action: none;
-}
-.divider::after { content: ""; position: absolute; inset: -14px -16px; }
-.divider .knob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--amber-2);
-  border-radius: 50%;
-  background: var(--ground);
-}
-.divider .knob::before, .divider .knob::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  border-top: 1px solid var(--amber-2);
-  border-right: 1px solid var(--amber-2);
-}
-.divider .knob::before { left: 5px; transform: translateY(-50%) rotate(-135deg); }
-.divider .knob::after { right: 5px; transform: translateY(-50%) rotate(45deg); }
-.divider:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.noscript-note { max-width: var(--maxw); margin: 0 auto; padding: 20px var(--pad); }
 
-.noscript-note { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad) 40px; }
+/* --------------------------------------------------------------- sections */
 
-/* ---------------------------------------------------------------- sections */
+section.band { padding-top: 96px; padding-bottom: 0; border-top: 1px solid var(--rule); overflow: clip; }
+section.band:first-of-type { border-top: 0; }
+.band[data-ghost]::before { content: none; }
 
-section.band { padding-top: 130px; padding-bottom: 10px; }
-
-.head { text-align: center; margin: 0 auto 52px; max-width: 74ch; }
-.head .marker { display: block; color: var(--amber-3); margin-bottom: 20px; }
-h2.big {
+.head { margin: 0 0 48px; display: grid; grid-template-columns: minmax(0, 26ch) minmax(0, 1fr); gap: 48px; align-items: start; }
+.head .marker { color: var(--red); letter-spacing: 0.2em; padding-top: 10px; }
+h2.big, .sec-head h2 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(30px, 3.6vw, 52px);
-  line-height: 1.04;
-  letter-spacing: -0.028em;
+  font-size: clamp(30px, 3.4vw, 50px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  margin: 0 auto 18px;
+  margin: 0;
   max-width: 20ch;
   text-transform: none;
   display: block;
 }
-.head .sub { color: var(--ink-2); font-size: 16px; margin: 0 auto; max-width: 62ch; }
+h2::after { content: none; }
+.head .sub { grid-column: 2; color: var(--ink-2); font-size: 16px; max-width: 58ch; margin: 14px 0 0; }
+.head::before { content: none; }
 
 /* ------------------------------------------------------------------ cards */
 
-.cards { display: grid; gap: 20px; }
-.cards.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.cards.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.cards.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.cards.tight { margin-top: 42px; }
+.cards { display: grid; gap: 0; border-top: 1px solid var(--rule-2); }
+.cards.two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.cards.three { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.cards.four { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.cards.tight { margin-top: 40px; }
 
 .card {
   position: relative;
-  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   text-align: left;
-  padding: 30px 26px 28px;
-  border: 1px solid var(--hairline);
-  border-radius: 3px;
-  background: var(--surface);
+  padding: 30px 30px 34px 0;
+  margin-right: 30px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: none;
   color: var(--ink-2);
   font: inherit;
+  border-radius: 0;
   cursor: default;
-  transition: border-color 0.45s var(--ease), transform 0.45s var(--ease),
-              background-color 0.45s var(--ease);
+  transform: none !important;
+  transition: color 0.25s var(--ease);
 }
-button.card { cursor: pointer; }
-
-/* The torch. The spec calls the pointer a torch on the map: a soft warm disc
- * that reveals what is in shadow without changing any data. Same idea, applied
- * to the panels, so the page answers the pointer everywhere. */
-.card::before, [data-torch]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0;
-  border-radius: inherit;
-  transition: opacity 0.45s var(--ease);
-  background: radial-gradient(
-    240px circle at var(--mx, 50%) var(--my, 50%),
-    color-mix(in srgb, var(--amber-2) 12%, transparent),
-    transparent 70%);
-}
-.card:hover::before, [data-torch]:hover::before { opacity: 1; }
-@media (hover: none) { .card::before, [data-torch]::before { display: none; } }
-
-.card:hover {
-  border-color: color-mix(in srgb, var(--amber-4) 65%, var(--hairline));
-  transform: translateY(-3px);
-}
-.card .n {
-  position: absolute;
-  top: 20px;
-  right: 22px;
-  color: var(--amber-4);
-  font-size: 10.5px;
-}
-.card .orb { width: 40px; height: 40px; }
-.card .word {
-  color: var(--ink);
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-family: var(--mono);
-}
+button.card, a.card { cursor: pointer; text-decoration: none; }
+.card::before, .card::after { content: none !important; }
+.card:hover { color: var(--ink); }
+.card .n { position: static; color: var(--red); font-size: 10px; letter-spacing: 0.2em; }
+.card .orb { width: 34px; height: 34px; }
+.card .word { color: var(--ink); font-family: var(--serif); text-transform: none; letter-spacing: -0.01em; font-size: 24px; line-height: 1.1; }
 .card .count {
-  font-family: var(--mono);
-  font-size: 40px;
-  line-height: 1;
-  color: var(--amber-2);
-  font-variant-numeric: tabular-nums;
-}
-.card .plain { margin: 0; max-width: 42ch; }
-.card .act {
-  margin-top: auto;
-  padding-top: 12px;
-  color: var(--ink-3);
-  font-size: 10px;
-  transition: color 0.35s var(--ease);
-}
-.card:hover .act { color: var(--amber-2); }
-.card[aria-pressed="true"] {
-  border-color: var(--amber-2);
-  background: var(--surface-2);
+  font-family: var(--serif);
+  font-size: 52px;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   color: var(--ink);
+  text-shadow: none;
 }
-.card[aria-pressed="true"] .act { color: var(--amber-2); }
-
-/* A node the legend filtered out keeps its disc and loses its emphasis, so the
- * map never claims the node is not there. */
-.node.muted { opacity: 0.22; }
-
-.card.beat { padding: 26px 22px 24px; gap: 10px; }
-.card.beat .plain { font-size: 13.5px; }
-.card.wide-card { padding: 26px; }
+.card .plain, .plain { color: var(--ink-2); font-size: 15px; line-height: 1.55; margin: 0; max-width: 44ch; }
+.card .act { margin-top: auto; padding-top: 10px; color: var(--ink-3); font-size: 9.5px; letter-spacing: 0.18em; }
+.card:hover .act { color: var(--red); }
+a.card .act::after { content: " \2192"; }
+.card[aria-pressed="true"] { color: var(--ink); }
+.card[aria-pressed="true"] .word { color: var(--red); }
+.card[aria-pressed="true"] .act { color: var(--red); }
 .card.term { gap: 16px; }
 .card.term .block { width: 100%; }
+.card.wide-card { padding-right: 30px; }
 
-.tiers { display: flex; flex-wrap: wrap; gap: 10px; margin: 40px auto 0; max-width: 96ch; justify-content: center; }
-
-.plate { position: relative; width: 100%; }
-.plate svg { display: block; width: 100%; height: auto; }
-
-.dropzone {
-  width: 100%;
-  border: 1px dashed var(--rule);
-  border-radius: 3px;
-  padding: 34px 20px;
-  text-align: center;
-  color: var(--ink-2);
-  font-size: 14px;
-  transition: border-color 0.4s var(--ease), color 0.4s var(--ease);
-}
-/* The default file control is a white system button and it is the one thing
- * on the page that belongs to the browser rather than to the page. */
-.dropzone input {
-  margin-top: 16px;
-  color: var(--ink-3);
-  font-family: var(--mono);
-  font-size: 11px;
-}
-.dropzone input::file-selector-button {
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 10.5px;
-  background: none;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  color: var(--ink-2);
-  padding: 9px 16px;
-  margin-right: 12px;
-  cursor: pointer;
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
-}
-.dropzone input::file-selector-button:hover { color: var(--ink); border-color: var(--amber-4); }
-.dropzone .ghost { margin-left: 10px; }
-#drop.over .dropzone { border-color: var(--amber-2); color: var(--ink); }
+.node.muted { opacity: 0.2; }
 
 pre.block {
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 12px;
   padding: 18px;
   margin: 0;
   overflow-x: auto;
   white-space: pre;
   color: var(--ink);
-  line-height: 1.75;
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.35);
+  line-height: 1.8;
+  border: 1px solid var(--rule-2);
+  border-radius: 0;
+  background: none;
 }
 
-/* ------------------------------------------------------------ the factors */
+.plate { position: relative; width: 100%; }
+.plate svg { display: block; width: 100%; height: auto; }
+.dropzone { width: 100%; border: 1px dashed var(--ink-3); padding: 30px 20px; text-align: center; color: var(--ink-2); font-size: 14px; }
+.dropzone input { margin-top: 14px; font-family: var(--mono); font-size: 11px; }
+#drop.over .dropzone { border-color: var(--red); color: var(--ink); }
 
-/* Six factors read one at a time as you pass them, which is the page saying
- * what the map says: what is in the light right now is one thing, and the rest
- * are still there. */
-.factors { list-style: none; padding: 0; max-width: 84ch; margin: 0 auto; counter-reset: f; }
+/* ------------------------------------------------------------------ lists */
+
+.factors, ul.limits, .phases, .flags, table.states {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-sizing: border-box;
+  max-width: none;
+}
+.factors { list-style: none; margin: 0; counter-reset: f; border-top: 1px solid var(--rule-2); }
 .factors li {
   counter-increment: f;
+  display: grid;
+  grid-template-columns: 6ch minmax(0, 1fr);
+  gap: 28px;
   margin: 0;
-  padding: 22px 0 22px 64px;
-  border-top: 1px solid var(--rule);
-  position: relative;
-  color: var(--ink-3);
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-2);
   font-size: 17px;
-  transition: color 0.5s var(--ease);
+  transition: color 0.3s var(--ease);
 }
 .factors li::before {
   content: counter(f, decimal-leading-zero);
-  position: absolute;
-  left: 26px;
-  top: 26px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10.5px;
   letter-spacing: 0.16em;
   color: var(--ink-3);
-  transition: color 0.5s var(--ease);
+  padding-top: 6px;
 }
-.factors li::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 28px;
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--umbra-edge);
-  border-radius: 50%;
-  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease),
-              box-shadow 0.5s var(--ease);
-}
-.factors li b { color: inherit; font-weight: 400; transition: color 0.5s var(--ease); }
+.factors li::after { content: none; }
+.factors li b { color: var(--ink); font-weight: 400; }
 .factors li.lit { color: var(--ink); }
-.factors li.lit b { color: var(--amber-2); }
-.factors li.lit::before { color: var(--amber-3); }
-.factors li.lit::after {
-  background: var(--amber-1);
-  border-color: var(--amber-2);
-  box-shadow: 0 0 18px 3px color-mix(in srgb, var(--amber-2) 45%, transparent);
-}
+.factors li.lit::before { color: var(--red); }
+.factors li.lit b { color: var(--red); }
 
-/* ------------------------------------------------------------- the limits */
-
-#limits ul { list-style: none; padding: 0; counter-reset: limit; max-width: 84ch; margin: 0 auto; }
-#limits ul > li {
-  counter-increment: limit;
-  position: relative;
-  margin: 0;
-  padding: 22px 0 22px 62px;
-  border-top: 1px solid var(--rule);
-  color: var(--ink-2);
-  font-size: 16px;
-  transition: color 0.4s var(--ease);
-}
-#limits ul > li::before {
-  content: counter(limit, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: 25px;
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--amber-4);
-  transition: color 0.4s var(--ease);
-}
-#limits ul > li:hover { color: var(--ink); }
-#limits ul > li:hover::before { color: var(--amber-2); }
-
-/* -------------------------------------------------------------- the sweep */
-
-/* The replay strip is the report's own component. Its behaviour is untouched;
- * only its voice is brought into line with the rest of this page. */
-.replay {
-  max-width: 100%;
-  margin: 34px 0 30px;
-  padding: 18px 22px 10px;
-  border-radius: 3px;
-}
-.replay .replay-label, .replay .counter {
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 10.5px;
-  color: var(--ink-2);
-}
-.replay .replay-label .sub { text-transform: none; letter-spacing: 0.04em; }
-.replay .replay-controls button {
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 10.5px;
-  background: none;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  color: var(--ink-2);
-  padding: 8px 14px;
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
-}
-.replay .replay-controls button:hover { border-color: var(--amber-4); color: var(--ink); }
-.replay .now { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); }
-
-/* ---------------------------------------------------------------- reveals */
-
-/* Content arrives out of shadow: blurred, dim and low, resolving to sharp and
- * lit. It is the page performing its own vocabulary, penumbra to lit. Gated on
- * .js, so with script off the page is simply visible. */
-.js [data-reveal],
-.js [data-stage] {
-  opacity: 0;
-  transform: translateY(var(--reveal-y));
-  filter: blur(var(--reveal-blur));
-  transition:
-    opacity 0.9s var(--ease) var(--d, 0s),
-    transform 1s var(--ease) var(--d, 0s),
-    filter 0.8s var(--ease) var(--d, 0s);
-}
-.js [data-reveal].in,
-.js [data-stage].in { opacity: 1; transform: none; filter: none; }
-
-/* ---------------------------------------------------------------- footer */
-
-.site-foot { margin-top: 140px; padding-top: 56px; border-top: 1px solid var(--rule); }
-.foot-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 40px;
-  padding-bottom: 48px;
-}
-.foot-col { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-.foot-col.brand .plain { max-width: 40ch; margin: 6px 0 0; }
-.foot-head { color: var(--ink-3); margin-bottom: 4px; }
-.foot-col a { color: var(--ink-2); text-decoration: none; font-size: 14.5px; transition: color 0.3s var(--ease); }
-.foot-col a:hover { color: var(--amber-2); }
-.foot-note {
-  color: var(--ink-3);
-  border-top: 1px solid var(--rule);
-  padding-top: 26px;
-  padding-bottom: 60px;
-  letter-spacing: 0.12em;
-  line-height: 1.9;
-}
-
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-
-/* ------------------------------------------------------------- responsive */
-
-@media (max-width: 1180px) {
-  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 34px; align-items: start; }
-  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 720px; }
-  .stage { transform: none; width: 118%; }
-  .hero-copy { max-width: 26ch; }
-  .cards.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .foot-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 900px) {
-  .cards.three { grid-template-columns: minmax(0, 1fr); }
-  .cards.two { grid-template-columns: minmax(0, 1fr); }
-  .pill { display: none; }
-  .bar { grid-template-columns: 1fr auto; }
-}
-
-@media (max-width: 620px) {
-  :root { --pad: 18px; }
-  .hero { min-height: auto; padding: 96px 0 30px; }
-  .hero-stage { position: relative; inset: auto; margin-bottom: 26px; }
-  .stage { width: 112%; }
-  .cards.four { grid-template-columns: minmax(0, 1fr); }
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .foot-grid { grid-template-columns: 1fr; gap: 30px; }
-  .hero-foot { flex-direction: column; gap: 10px; }
-}
-
-/* --------------------------------------------------------- reduced motion */
-
-@media (prefers-reduced-motion: reduce) {
-  .stage .layer *, .card, .install button, .pill a { transition: none !important; }
-  .js [data-reveal],
-  .js [data-stage] {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-  }
-  .stage { transform: none !important; opacity: 1 !important; }
-  .card::before, [data-torch]::before { display: none; }
-  .topbar, .bar, .factors li, .factors li::after { transition: none !important; }
-}
-
-/* ------------------------------------------------------------ without JS */
-
-.nojs .stage, .nojs .hero-stage, .nojs #legend, .nojs #beats, .nojs #replay { display: none; }
-.nojs .grid-overlay, .nojs .progress, .nojs .pill { display: none; }
-.nojs .topbar { position: static; }
-.nojs .hero { min-height: auto; padding-top: 60px; }
-
-/* ------------------------------------------------------------------ print */
-
-@media print {
-  /* The day scheme, forced. A page that prints its own black ground is a page
-   * nobody prints twice. */
-  :root, body, .scheme-night {
-    --ground: #FFFFFF;
-    --night: #FFFFFF;
-    --ink: #14100C;
-    --ink-2: #5B5148;
-    --ink-3: #7A7068;
-    --rule: #D8D0C4;
-    --hairline: #D8D0C4;
-    --surface: transparent;
-    --amber-1: #8A3D06;
-    --amber-2: #B85C00;
-    --amber-3: #8A3D06;
-    --amber-4: #5A2A04;
-    --lit: #FFFFFF;
-    --lit-glow: #B85C00;
-    --penumbra: #B39A73;
-    --umbra: #14100C;
-    --umbra-edge: #6B6055;
-    --unknown: #9A9088;
-    --fail: #8A3D06;
-    --pass: #14100C;
-    --focus: #1A4F9C;
-    --glow-peak: 0.14;
-    --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
-  }
-  body { background: #FFFFFF; color: var(--ink); }
-  .stage .layer.scheme-day, .divider, .grid-overlay, .progress, .pill, .hero-foot { display: none; }
-  .topbar { position: static; background: none; backdrop-filter: none; }
-  .stage { transform: none; opacity: 1; }
-  .card, .cards, .factors li, #limits li { break-inside: avoid; }
-  /* No transition, or a print catches a section part way through its arrival
-   * and puts a half faded paragraph on paper. */
-  .js [data-reveal], .js [data-stage] {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-  }
-  .card::before, [data-torch]::before { display: none; }
-}
-
-/* ------------------------------------------------------- the other pages */
-
-/* Pages that are not the home page open on their content rather than on a
- * full height hero, so the first thing below the bar is a heading. */
-section.band.top { padding-top: 148px; }
-
-.hero.short { min-height: 68vh; padding-bottom: 20px; }
-h1.mid { font-size: clamp(34px, 3.8vw, 56px); max-width: 18ch; }
-
-.center-note { text-align: center; color: var(--ink-3); margin: 56px auto 20px; max-width: none; }
-.caption.center, p.center { margin-left: auto; margin-right: auto; text-align: center; }
-
-/* A card that is a link keeps the card's shape and gains the affordance. */
-a.card { text-decoration: none; }
-a.card .act::after { content: " \2192"; }
-
-.big-glyph { font-size: 30px; line-height: 1; color: var(--ink); }
-.glyph.state-lit { color: var(--lit); }
-.glyph.state-penumbra { color: var(--penumbra); }
-.glyph.state-umbra { color: var(--umbra-edge); }
-.glyph.state-unknown { color: var(--unknown); }
-
-/* The steps read as a sequence rather than as six competing items, so they
- * all stay lit. */
-.factors.steps li { color: var(--ink-2); }
-.factors.steps li::after { background: var(--amber-4); border-color: var(--amber-4); }
-
-/* Flags: a definition list without the list. */
-.flags {
-  max-width: 96ch;
-  margin: 0 auto;
-  border-top: 1px solid var(--rule);
-}
-.flag {
-  display: grid;
-  grid-template-columns: minmax(0, 22ch) minmax(0, 1fr);
-  gap: 28px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--rule);
-  align-items: baseline;
-  transition: background-color 0.35s var(--ease);
-}
-.flag:hover { background: var(--surface); }
-.flag code { font-family: var(--mono); font-size: 12.5px; color: var(--amber-2); }
-.flag .plain { margin: 0; }
-
-/* The phase table. Nineteen rows, so it is a rhythm rather than a grid. */
-.phases { max-width: 96ch; margin: 0 auto; border-top: 1px solid var(--rule); }
-.prow {
-  display: grid;
-  grid-template-columns: 5ch minmax(0, 1fr) 9ch;
-  gap: 24px;
-  padding: 15px 0;
-  border-bottom: 1px solid var(--rule);
-  align-items: baseline;
-  transition: background-color 0.35s var(--ease), color 0.35s var(--ease);
-  color: var(--ink-2);
-}
-.prow:hover { background: var(--surface); color: var(--ink); }
-.pn { color: var(--amber-4); font-size: 11px; }
-.pw { font-size: 15.5px; }
-.pt { color: var(--ink-3); font-size: 10.5px; text-align: right; }
-.prow:hover .pn { color: var(--amber-2); }
-
-/* The limits list, numbered, on the same rhythm. */
-ul.limits { list-style: none; padding: 0; counter-reset: lim; max-width: 92ch; margin: 0 auto; }
+ul.limits { list-style: none; margin: 0; counter-reset: lim; border-top: 1px solid var(--rule-2); }
 ul.limits > li {
   counter-increment: lim;
-  position: relative;
+  display: grid;
+  grid-template-columns: 6ch minmax(0, 1fr);
+  gap: 28px;
   margin: 0;
-  padding: 22px 0 22px 62px;
-  border-top: 1px solid var(--rule);
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
   color: var(--ink-2);
   font-size: 16px;
-  transition: color 0.4s var(--ease);
 }
-ul.limits > li:last-child { border-bottom: 1px solid var(--rule); }
 ul.limits > li::before {
   content: counter(lim, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: 25px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10.5px;
   letter-spacing: 0.16em;
-  color: var(--amber-4);
-  transition: color 0.4s var(--ease);
+  color: var(--ink-3);
+  padding-top: 5px;
 }
 ul.limits > li b { color: var(--ink); font-weight: 400; }
 ul.limits > li:hover { color: var(--ink); }
-ul.limits > li:hover::before { color: var(--amber-2); }
 
-@media (max-width: 900px) {
-  .flag { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .prow { grid-template-columns: 4ch minmax(0, 1fr); }
-  .pt { display: none; }
-}
-
-/* ====================================================================
-   Depth pass.
-   Everything below adds texture and light. It changes no content, it
-   animates only opacity, transform and filter, and every piece of it is
-   off under prefers-reduced-motion.
-   ==================================================================== */
-
-/* ------------------------------------------------------------------ grain */
-
-/* Flat black on a good screen looks like a hole. A little film grain gives it
- * a surface to be. The noise is one inline SVG turbulence, rendered once by
- * the browser and tiled, so it costs nothing to scroll. */
-.grain {
-  position: fixed;
-  inset: -50%;
-  z-index: 50;
-  pointer-events: none;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
-  will-change: transform;
-  animation: grain 7s steps(6) infinite;
-}
-@keyframes grain {
-  0%   { transform: translate(0, 0); }
-  20%  { transform: translate(-3%, 2%); }
-  40%  { transform: translate(2%, -3%); }
-  60%  { transform: translate(-2%, -2%); }
-  80%  { transform: translate(3%, 1%); }
-  100% { transform: translate(0, 0); }
-}
-
-/* --------------------------------------------------------- card highlight */
-
-/* A hairline that catches light along the top edge, brightest where the
- * pointer is. It is the single detail that makes a flat rectangle read as a
- * surface with an edge. */
-.card, .panel, .install, .stats, .replay {
-  position: relative;
-}
-.card::after, .panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.5s var(--ease);
-  background: linear-gradient(
-    100deg,
-    transparent,
-    color-mix(in srgb, var(--amber-2) 55%, transparent) 40%,
-    color-mix(in srgb, var(--amber-1) 75%, transparent) 50%,
-    color-mix(in srgb, var(--amber-2) 55%, transparent) 60%,
-    transparent);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-.card:hover::after, .panel:hover::after { opacity: 0.7; }
-
-/* ------------------------------------------------------- the ghost number */
-
-/* The section index, set enormous and almost invisible behind the heading.
- * It is the same number the marker prints, at the size the section deserves. */
-.band { position: relative; }
-.band .head { position: relative; z-index: 1; }
-.band[data-ghost]::before {
-  content: attr(data-ghost);
-  position: absolute;
-  top: 26px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--mono);
-  font-size: clamp(140px, 20vw, 300px);
-  line-height: 0.8;
-  letter-spacing: -0.04em;
-  color: color-mix(in srgb, var(--ink) 3.2%, transparent);
-  pointer-events: none;
-  z-index: 0;
-  user-select: none;
-}
-
-/* ----------------------------------------------------------- the ticker */
-
-/* A strip of the report's own numbers, moving. Nothing on it is a figure
- * somebody chose: every value is read out of umbra.json by site.js. */
-.ticker {
-  position: relative;
-  overflow: hidden;
-  border-top: 1px solid var(--rule);
+.phases { border-top: 1px solid var(--rule-2); }
+.prow {
+  display: grid;
+  grid-template-columns: 5ch minmax(0, 1fr) 8ch;
+  gap: 24px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--rule);
-  padding: 16px 0;
-  margin: 0;
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.ticker-run {
-  display: flex;
-  gap: 0;
-  width: max-content;
-  animation: ticker 48s linear infinite;
-}
-.ticker:hover .ticker-run { animation-play-state: paused; }
-.ticker-run > span {
-  display: inline-flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 0 34px;
-  border-right: 1px solid var(--rule);
-  white-space: nowrap;
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 11px;
-  color: var(--ink-3);
+  color: var(--ink-2);
+  transition: color 0.25s var(--ease);
 }
-.ticker-run b {
-  font-weight: 400;
-  font-size: 15px;
-  color: var(--amber-2);
-  letter-spacing: 0.06em;
-}
-@keyframes ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
+.prow:hover { color: var(--ink); background: none; }
+.pn { color: var(--ink-3); font-size: 10px; }
+.prow:hover .pn { color: var(--red); }
+.pw { font-size: 16px; }
+.pt { color: var(--ink-3); font-size: 10px; text-align: right; }
 
-/* ------------------------------------------------------- the hero's light */
+.flags { border-top: 1px solid var(--rule-2); }
+.flag { display: grid; grid-template-columns: minmax(0, 24ch) minmax(0, 1fr); gap: 30px; padding: 16px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.flag:hover { background: none; }
+.flag code { font-family: var(--mono); font-size: 12px; color: var(--red); }
 
-/* The pointer carries a torch over the hero too, not only over the panels. */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.6s var(--ease);
-  background: radial-gradient(
-    460px circle at var(--hx, 50%) var(--hy, 40%),
-    color-mix(in srgb, var(--amber-2) 7%, transparent),
-    transparent 70%);
+.tiers { display: flex; flex-wrap: wrap; gap: 10px; margin: 34px 0 0; }
+.chip { border: 1px solid var(--rule) !important; background: none !important; }
+.chip b { color: var(--ink) !important; }
+.chip i { color: var(--ink-2) !important; }
+
+.center-note { color: var(--ink-3); margin: 44px 0 14px; }
+.caption { color: var(--ink-2); font-size: 14.5px; max-width: 76ch; }
+.caption.center, p.center { margin-left: 0; text-align: left; }
+.big-glyph { font-size: 26px; color: var(--ink); }
+
+/* ----------------------------------------------------------------- replay */
+
+.replay { border: 1px solid var(--rule-2); border-radius: 0; background: none; margin: 34px 0 30px; padding: 16px 20px 8px; }
+.replay .replay-label, .replay .counter { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px; color: var(--ink-2); }
+.replay .replay-label .sub { text-transform: none; letter-spacing: 0.02em; }
+.replay .replay-controls button {
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px;
+  background: none; border: 1px solid var(--rule-2); border-radius: 0; color: var(--ink);
+  padding: 8px 14px; transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
 }
-.hero:hover::before { opacity: 1; }
+.replay .replay-controls button:hover { background: var(--ink); color: var(--paper); }
+.replay .now { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+.replay .tick { filter: none; }
 
-/* A very slow drift, so the hero is never quite still.
- *
- * It moves the streamers only, not the whole corona. Scaling the corona SVG
- * scales the occluding disc with it, while the map drawn on top does not move,
- * and the two come apart: the moon grows over the source nodes that are meant
- * to sit on it. The field is the only part that may breathe. */
-.corona .corona-field {
-  animation: drift 72s ease-in-out infinite;
-  transform-origin: 600px 400px;
-}
-@keyframes drift {
-  0%   { transform: scale(1) rotate(0deg); }
-  50%  { transform: scale(1.035) rotate(1.2deg); }
-  100% { transform: scale(1) rotate(0deg); }
-}
+/* ----------------------------------------------------------------- ticker */
 
-/* --------------------------------------------------------- the big foot */
+.ticker { border-top: 1px solid var(--rule-2); border-bottom: 1px solid var(--rule-2); padding: 14px 0; overflow: hidden; }
+.ticker-run > span { border-right: 1px solid var(--rule); color: var(--ink-3); }
+.ticker-run b { color: var(--red); font-family: var(--serif); font-size: 17px; letter-spacing: -0.01em; }
 
-/* The wordmark, once, at the size of the page. It is the last thing on every
- * page and the only place the name is allowed to be loud. */
+/* ----------------------------------------------------------------- footer */
+
+.site-foot { border-top: 1px solid var(--rule-2); margin-top: 96px; }
+.foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding-top: 44px; padding-bottom: 44px; }
+.foot-col { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.foot-head { color: var(--ink-3); margin-bottom: 4px; }
+.foot-col a { color: var(--ink-2); text-decoration: none; font-size: 15px; }
+.foot-col a:hover { color: var(--red); }
 .foot-mark {
   font-family: var(--serif);
-  font-size: clamp(84px, 22vw, 340px);
-  line-height: 0.78;
-  letter-spacing: -0.05em;
-  color: color-mix(in srgb, var(--ink) 6%, transparent);
-  text-align: center;
-  margin: 40px 0 -10px;
+  font-size: clamp(84px, 20vw, 300px);
+  line-height: 0.76;
+  letter-spacing: -0.055em;
+  color: var(--ink);
+  text-align: left;
+  margin: 0;
+  padding: 0 var(--pad);
+  max-width: var(--maxw);
+  margin-left: auto; margin-right: auto;
   user-select: none;
-  overflow: hidden;
 }
+.foot-note { color: var(--ink-3); padding-top: 26px; padding-bottom: 50px; border-top: 1px solid var(--rule); letter-spacing: 0.1em; line-height: 1.9; margin: 0; max-width: none; }
 
-/* ---------------------------------------------------------------- polish */
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
-.head .marker { letter-spacing: 0.24em; }
-h2.big em { font-style: italic; color: var(--amber-2); }
-.stat dd { text-shadow: 0 0 32px color-mix(in srgb, var(--amber-2) 30%, transparent); }
-.card .count { text-shadow: 0 0 28px color-mix(in srgb, var(--amber-2) 26%, transparent); }
-h1 { text-shadow: 0 0 60px rgba(0, 0, 0, 0.9); }
+/* ------------------------------------------------------------- responsive */
 
-@media (prefers-reduced-motion: reduce) {
-  .grain { animation: none; }
-  .corona .corona-field { animation: none; }
-  .ticker-run { animation: none; }
-  .hero::before { display: none; }
-  .card::after, .panel::after { transition: none; }
+@media (max-width: 1080px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { border-right: 0; padding: 60px 0 30px; }
+  .hero-stage { padding: 0 0 40px; }
+  .head { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .head .sub { grid-column: 1; }
+  .foot-grid { grid-template-columns: 1fr 1fr; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-
-@media print {
-  .grain, .ticker, .foot-mark { display: none; }
-  .band[data-ghost]::before { display: none; }
-  .card::after, .panel::after { display: none; }
-  .corona .corona-field { animation: none; }
-}
-
-/* ------------------------------------------------------------- halftone */
-
-/* The field of dots behind everything. It is drawn by halftone.js into a
- * canvas, sits under the content and takes no pointer events. The grid is
- * turned down to a whisper now that the field carries the surface. */
-.halftone {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.5;
-  mask-image: radial-gradient(120% 100% at 68% 42%, #000 20%, rgba(0,0,0,0.5) 55%, transparent 85%);
-  -webkit-mask-image: radial-gradient(120% 100% at 68% 42%, #000 20%, rgba(0,0,0,0.5) 55%, transparent 85%);
-}
-:root { --grid-line: rgba(243, 234, 224, 0.018); }
-.grid-overlay::before { border-color: color-mix(in srgb, var(--ink) 4%, transparent); }
-
-/* The hero sits above the field, and its own corona is the brightest thing. */
-/* The content sits above the field. The bar is left out of this on purpose:
- * it is position sticky, and relative here would quietly override it, which is
- * exactly how the bar stopped sticking the first time. */
-.hero, section.band, .ticker, .site-foot { position: relative; z-index: 1; }
-.topbar { z-index: 30; }
-
-@media (prefers-reduced-motion: reduce) { .halftone { opacity: 0.42; } }
-@media print { .halftone { display: none; } }
-
-/* ---------------------------------------------------------- the torch */
-
-/* A dot at the pointer and a ring that trails it, plus a canvas of embers
- * behind them. All three are decoration: pointer-events none, aria-hidden,
- * and interact.js does not even create them under reduced motion or on a
- * device with no fine pointer. The system cursor stays exactly where it is,
- * because taking somebody's cursor away is a good way to lose them. */
-.torch-dot, .torch-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 95;
-  pointer-events: none;
-  border-radius: 50%;
-  transition: opacity 0.3s var(--ease);
-}
-.torch-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--amber-1);
-  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--amber-2) 80%, transparent);
-}
-.torch-ring {
-  width: 30px;
-  height: 30px;
-  border: 1px solid color-mix(in srgb, var(--amber-2) 55%, transparent);
-  transition: opacity 0.3s var(--ease), border-color 0.35s var(--ease),
-              background-color 0.35s var(--ease);
-}
-.torch-ring.hot {
-  border-color: var(--amber-2);
-  background: color-mix(in srgb, var(--amber-2) 9%, transparent);
-}
-.torch-trail {
-  position: fixed;
-  inset: 0;
-  z-index: 94;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-
-/* ------------------------------------------------------------- the tilt */
-
-/* Cards lean toward the pointer. The lift and the lean are separate variables
- * so hover and tilt can both be true at once without one overwriting the
- * other's transform. */
-.card, .tile, .panel {
-  transform:
-    translateY(var(--lift, 0px))
-    perspective(900px)
-    rotateX(var(--rx, 0deg))
-    rotateY(var(--ry, 0deg));
-  transform-style: preserve-3d;
-  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease),
-              transform 0.35s var(--ease);
-}
-.card:hover, .tile:hover, .panel:hover { --lift: -3px; }
-.has-torch .card:hover, .has-torch .tile:hover, .has-torch .panel:hover {
-  transition: border-color 0.45s var(--ease), background-color 0.45s var(--ease),
-              transform 0.12s linear;
-}
-
-/* Magnets: the transform is set inline by interact.js, so all this does is
- * make the return smooth. */
-.install button, .ghost, .pill a, .replay .replay-controls button, .filters button {
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease),
-              background-color 0.3s var(--ease), transform 0.35s var(--ease);
+@media (max-width: 620px) {
+  :root { --pad: 18px; }
+  .pill { display: none; }
+  .topbar-inner { grid-template-columns: 1fr auto; }
+  .cards.two, .cards.three, .cards.four { grid-template-columns: minmax(0, 1fr); }
+  .card { margin-right: 0; padding-right: 0; }
+  .foot-grid { grid-template-columns: 1fr; }
+  .factors li, ul.limits > li { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .prow { grid-template-columns: 4ch minmax(0, 1fr); }
+  .pt { display: none; }
+  .flag { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .tile, .panel { transform: none !important; }
-}
-@media print {
-  .torch-dot, .torch-ring, .torch-trail { display: none; }
-  .card, .tile, .panel { transform: none !important; }
-}
-
-/* ---------------------------------------------------- readable grounds */
-
-/* The halftone shows through anything translucent, which is right behind the
- * page and wrong behind a paragraph. Every surface that carries text gets a
- * dark ground under its warm tint, so the field reads as being behind the
- * page rather than through it. */
-.card, .tile, .panel, .install, .replay, .dropzone, pre.block {
-  background-color: rgba(6, 5, 4, 0.72);
-  background-image: linear-gradient(var(--surface), var(--surface));
-}
-.card[aria-pressed="true"] {
-  background-color: rgba(10, 8, 5, 0.8);
-  background-image: linear-gradient(var(--surface-2), var(--surface-2));
-}
-pre.block { background-color: rgba(0, 0, 0, 0.6); }
-
-/* The field is quieter now that it is not the only thing giving the page a
- * surface. */
-.halftone { opacity: 0.44; }
-
-.scheme-day .card, .scheme-day .panel {
-  background-color: rgba(255, 255, 255, 0.72);
-}
-
-@media print {
-  .card, .tile, .panel, .install, .replay, .dropzone, pre.block {
-    background-color: #FFFFFF;
-    background-image: none;
-  }
-}
-
-/* A scrim behind every section heading, so the field never competes with the
- * one sentence the section is trying to say. It is a soft ellipse of the
- * ground colour, not a box. */
-.head, .pane-head { position: relative; }
-.head::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -34px;
-  transform: translateX(-50%);
-  /* 118 percent of a full width head is wider than the viewport at 390, which
-   * is where this first showed. The bleed is kept and the section clips it.
-   * clip rather than hidden, because hidden would make the section a scroll
-   * container and break the sticky bar again. */
-  width: min(880px, 118%);
-  max-width: 100vw;
-  height: calc(100% + 76px);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--ground) 42%, color-mix(in srgb, var(--ground) 70%, transparent) 68%, transparent);
-  z-index: -1;
-  pointer-events: none;
-}
-.head > * { position: relative; }
-
-/* The long rows carry text too, so they get the same ground as the cards.
- * A row is not a card, so the ground is flat and the hairlines still do the
- * separating. */
-.phases, .flags, ul.limits, .factors, table.states {
-  position: relative;
-  background: rgba(6, 5, 4, 0.7);
-  border-radius: 3px;
-}
-/* border-box, or the padding is added to the max-width and the row runs 14px
- * wider than the viewport at 390. Caught by the overflow check, not by eye. */
-.phases, .flags, ul.limits, .factors, table.states { box-sizing: border-box; }
-.phases, .flags, ul.limits { padding-left: 18px; padding-right: 18px; }
-.prow, .flag { padding-left: 6px; padding-right: 6px; }
-.factors li, ul.limits > li { padding-right: 14px; }
-
-@media print {
-  .phases, .flags, ul.limits, .factors, table.states { background: none; }
-}
-
-section.band, .hero { overflow: clip; }
-
-/* -------------------------------------------------------- the headline */
-
-/* Each word rises out of its own clipped line. The heading keeps its text and
- * its accessible name; only the boxes around the words are new. */
-h1 .wline {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-bottom: 0.06em;
-}
-h1 .word-in {
-  display: inline-block;
-  transform: translateY(105%) rotate(2.5deg);
-  opacity: 0;
-  transition:
-    transform 1s var(--ease) var(--wd, 0s),
-    opacity 0.7s var(--ease) var(--wd, 0s);
-}
-h1.words-in .word-in { transform: none; opacity: 1; }
-
-/* The headline no longer needs the blanket stage fade: the words carry it. */
-.js h1[data-split="1"][data-stage] {
-  opacity: 1;
-  transform: none;
-  filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal], .js [data-stage] { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
   h1 .word-in { transform: none !important; opacity: 1 !important; transition: none !important; }
+  .ticker-run { animation: none; }
 }
+
 @media print {
+  .topbar, .ticker, .progress, .foot-mark { display: none; }
+  body { background: #fff; }
+  .js [data-reveal], .js [data-stage] { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
   h1 .word-in { transform: none !important; opacity: 1 !important; }
 }

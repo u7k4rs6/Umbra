@@ -2,8 +2,8 @@
   "umbra_version": "0.1.0",
   "checkpoint": {
     "id": "b20f84567474",
-    "commit": "00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "parent": "faf4dc616ae391650ddd4680657d64b79d9d248f",
+    "commit": "1c2cf29f0c52e07cd61dacc14ace9e69ce036845",
+    "parent": "6eb4434d887137218ffa7f9cbfb455b08b26feec",
     "agent": "Claude Code",
     "route": "session window",
     "session_ids": [
@@ -70,7 +70,7 @@
     "line": "2 file reads, 4 edits, 0 searches, 47 shell commands"
   },
   "notes": [
-    "commit 0063443 carries no Entire-Checkpoint trailer, so it was paired with checkpoint b20f845 by session time",
+    "commit 1c2cf29 carries no Entire-Checkpoint trailer, so it was paired with checkpoint b20f845 by session time",
     "the checkpoint was paired with this commit by session time and owns a commit of its own, so the change came from graph commit"
   ],
   "sources": [
@@ -1252,24 +1252,24 @@
   ],
   "commands_run": [
     "entire checkpoint list --json",
-    "git -C \u003crepo\u003e rev-parse --verify 0063443^{commit}",
-    "git -C \u003crepo\u003e rev-list --parents -n 1 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e log -1 --format=%B 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e log -1 --format=%cI 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
-    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base faf4dc616ae391650ddd4680657d64b79d9d248f",
+    "git -C \u003crepo\u003e rev-parse --verify 1c2cf29^{commit}",
+    "git -C \u003crepo\u003e rev-list --parents -n 1 1c2cf29f0c52e07cd61dacc14ace9e69ce036845",
+    "git -C \u003crepo\u003e log -1 --format=%B 1c2cf29f0c52e07cd61dacc14ace9e69ce036845",
+    "git -C \u003crepo\u003e log -1 --format=%cI 1c2cf29f0c52e07cd61dacc14ace9e69ce036845",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head 1c2cf29f0c52e07cd61dacc14ace9e69ce036845",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/base 6eb4434d887137218ffa7f9cbfb455b08b26feec",
     "entire graph capabilities --json",
-    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format ndjson",
-    "entire graph commit 00634433c2bc2ac6d1da8e76f45847e7f6702a36 --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --json",
-    "entire graph impact --symbol handle_order --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 14",
-    "entire graph impact --symbol quote --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 26",
-    "entire graph impact --symbol compute_total --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 20",
-    "entire graph impact --symbol summarize --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 33",
+    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --format ndjson",
+    "entire graph commit 1c2cf29f0c52e07cd61dacc14ace9e69ce036845 --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --json",
+    "entire graph impact --symbol handle_order --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --format json --file umbra/fixtures/app/app/api.py --line 14",
+    "entire graph impact --symbol quote --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --format json --file umbra/fixtures/app/app/api.py --line 26",
+    "entire graph impact --symbol compute_total --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --format json --file umbra/fixtures/app/app/service.py --line 20",
+    "entire graph impact --symbol summarize --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head --format json --file umbra/fixtures/app/app/service.py --line 33",
     "entire checkpoint explain b20f84567474 --raw-transcript",
     "entire checkpoint explain b20f84567474 --short",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json",
-    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json"
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/base/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/baseline.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/baseline.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/base/umbra/fixtures/app --test pytest -v --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/sweep.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/head/umbra/fixtures/app --test pytest -v --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/1c2cf29f0c52e07cd61dacc14ace9e69ce036845/sweep.json"
   ]
 }

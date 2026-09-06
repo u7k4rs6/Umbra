@@ -59,11 +59,11 @@ func requireTooling(t *testing.T) {
 const (
 	// A signature change on the fixture app. It has a field of dependents,
 	// and running its probes cracks tests.
-	commitWithShadow = "0063443"
+	commitWithShadow = "1c2cf29"
 	// A commit that touches only Markdown. Its changed entities are in a
 	// language the graph cannot resolve calls for, so they are not sources,
 	// there is no field, and no node is in any state. That holds anywhere.
-	commitWithNothing = "2e0aaca"
+	commitWithNothing = "b8dc631"
 )
 
 type result struct {

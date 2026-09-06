@@ -1,6 +1,6 @@
 # Umbra run on its own build
 
-`entire umbra 13adcdd --run none` on the commit where Umbra changed
+`entire umbra fd9e9be --run none` on the commit where Umbra changed
 `shadow.Build` and `shadow.AddCoChange` during phase 9.
 
 Every one of the twelve dependents came back **umbra**, including `runScenario`

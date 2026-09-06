@@ -25,7 +25,7 @@ of them tests in a file the session never opened, committed with a message that
 says the callers were checked because only one test file ran.
 
 ```
-Umbra  01M1PVD1WBK1J1J8GWDNJJR7XZ  0063443  claude-code  depth 2
+Umbra  01M1PVD1WBK1J1J8GWDNJJR7XZ  1c2cf29  claude-code  depth 2
 session said  "Checked the callers and updated them; all tests pass."
 compute_total  signature changed  app/service.py:20
 light  ●●◐◐◐○○○○○○   2 lit  3 penumbra  6 umbra  0 unknown   18% examined
@@ -97,7 +97,7 @@ Exit codes: 0 completed, 2 the `--fail-on` condition was met, 1 runtime error.
 git clone https://github.com/u7k4rs6/Umbra && cd Umbra
 cd umbra/fixtures/app && ./setup.sh && cd ../../..
 . umbra/fixtures/app/.venv/bin/activate
-entire umbra 0063443 --test "pytest -v"
+entire umbra 1c2cf29 --test "pytest -v"
 ```
 
 That reports 8 probes selected and 5 cracked, naming `test_empty_is_zero`,
@@ -307,7 +307,7 @@ written; these are the corrections the code carries.
    checkpoint that owns no commit and the fallback runs. In a clone it chose a
    hook-written checkpoint that does own one, and the report described that
    commit's changes under the header of the one the reader asked for: the
-   header said `0063443` while the sources were the transcript package from
+   header said `1c2cf29` while the sources were the transcript package from
    phase 3. The bridge is now used only when the reference resolved through the
    trailer or through the checkpoint id, where the two are the same work.
 
@@ -336,7 +336,7 @@ Phase 11 was a semantic-diff review of the whole build to that point,
 comparing the first commit against the last:
 
 ```
-entire graph diff --base 6e0dff8e92417fc25e28f07c4950753bd1701966 --head HEAD --repo .
+entire graph diff --base 2495309553ee8c01a61a3c4922e45861d3d4de6d --head HEAD --repo .
 ```
 
 The diff itself is unremarkable: 1014 added entities, no signature changes, and
@@ -465,7 +465,7 @@ kind of thing.
 
 - The first is a **real session on a seeded fixture**. The session, its tool
   activity and the test results are real: checkpoint `b20f84567474` against
-  commit `0063443`, where an agent changed a signature and five probes cracked.
+  commit `1c2cf29`, where an agent changed a signature and five probes cracked.
   What is arranged is the fixture underneath it, `umbra/fixtures/app`, which was
   written to have callers a session would plausibly miss. The sentence above the
   map is the agent's own, taken from the stored transcript.

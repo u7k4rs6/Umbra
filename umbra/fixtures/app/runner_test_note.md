@@ -20,9 +20,9 @@ Either of these works:
 
 ```
 . umbra/fixtures/app/.venv/bin/activate
-entire umbra 0063443 --test "pytest -v"
+entire umbra 1c2cf29 --test "pytest -v"
 ```
 
 ```
-entire umbra 0063443 --test "$PWD/umbra/fixtures/app/.venv/bin/python -m pytest -v"
+entire umbra 1c2cf29 --test "$PWD/umbra/fixtures/app/.venv/bin/python -m pytest -v"
 ```

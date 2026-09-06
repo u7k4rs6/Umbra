@@ -84,21 +84,11 @@ func run(root string) error {
 		}
 	}
 
-	// The second map, when there is one, is a report from a session in another
-	// project. It is optional: the page renders without it.
-	importedPath := filepath.Join(site, "imported", "umbra.json")
-	if blob, err := os.ReadFile(importedPath); err == nil {
-		if err := CheckSampleIsClean(importedPath, blob); err != nil {
+	// Earlier site builds embedded a second report from an unrelated project.
+	// Clear that legacy data from any existing pages instead of republishing it.
+	for _, page := range pages {
+		if _, err := embedSample(page, []byte("{}"), importedTag); err != nil {
 			return err
-		}
-		for _, page := range pages {
-			n, err := embedSample(page, blob, importedTag)
-			if err != nil {
-				return err
-			}
-			if n {
-				fmt.Printf("embedded %s into %s (%d bytes)\n", importedPath, filepath.Base(page), len(blob))
-			}
 		}
 	}
 	return nil

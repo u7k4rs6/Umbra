@@ -1,6 +1,6 @@
 # Blind spot packet
 
-Checkpoint `01M1PY8KZ28HS7TG95ZVKQSZ2W`, commit `13adcdd`, parent `31fa246`, agent Claude Code, resolved via trailer.
+Checkpoint `01M1PY8KZ28HS7TG95ZVKQSZ2W`, commit `fd9e9be`, parent `3f0fd58`, agent Claude Code, resolved via trailer.
 
 **0 of 12 dependents were examined (0%).** 0 are in penumbra, 12 are in full shadow.
 
@@ -159,48 +159,48 @@ entire umbra 01M1PY8KZ28HS7TG95ZVKQSZ2W --run none
 <details><summary>Commands run</summary>
 
 - `entire checkpoint list --json`
-- `git -C <repo> rev-parse --verify 13adcdd^{commit}`
-- `git -C <repo> rev-list --parents -n 1 13adcddaa88b36e7b6df56bb0d5f183be3957a30`
-- `git -C <repo> log -1 --format=%B 13adcddaa88b36e7b6df56bb0d5f183be3957a30`
-- `git -C <repo> worktree add --detach <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head 13adcddaa88b36e7b6df56bb0d5f183be3957a30`
-- `git -C <repo> worktree add --detach <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/base 31fa246c254c447e3672286112684632bd7a657b`
+- `git -C <repo> rev-parse --verify fd9e9be1f823300b297c148a240a0505aa09330f^{commit}`
+- `git -C <repo> rev-list --parents -n 1 fd9e9be1f823300b297c148a240a0505aa09330f`
+- `git -C <repo> log -1 --format=%B fd9e9be1f823300b297c148a240a0505aa09330f`
+- `git -C <repo> worktree add --detach <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head fd9e9be1f823300b297c148a240a0505aa09330f`
+- `git -C <repo> worktree add --detach <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/base 3f0fd58db7dec45221eec8d404c38b582cf785cd`
 - `git -C <repo> config --get user.name`
 - `git -C <repo> config --get author.name`
 - `git -C <repo> config --get committer.name`
 - `entire graph capabilities --json`
-- `entire graph snapshot --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format ndjson`
+- `entire graph snapshot --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format ndjson`
 - `entire graph checkpoint 01M1PY8KZ28HS7TG95ZVKQSZ2W --json`
-- `entire graph impact --symbol drawField --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 36`
-- `entire graph impact --symbol boot --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 508`
-- `entire graph impact --symbol tierRank --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 729`
-- `entire graph impact --symbol stateAt --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 736`
-- `entire graph impact --symbol consider --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 742`
-- `entire graph impact --symbol wireReplay --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 782`
-- `entire graph impact --symbol render --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 822`
-- `entire graph impact --symbol goTo --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 835`
-- `entire graph impact --symbol step --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 840`
-- `entire graph impact --symbol play --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 847`
-- `entire graph impact --symbol pause --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 857`
-- `entire graph impact --symbol tick --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 864`
-- `entire graph impact --symbol anyEvidence --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 898`
-- `entire graph impact --symbol indexOf --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 906`
-- `entire graph impact --symbol eventAt --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 914`
-- `entire graph impact --symbol describe --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 919`
-- `entire graph impact --symbol applyState --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 943`
-- `entire graph impact --symbol rewireNodes --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 975`
-- `entire graph impact --symbol wireSpotlight --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1055`
-- `entire graph impact --symbol toViewBox --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1082`
-- `entire graph impact --symbol revealNear --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1093`
-- `entire graph impact --symbol wireKeyboard --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1103`
-- `entire graph impact --symbol focusAt --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1109`
-- `entire graph impact --symbol toggleLabels --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/report/assets/umbra.js --line 1134`
-- `entire graph impact --symbol Build --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 27`
-- `entire graph impact --symbol AddCoChange --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 96`
-- `entire graph impact --symbol exposuresFor --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/build.go --line 185`
-- `entire graph impact --symbol jsNode --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 20`
-- `entire graph impact --symbol jsExposure --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 26`
-- `entire graph impact --symbol jsCase --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 32`
-- `entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo <home>/.local/share/entire/plugins/data/umbra/wt/13adcddaa88b36e7b6df56bb0d5f183be3957a30/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 51`
+- `entire graph impact --symbol drawField --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 36`
+- `entire graph impact --symbol boot --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 508`
+- `entire graph impact --symbol tierRank --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 729`
+- `entire graph impact --symbol stateAt --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 736`
+- `entire graph impact --symbol consider --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 742`
+- `entire graph impact --symbol wireReplay --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 782`
+- `entire graph impact --symbol render --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 822`
+- `entire graph impact --symbol goTo --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 835`
+- `entire graph impact --symbol step --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 840`
+- `entire graph impact --symbol play --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 847`
+- `entire graph impact --symbol pause --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 857`
+- `entire graph impact --symbol tick --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 864`
+- `entire graph impact --symbol anyEvidence --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 898`
+- `entire graph impact --symbol indexOf --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 906`
+- `entire graph impact --symbol eventAt --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 914`
+- `entire graph impact --symbol describe --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 919`
+- `entire graph impact --symbol applyState --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 943`
+- `entire graph impact --symbol rewireNodes --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 975`
+- `entire graph impact --symbol wireSpotlight --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1055`
+- `entire graph impact --symbol toViewBox --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1082`
+- `entire graph impact --symbol revealNear --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1093`
+- `entire graph impact --symbol wireKeyboard --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1103`
+- `entire graph impact --symbol focusAt --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1109`
+- `entire graph impact --symbol toggleLabels --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/report/assets/umbra.js --line 1134`
+- `entire graph impact --symbol Build --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/build.go --line 27`
+- `entire graph impact --symbol AddCoChange --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/build.go --line 96`
+- `entire graph impact --symbol exposuresFor --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/build.go --line 185`
+- `entire graph impact --symbol jsNode --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 20`
+- `entire graph impact --symbol jsExposure --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 26`
+- `entire graph impact --symbol jsCase --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 32`
+- `entire graph impact --symbol TestJavaScriptMirrorsTheGoClassifier --repo <home>/.cache/umbra/wt/fd9e9be1f823300b297c148a240a0505aa09330f/head --format json --file umbra/internal/shadow/jsmirror_test.go --line 51`
 - `entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --raw-transcript`
 - `entire checkpoint explain 01M1PY8KZ28HS7TG95ZVKQSZ2W --short`
 

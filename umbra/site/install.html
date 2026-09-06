@@ -18,7 +18,7 @@
 <div class="progress" aria-hidden="true"><span></span></div>
 
 <header class="topbar" id="topbar">
-  <div class="bar">
+  <div class="topbar-inner">
     <a class="wordmark mono" href="index.html">Umbra</a>
     <nav class="pill mono" aria-label="Pages">
       <a href="map.html">Map</a>
@@ -56,7 +56,7 @@ open ./umbra-out/umbra.html</pre>
 cd Umbra/umbra/fixtures/app &amp;&amp; ./setup.sh
 cd ../../..
 . umbra/fixtures/app/.venv/bin/activate
-entire umbra 0063443 --test "pytest -v"</pre>
+entire umbra 1c2cf29 --test "pytest -v"</pre>
       <p class="plain">That reports 8 probes selected and 5 cracked, with a full sweep and 0 leaks. The venv is activated because the runner has to be on PATH: the tests run in a detached worktree that has no venv in it.</p>
     </div>
   </div>

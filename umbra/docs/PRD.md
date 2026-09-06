@@ -141,7 +141,7 @@ Deliberately out of v1, with the reason:
 3. Coverage deltas between the selected run and the sweep.
 4. Cross-repository shadows through Graph's cross-service links.
 5. Feeding the packet into `entire review --prompt` so reviewer agents start in the shadow.
-6. The merge with Impeach: Impeach finds the sentence "I checked the callers"; Umbra shows 2 of 4 were opened. Two separate entries at this event; one product after it.
+6. Intent-aware review: pair the sentence "I checked the callers" with Umbra's evidence that only 2 of 4 were opened, without a model.
 
 ## Cost
 

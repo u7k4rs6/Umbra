@@ -12,7 +12,7 @@ reading the code. Six of them: both schemes at three points of the sweep.
 | `lightfield-light-cut.png` | day | the cut |
 | `lightfield-light-end.png` | day | the end |
 
-They come from a real run: checkpoint `b20f84567474` against commit `0063443`,
+They come from a real run: checkpoint `b20f84567474` against commit `1c2cf29`,
 the same report the landing page draws.
 
 `lightfield-first-pass.png` is the very first render of the light field, taken

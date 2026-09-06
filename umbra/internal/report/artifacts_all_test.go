@@ -11,8 +11,7 @@ import (
 // The output-wide check.
 //
 // The earlier artifact tests named the files they knew about, which is how a
-// new output path gets missed: site/imported/ existed for a day before it was
-// added to the list. This walks the trees instead, so a file that appears
+// new output path gets missed. This walks the trees instead, so a file that appears
 // tomorrow is covered tomorrow.
 
 // generatedArtifacts walks every tree Umbra writes into and returns the text

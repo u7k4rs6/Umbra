@@ -49,8 +49,8 @@ enabled, the graph plugin installed, and `umbra/` holding HANDOFF.md,
 KICKOFF_PROMPT.md and docs/. None of that was present: the working directory
 held only the four docs in a folder named `files (1)`, was not a git
 repository, and had no Entire CLI on the machine. HANDOFF.md and
-KICKOFF_PROMPT.md were never supplied, and the files of those names in
-`~/Downloads` belong to a different project, Impeach, so they were not used.
+KICKOFF_PROMPT.md were never supplied, and similarly named files in
+`~/Downloads` belonged to an unrelated project, so they were not used.
 
 On instruction, the repository was created fresh as `u7k4rs6/Umbra` rather
 than forked, the docs were moved to `umbra/docs/`, and the kickoff message
@@ -313,7 +313,7 @@ Grepped every committed file for `pytest -q`. What it found, and what was done:
 README's own reproduce command.** The documented line was:
 
 ```
-entire umbra 0063443 --test "umbra/fixtures/app/.venv/bin/python -m pytest -v"
+entire umbra 1c2cf29 --test "umbra/fixtures/app/.venv/bin/python -m pytest -v"
 ```
 
 That degrades to an exit-code-only verdict even though it says `-v`, and it
@@ -329,7 +329,7 @@ The documented path now activates the venv so the runner is on `PATH`:
 
 ```
 . umbra/fixtures/app/.venv/bin/activate
-entire umbra 0063443 --test "pytest -v"
+entire umbra 1c2cf29 --test "pytest -v"
 ```
 
 Confirmed against the fixture: 8 probes selected, **5 cracked, all named**,
@@ -517,7 +517,7 @@ copy the pairing happens to choose an imported checkpoint, which has no commit,
 so the fallback runs and the report is correct. In a clone it chose a
 hook-written checkpoint that does own a commit, and the report described that
 commit's changes under the header of the one the reader asked for: the header
-said `0063443` while the sources were the transcript package from phase 3. The
+said `1c2cf29` while the sources were the transcript package from phase 3. The
 bridge is now used only when the reference resolved through the trailer or
 through the checkpoint id, where the two are the same piece of work.
 
@@ -1141,8 +1141,8 @@ way until this is dealt with. Recording it here so the decision is not lost.
 **The checkpoint refs on `origin` carry another project's material.** Every
 hook-written checkpoint stores the whole session transcript: 8.9 MB, 1836
 records. Those refs live under `refs/entire/checkpoints/` and are pushed with
-every `git push`. One of them contains verbatim content from **Impeach**, an
-unreleased project that happens to live on the same machine, captured in the
+every `git push`. One of them contains verbatim content from an unrelated
+project that happens to live on the same machine, captured in the
 first few minutes of the build when its handoff files were read to establish
 that they were not Umbra's. The same transcripts carry roughly 1790 absolute
 home paths, 2196 occurrences of the operating-system user name, the owner's

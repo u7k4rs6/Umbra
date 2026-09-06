@@ -269,7 +269,7 @@ Degradations:
 - Another language: any language Graph parses; test execution supports pytest and go test, others get selection without execution and say so.
 - Depth or scale constraint (large repo): `--depth 1`, node cap in the HTML with clustering, snapshot loaded once.
 - Change spans several commits: `--session` loop.
-- Must connect to Checkpoint intent (prompts): the docket gains a column "asked for in a prompt" by name matching, no model. Kept out of the core so this entry and Impeach stay distinct.
+- Must connect to Checkpoint intent (prompts): the docket gains a column "asked for in a prompt" by name matching, no model. Kept out of the core so the two entries stay distinct.
 
 ## Build order
 
@@ -295,7 +295,7 @@ A fresh session, given only `entire checkpoint explain <latest>`, `entire graph 
 
 Answered by the Step 0 probe on 2026-09-04. Installed versions: Entire CLI 0.10.5,
 entire-graph v0.4.1-nightly.202609030616.ddcebd05, Python 3.14.4, pytest 8.3.4.
-The probe session, its checkpoint `b20f84567474` and the commit `0063443` are the evidence.
+The probe session, its checkpoint `b20f84567474` and the commit `1c2cf29` are the evidence.
 
 **1. Do Read tool inputs in the stored transcript include `offset` and `limit`? Yes.**
 A full read stores `{"file_path": "..."}` with no range keys; a partial read stores

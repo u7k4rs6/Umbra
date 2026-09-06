@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src data:; connect-src 'self'">
-<title>Umbra</title>
+<title>The map</title>
 <link rel="stylesheet" href="umbra.css">
 <link rel="stylesheet" href="landing.css">
 <script>document.documentElement.classList.remove("nojs");document.documentElement.classList.add("js");</script>
@@ -21,7 +21,7 @@
   <div class="topbar-inner">
     <a class="wordmark mono" href="index.html">Umbra</a>
     <nav class="pill mono" aria-label="Pages">
-      <a href="map.html">Map</a>
+      <a href="map.html" class="on">Map</a>
       <a href="how.html">How it works</a>
       <a href="install.html">Install</a>
       <a href="build.html">Build</a>
@@ -33,21 +33,14 @@
 
 <main id="main">
 
-<section class="hero" id="hero">
+<section class="hero short" id="hero">
 
   <div class="hero-grid">
     <div class="hero-copy">
       <span class="badge mono" data-stage="1"><i></i>Checkpoint b20f84567474</span>
-      <h1 data-stage="2">What the change <em>reaches</em>, and the agent never looked at.</h1>
+      <h1 class="mid" data-stage="2">The eclipse map.</h1>
       <p class="said" id="said" data-stage="3"></p>
       <p class="contradiction" id="contradiction" data-stage="4"></p>
-      <div class="cta" data-stage="5">
-        <div class="install">
-          <code id="install-cmd" tabindex="0" role="group" aria-label="Install command">go install github.com/u7k4rs6/Umbra/umbra/cmd/entire-umbra@main</code>
-          <button type="button" id="copy" class="mono" aria-label="Copy the install command">Copy</button>
-        </div>
-        <p class="caption" id="copied" role="status"></p>
-      </div>
     </div>
     <div class="hero-stage">
       <div class="stage" id="stage">
@@ -64,102 +57,114 @@
     </div>
     </div>
   </div>
-
-  <dl class="stats" data-stage="5">
-    <div class="stat"><dd data-stat="total">0</dd><dt class="mono">symbols reached</dt></div>
-    <div class="stat"><dd data-stat="lit">0</dd><dt class="mono">the session opened</dt></div>
-    <div class="stat"><dd data-stat="umbra">0</dd><dt class="mono">never opened</dt></div>
-    <div class="stat"><dd data-stat="fails">0</dd><dt class="mono">tests broken</dt></div>
-  </dl>
-
   <div class="hero-foot mono" data-stage="5">
-    <span class="scroll-cue"><i></i>Scroll</span>
+    <span class="scroll-cue"><i></i>Press play below</span>
     <span class="drag-hint">Drag the divider for the day scheme</span>
   </div>
 </section>
 <noscript><p class="caption noscript-note">The map needs JavaScript. Everything else on this site reads without it.</p></noscript>
 
-<section data-ghost="01" class="band" id="field" data-reveal>
+<section data-ghost="01" class="band" id="sweep" data-reveal>
   <div class="head">
-    <span class="marker mono">01 &nbsp; The field</span>
-    <h2 class="big">Three states, and only one of them is the code it read.</h2>
-    <p class="sub">Every dependent of a changed symbol lands in one of these. The counts are this report's own. Click one to filter the map above.</p>
+    <span class="marker mono">01 &nbsp; The sweep</span>
+    <h2 class="big">Replay where the session actually looked.</h2>
+    <p class="sub">Move the playhead and every state above is recomputed from the transcript, in order. The rules run in the browser and they mirror the ones in Go, which a test checks at three playhead positions across eight scenarios.</p>
   </div>
+
+  <div class="cards four" id="beats">
+    <button type="button" class="card beat" data-beat="claim" aria-pressed="false"
+        aria-label="Beat 1, claim.">
+      <span class="n mono">01</span><span class="word mono">Claim</span>
+      <span class="plain">The session's own sentence, and the field before it had opened anything.</span>
+    </button>
+    <button type="button" class="card beat" data-beat="field" aria-pressed="false"
+        aria-label="Beat 2, field.">
+      <span class="n mono">02</span><span class="word mono">Field</span>
+      <span class="plain">Everything the change can reach, as the session had it just before the first edit.</span>
+    </button>
+    <button type="button" class="card beat" data-beat="cut" aria-pressed="false"
+        aria-label="Beat 3, the cut.">
+      <span class="n mono">03</span><span class="word mono">The cut</span>
+      <span class="plain">The first edit to a source file. Reads before this one become afterimages.</span>
+    </button>
+    <button type="button" class="card beat" data-beat="sweep" aria-pressed="true"
+        aria-label="Beat 4, sweep.">
+      <span class="n mono">04</span><span class="word mono">Sweep</span>
+      <span class="plain">The whole session replayed, settling on the eclipse: what was still dark at commit.</span>
+    </button>
+  </div>
+
+  <section id="replay" class="replay panel" aria-label="Attention replay" data-torch>
+    <div class="replay-controls">
+      <span class="replay-label">Sweep <span class="sub">replay the session's attention</span></span>
+      <button type="button" data-act="play" aria-label="Play the sweep">Play</button>
+      <button type="button" data-act="back" aria-label="Step back">&#9664;&#9664;</button>
+      <button type="button" data-act="fwd" aria-label="Step forward">&#9654;&#9654;</button>
+      <button type="button" data-act="speed" aria-label="Playback speed">1x</button>
+      <span class="counter"></span>
+    </div>
+    <div class="track"></div>
+    <p class="now" aria-live="polite"></p>
+  </section>
 
   <div class="cards three" id="legend" role="group" aria-label="Filter the map by state">
     <button type="button" class="card" data-state="lit" aria-pressed="false"
-        aria-label="Lit: read after the change began, or edited. Show only these on the map.">
-      <span class="n mono">01</span>
-      <svg class="orb" data-orb="2"></svg>
-      <span class="word mono">Lit</span>
-      <span class="count" data-stat="lit">0</span>
+        aria-label="Lit. Show only these on the map.">
+      <span class="n mono">01</span><svg class="orb" data-orb="2"></svg>
+      <span class="word mono">Lit</span><span class="count" data-stat="lit">0</span>
       <span class="plain">Read with a range covering the symbol, at or after the change began, or edited.</span>
       <span class="act mono">Show only these</span>
     </button>
     <button type="button" class="card" data-state="penumbra" aria-pressed="false"
-        aria-label="Penumbra: half seen. Show only these on the map.">
-      <span class="n mono">02</span>
-      <svg class="orb" data-orb="1"></svg>
-      <span class="word mono">Penumbra</span>
-      <span class="count" data-stat="penumbra">0</span>
+        aria-label="Penumbra. Show only these on the map.">
+      <span class="n mono">02</span><svg class="orb" data-orb="1"></svg>
+      <span class="word mono">Penumbra</span><span class="count" data-stat="penumbra">0</span>
       <span class="plain">Half seen: a partial read, a search hit, a quote inside a tool result, or a mention.</span>
       <span class="act mono">Show only these</span>
     </button>
     <button type="button" class="card" data-state="umbra" aria-pressed="false"
-        aria-label="Umbra: nothing in the session touched or mentioned it. Show only these on the map.">
-      <span class="n mono">03</span>
-      <svg class="orb" data-orb="0"></svg>
-      <span class="word mono">Umbra</span>
-      <span class="count" data-stat="umbra">0</span>
-      <span class="plain">Nothing in the session touched the file or named it. This is what the tool exists to find.</span>
+        aria-label="Umbra. Show only these on the map.">
+      <span class="n mono">03</span><svg class="orb" data-orb="0"></svg>
+      <span class="word mono">Umbra</span><span class="count" data-stat="umbra">0</span>
+      <span class="plain">Nothing in the session touched the file or named it.</span>
       <span class="act mono">Show only these</span>
     </button>
   </div>
+
+  <p class="caption wide center">
+    A real session, on a seeded fixture. The map is the report of checkpoint
+    <code>b20f84567474</code> against commit <code>1c2cf29</code> of this repository, where an
+    agent changed the signature of <code>compute_total</code> in <code>umbra/fixtures/app</code>.
+    The session, the tool activity and the test results are all real; what is arranged is the
+    fixture itself, which was built to have callers the session would miss.
+    The sentence beside the map is the agent's own account of the change, taken from the
+    transcript Entire stored, because that checkpoint carries no generated summary; the report
+    says so, and Umbra never checks whether the sentence is true.
+  </p>
 </section>
 
-<section data-ghost="02" class="band" data-reveal>
+<section data-ghost="02" class="band" id="others" data-reveal>
   <div class="head">
-    <span class="marker mono">02 &nbsp; What it does</span>
-    <h2 class="big">A clean diff tells you what changed. Not what was never opened.</h2>
+    <span class="marker mono">02 &nbsp; Your evidence</span>
+    <h2 class="big">Inspect your own report locally.</h2>
   </div>
-  <div class="cards three">
-    <div class="card" data-torch>
-      <span class="n mono">01</span>
-      <span class="word mono">Subtract</span>
-      <p class="plain">Take every dependent of every changed symbol from Entire Graph. Subtract what the session actually examined, according to the checkpoint's tool activity and the agent's own words. Rank whatever is left in shadow.</p>
-    </div>
-    <div class="card" data-torch>
-      <span class="n mono">02</span>
-      <span class="word mono">Probe</span>
-      <p class="plain">Run the tests that reach the shadow, against a baseline recorded on the parent commit, so a failure that was already there is not reported as a new one.</p>
-    </div>
-    <div class="card" data-torch>
-      <span class="n mono">03</span>
-      <span class="word mono">Audit itself</span>
-      <p class="plain">Then run the whole suite once. Any test that changed state but was never selected is a leak, and carries the reason the selection missed it. The count is printed even when it is zero.</p>
-    </div>
-  </div>
-</section>
 
-<section data-ghost="03" class="band" data-reveal>
-  <div class="head">
-    <span class="marker mono">03 &nbsp; Inspect the evidence</span>
-    <h2 class="big">A seeded report you can verify.</h2>
-    <p class="sub">The map above is a real session on a <b>seeded fixture</b>, built to have callers a session would plausibly miss. Open it to inspect every source span, graph relation, and test result.</p>
-  </div>
-  <div class="cards two">
-    <a class="card link" href="map.html" data-torch>
+  <div class="cards">
+    <div class="card wide-card" id="drop" data-torch>
       <span class="n mono">01</span>
-      <span class="word mono">See the map</span>
-      <p class="plain">The full eclipse map, the attention replay, and the drop-in viewer for your own report.</p>
-      <span class="act mono">Open the map</span>
-    </a>
-    <a class="card link" href="how.html" data-torch>
-      <span class="n mono">02</span>
-      <span class="word mono">How the ranking works</span>
-      <p class="plain">Six factors, the beacon override, the opt-in scar, and what a leak's reason tells you.</p>
-      <span class="act mono">Read it</span>
-    </a>
+      <span class="word mono">Your own</span>
+      <div class="dropzone">
+        <p>Drop an <code>umbra.json</code> here to view it.<br>Nothing is uploaded; the map is drawn in your browser.</p>
+        <input type="file" id="file" accept="application/json,.json" aria-label="Choose an umbra.json file">
+        <button type="button" id="back" class="ghost mono" hidden>Back to the sample</button>
+      </div>
+      <p class="caption" id="dropmsg" role="status"></p>
+      <p class="plain">
+        The viewer is the same code as the report. It renders only the fields it knows, through
+        <code>textContent</code> and attribute setters, refuses anything over 20 MB, and makes no
+        request of any kind. A symbol named like a script tag renders as text.
+      </p>
+    </div>
   </div>
 </section>
 </main>
