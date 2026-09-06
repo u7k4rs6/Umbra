@@ -1,12 +1,14 @@
 {
   "umbra_version": "0.1.0",
   "checkpoint": {
-    "id": "sample000class",
-    "commit": "0000000000000000000000000000000000000001",
-    "parent": "0000000000000000000000000000000000000000",
-    "agent": "claude-code",
-    "route": "checkpoint id",
-    "session_ids": []
+    "id": "b20f84567474",
+    "commit": "00634433c2bc2ac6d1da8e76f45847e7f6702a36",
+    "parent": "faf4dc616ae391650ddd4680657d64b79d9d248f",
+    "agent": "Claude Code",
+    "route": "session window",
+    "session_ids": [
+      "8017734d-cdf6-4a18-b2f8-f4b5f637ec35"
+    ]
   },
   "inputs": {
     "adapter": "claude-code",
@@ -55,100 +57,150 @@
       "reads": true
     }
   },
-  "session_said": "Checked the callers. All tests pass.",
-  "session_said_from": "the checkpoint summary Entire stored",
+  "session_said": "Now running the focused test the probe calls for.",
+  "session_said_from": "what the agent said after its last edit, because Entire stored no summary",
   "coverage": {
     "reads": 2,
-    "edits": 1,
-    "searches": 1,
-    "quoted": 0,
-    "mentions": 0,
-    "shell_commands": 0,
+    "edits": 4,
+    "searches": 0,
+    "quoted": 10,
+    "mentions": 11,
+    "shell_commands": 47,
     "shell_only": false,
-    "line": "2 file reads, 1 edit, 1 search, 0 shell commands"
+    "line": "2 file reads, 4 edits, 0 searches, 47 shell commands"
   },
   "notes": [
-    "this is the seeded fixture from the repository, recorded so the page has a real report to draw"
+    "commit 0063443 carries no Entire-Checkpoint trailer, so it was paired with checkpoint b20f845 by session time",
+    "the checkpoint was paired with this commit by session time and owns a commit of its own, so the change came from graph commit"
   ],
   "sources": [
     {
-      "id": "gh/example/repo:Python:app/service.py:function:compute_total",
-      "name": "compute_total",
-      "file": "app/service.py",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order",
+      "name": "handle_order",
+      "file": "umbra/fixtures/app/app/api.py",
+      "span": [
+        14,
+        23
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote",
+      "name": "quote",
+      "file": "umbra/fixtures/app/app/api.py",
       "span": [
         26,
-        38
+        29
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 1
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+      "name": "compute_total",
+      "file": "umbra/fixtures/app/app/service.py",
+      "span": [
+        20,
+        30
       ],
       "change": "signature",
       "weight": 1,
       "dependents": 7
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:summarize",
+      "name": "summarize",
+      "file": "umbra/fixtures/app/app/service.py",
+      "span": [
+        33,
+        36
+      ],
+      "change": "body",
+      "weight": 0.6,
+      "dependents": 1
     }
   ],
   "nodes": [
     {
-      "id": "gh/example/repo:Python:app/refunds.py:function:apply_refund",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
       "name": "apply_refund",
-      "file": "app/refunds.py",
+      "file": "umbra/fixtures/app/app/refunds.py",
       "span": [
         17,
         28
       ],
       "is_test": false,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "direct caller",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/refunds.py:function:apply_refund"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund"
       ],
       "state": "penumbra",
-      "tier": "glimpse",
+      "tier": "echo",
       "modifiers": [
-        "glimpse",
+        "echo",
         "fault line",
         "beacon"
       ],
       "exposures": [
         {
-          "seq": 4,
-          "kind": "grep"
+          "seq": 76,
+          "kind": "mention"
+        },
+        {
+          "seq": 76,
+          "kind": "mention"
         }
       ],
-      "sentence": "the session saw app/refunds.py in a search result and never opened it",
+      "sentence": "the session named umbra/fixtures/app/app/refunds.py in its own words and never opened it",
       "call_site": 23,
       "dependents": 4,
-      "score": 7.474,
+      "score": 10.464,
       "factors": {
         "dependents": 3.322,
         "farfield": 1,
         "faultline": 1.5,
         "relation": 3,
-        "state": 0.5,
+        "state": 0.7,
         "test": 0
       },
       "beacon": "# SAFETY: a pricing failure must not refund the full amount paid.",
-      "tests": [],
+      "tests": [
+        {
+          "id": "tests/test_refunds.py::test_apply_refund_normal",
+          "outcome": "fail"
+        },
+        {
+          "id": "tests/test_refunds.py::test_apply_refund_caps_at_paid",
+          "outcome": "fail"
+        }
+      ],
       "result": "notrun"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero",
       "name": "test_empty_is_zero",
-      "file": "tests/test_service.py",
+      "file": "umbra/fixtures/app/tests/test_service.py",
       "span": [
         19,
         20
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "direct caller",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero"
       ],
       "state": "umbra",
       "modifiers": [
@@ -156,8 +208,8 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
-      "call_site": 19,
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
+      "call_site": 20,
       "dependents": 1,
       "score": 12,
       "factors": {
@@ -172,22 +224,22 @@
       "result": "fail"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_service.py:function:test_negative",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative",
       "name": "test_negative",
-      "file": "tests/test_service.py",
+      "file": "umbra/fixtures/app/tests/test_service.py",
       "span": [
         13,
         16
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "direct caller",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:tests/test_service.py:function:test_negative"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative"
       ],
       "state": "umbra",
       "modifiers": [
@@ -195,8 +247,8 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
-      "call_site": 13,
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
+      "call_site": 15,
       "dependents": 1,
       "score": 12,
       "factors": {
@@ -211,22 +263,22 @@
       "result": "fail"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_service.py:function:test_rounding",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding",
       "name": "test_rounding",
-      "file": "tests/test_service.py",
+      "file": "umbra/fixtures/app/tests/test_service.py",
       "span": [
         7,
         10
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "direct caller",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:tests/test_service.py:function:test_rounding"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding"
       ],
       "state": "umbra",
       "modifiers": [
@@ -234,7 +286,7 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
       "call_site": 9,
       "dependents": 1,
       "score": 12,
@@ -250,59 +302,123 @@
       "result": "fail"
     },
     {
-      "id": "gh/example/repo:Python:app/report.py:function:line_total",
-      "name": "line_total",
-      "file": "app/report.py",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order",
+      "name": "test_handle_order",
+      "file": "umbra/fixtures/app/tests/test_api.py",
       "span": [
-        9,
-        11
+        11,
+        16
       ],
-      "is_test": false,
+      "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order"
       ],
       "relation": "direct caller",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/report.py:function:line_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order"
       ],
-      "state": "umbra",
-      "modifiers": [],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned app/report.py",
-      "call_site": 9,
-      "dependents": 4,
-      "score": 9.966,
+      "state": "penumbra",
+      "tier": "echo",
+      "modifiers": [
+        "echo",
+        "test",
+        "far field"
+      ],
+      "exposures": [
+        {
+          "seq": 83,
+          "kind": "mention"
+        },
+        {
+          "seq": 87,
+          "kind": "mention"
+        }
+      ],
+      "sentence": "the session named umbra/fixtures/app/tests/test_api.py in its own words and never opened it",
+      "call_site": 13,
+      "dependents": 1,
+      "score": 9.3,
       "factors": {
-        "dependents": 3.322,
-        "farfield": 1,
+        "dependents": 2,
+        "farfield": 1.5,
         "faultline": 1,
         "relation": 3,
-        "state": 1,
-        "test": 0
+        "state": 0.7,
+        "test": 3
       },
       "tests": [],
-      "result": "notrun"
+      "result": "pass"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line",
+      "name": "test_quote_single_line",
+      "file": "umbra/fixtures/app/tests/test_api.py",
+      "span": [
+        19,
+        20
+      ],
+      "is_test": true,
+      "sources": [
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote"
+      ],
+      "relation": "direct caller",
+      "depth": 1,
+      "path": [
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line"
+      ],
+      "state": "penumbra",
+      "tier": "echo",
+      "modifiers": [
+        "echo",
+        "test",
+        "far field"
+      ],
+      "exposures": [
+        {
+          "seq": 83,
+          "kind": "mention"
+        },
+        {
+          "seq": 87,
+          "kind": "mention"
+        }
+      ],
+      "sentence": "the session named umbra/fixtures/app/tests/test_api.py in its own words and never opened it",
+      "call_site": 20,
+      "dependents": 1,
+      "score": 9.3,
+      "factors": {
+        "dependents": 2,
+        "farfield": 1.5,
+        "faultline": 1,
+        "relation": 3,
+        "state": 0.7,
+        "test": 3
+      },
+      "tests": [],
+      "result": "pass"
+    },
+    {
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places",
       "name": "test_round_money_places",
-      "file": "tests/test_service.py",
+      "file": "umbra/fixtures/app/tests/test_service.py",
       "span": [
         23,
         24
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "data flow",
       "depth": 2,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/service.py:function:round_money",
-        "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places"
       ],
       "state": "umbra",
       "modifiers": [
@@ -311,7 +427,7 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_service.py",
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_service.py",
       "call_site": 0,
       "dependents": 1,
       "score": 9,
@@ -324,26 +440,26 @@
         "test": 3
       },
       "tests": [],
-      "result": "notrun"
+      "result": "pass"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal",
       "name": "test_apply_refund_normal",
-      "file": "tests/test_refunds.py",
+      "file": "umbra/fixtures/app/tests/test_refunds.py",
       "span": [
         18,
         20
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "transitive caller",
       "depth": 2,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/refunds.py:function:apply_refund",
-        "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal"
       ],
       "state": "umbra",
       "modifiers": [
@@ -352,8 +468,8 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_refunds.py",
-      "call_site": 17,
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_refunds.py",
+      "call_site": 20,
       "dependents": 2,
       "score": 8.816,
       "factors": {
@@ -365,108 +481,26 @@
         "test": 3
       },
       "tests": [],
-      "result": "notrun"
+      "result": "fail"
     },
     {
-      "id": "gh/example/repo:Python:tests/test_api.py:function:test_handle_order",
-      "name": "test_handle_order",
-      "file": "tests/test_api.py",
-      "span": [
-        11,
-        16
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "transitive caller",
-      "depth": 2,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/api.py:function:handle_order",
-        "gh/example/repo:Python:tests/test_api.py:function:test_handle_order"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "transitive",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_api.py",
-      "call_site": 14,
-      "dependents": 1,
-      "score": 7.5,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 1.5,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line",
-      "name": "test_quote_single_line",
-      "file": "tests/test_api.py",
-      "span": [
-        19,
-        20
-      ],
-      "is_test": true,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "transitive caller",
-      "depth": 2,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/api.py:function:quote",
-        "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "test",
-        "transitive",
-        "far field"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_api.py",
-      "call_site": 26,
-      "dependents": 1,
-      "score": 7.5,
-      "factors": {
-        "dependents": 2,
-        "farfield": 1.5,
-        "faultline": 1,
-        "relation": 1.5,
-        "state": 1,
-        "test": 3
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid",
       "name": "test_apply_refund_caps_at_paid",
-      "file": "tests/test_refunds.py",
+      "file": "umbra/fixtures/app/tests/test_refunds.py",
       "span": [
         13,
         15
       ],
       "is_test": true,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "transitive caller",
       "depth": 2,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/refunds.py:function:apply_refund",
-        "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid"
       ],
       "state": "umbra",
       "modifiers": [
@@ -475,8 +509,8 @@
         "far field"
       ],
       "exposures": [],
-      "sentence": "nothing in the session touched or mentioned tests/test_refunds.py",
-      "call_site": 17,
+      "sentence": "nothing in the session touched or mentioned umbra/fixtures/app/tests/test_refunds.py",
+      "call_site": 15,
       "dependents": 1,
       "score": 7.5,
       "factors": {
@@ -488,155 +522,26 @@
         "test": 3
       },
       "tests": [],
-      "result": "notrun"
+      "result": "fail"
     },
     {
-      "id": "gh/example/repo:Python:app/report.py:function:line_text",
-      "name": "line_text",
-      "file": "app/report.py",
-      "span": [
-        14,
-        16
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "transitive caller",
-      "depth": 2,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/report.py:function:line_total",
-        "gh/example/repo:Python:app/report.py:function:line_text"
-      ],
-      "state": "umbra",
-      "modifiers": [
-        "transitive"
-      ],
-      "exposures": [],
-      "sentence": "nothing in the session touched or mentioned app/report.py",
-      "call_site": 9,
-      "dependents": 2,
-      "score": 3.877,
-      "factors": {
-        "dependents": 2.585,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 1.5,
-        "state": 1,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:app/api.py:function:handle_order",
-      "name": "handle_order",
-      "file": "app/api.py",
-      "span": [
-        14,
-        23
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/api.py:function:handle_order"
-      ],
-      "state": "lit",
-      "modifiers": [],
-      "exposures": [
-        {
-          "seq": 4,
-          "kind": "grep"
-        },
-        {
-          "seq": 5,
-          "kind": "read"
-        }
-      ],
-      "sentence": "the session read or edited app/api.py after the change began",
-      "call_site": 16,
-      "dependents": 3,
-      "score": 0,
-      "factors": {
-        "dependents": 3,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 3,
-        "state": 0,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:app/api.py:function:quote",
-      "name": "quote",
-      "file": "app/api.py",
-      "span": [
-        26,
-        29
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/api.py:function:quote"
-      ],
-      "state": "lit",
-      "modifiers": [],
-      "exposures": [
-        {
-          "seq": 4,
-          "kind": "grep"
-        },
-        {
-          "seq": 5,
-          "kind": "read"
-        }
-      ],
-      "sentence": "the session read or edited app/api.py after the change began",
-      "call_site": 29,
-      "dependents": 3,
-      "score": 0,
-      "factors": {
-        "dependents": 3,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 3,
-        "state": 0,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:app/service.py:function:apply_tax",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax",
       "name": "apply_tax",
-      "file": "app/service.py",
+      "file": "umbra/fixtures/app/app/service.py",
       "span": [
-        21,
-        23
+        15,
+        17
       ],
       "is_test": false,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "data flow",
       "depth": 2,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/service.py:function:round_money",
-        "gh/example/repo:Python:app/service.py:function:apply_tax"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax"
       ],
       "state": "lit",
       "modifiers": [
@@ -644,15 +549,15 @@
       ],
       "exposures": [
         {
-          "seq": 2,
+          "seq": 69,
           "kind": "read"
         },
         {
-          "seq": 3,
+          "seq": 77,
           "kind": "edit"
         }
       ],
-      "sentence": "the session read or edited app/service.py after the change began",
+      "sentence": "the session read or edited umbra/fixtures/app/app/service.py after the change began",
       "call_site": 0,
       "dependents": 3,
       "score": 0,
@@ -668,36 +573,36 @@
       "result": "notrun"
     },
     {
-      "id": "gh/example/repo:Python:app/service.py:function:round_money",
+      "id": "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money",
       "name": "round_money",
-      "file": "app/service.py",
+      "file": "umbra/fixtures/app/app/service.py",
       "span": [
         10,
-        18
+        12
       ],
       "is_test": false,
       "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total"
       ],
       "relation": "data flow",
       "depth": 1,
       "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/service.py:function:round_money"
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total",
+        "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money"
       ],
       "state": "lit",
       "modifiers": [],
       "exposures": [
         {
-          "seq": 2,
+          "seq": 69,
           "kind": "read"
         },
         {
-          "seq": 3,
+          "seq": 77,
           "kind": "edit"
         }
       ],
-      "sentence": "the session read or edited app/service.py after the change began",
+      "sentence": "the session read or edited umbra/fixtures/app/app/service.py after the change began",
       "call_site": 0,
       "dependents": 5,
       "score": 0,
@@ -711,95 +616,438 @@
       },
       "tests": [],
       "result": "notrun"
-    },
-    {
-      "id": "gh/example/repo:Python:app/service.py:function:summarize",
-      "name": "summarize",
-      "file": "app/service.py",
-      "span": [
-        41,
-        44
-      ],
-      "is_test": false,
-      "sources": [
-        "gh/example/repo:Python:app/service.py:function:compute_total"
-      ],
-      "relation": "direct caller",
-      "depth": 1,
-      "path": [
-        "gh/example/repo:Python:app/service.py:function:compute_total",
-        "gh/example/repo:Python:app/service.py:function:summarize"
-      ],
-      "state": "lit",
-      "modifiers": [],
-      "exposures": [
-        {
-          "seq": 2,
-          "kind": "read"
-        },
-        {
-          "seq": 3,
-          "kind": "edit"
-        }
-      ],
-      "sentence": "the session read or edited app/service.py after the change began",
-      "call_site": 41,
-      "dependents": 3,
-      "score": 0,
-      "factors": {
-        "dependents": 3,
-        "farfield": 1,
-        "faultline": 1,
-        "relation": 3,
-        "state": 0,
-        "test": 0
-      },
-      "tests": [],
-      "result": "notrun"
     }
   ],
   "timeline": [
     {
-      "seq": 2,
-      "ts": "2026-09-05T10:02:00Z",
-      "kind": "read",
-      "path": "app/service.py"
-    },
-    {
       "seq": 3,
-      "ts": "2026-09-05T10:04:00Z",
-      "kind": "edit",
-      "path": "app/service.py"
-    },
-    {
-      "seq": 4,
-      "ts": "2026-09-05T10:06:00Z",
-      "kind": "grep",
-      "paths": [
-        "app/api.py",
-        "app/refunds.py"
-      ]
+      "ts": "2026-09-04T17:51:19Z",
+      "kind": "command",
+      "cmd": "pwd \u0026\u0026 echo \"--- ls ---\" \u0026\u0026 ls -la \u0026\u0026 echo \"--- git ---\" \u0026\u0026 git rev-parse --is-inside-work-tree 2\u003e\u00261 | head -5"
     },
     {
       "seq": 5,
-      "ts": "2026-09-05T10:08:00Z",
+      "ts": "2026-09-04T17:51:22Z",
+      "kind": "command",
+      "cmd": "find . -maxdepth 4 | head -80"
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-04T17:51:27Z",
+      "kind": "command",
+      "cmd": "echo \"--- entire ---\"; command -v entire || echo \"entire: NOT FOUND\" echo \"--- entire status ---\"; entire status 2\u003e\u00261 | ..."
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-04T17:51:34Z",
+      "kind": "command",
+      "cmd": "cd \"\u003crepo\u003e/files (1)\" \u0026\u0026 wc -l docs/*.md echo \"=== searching home for HANDOFF/KICKOFF/entire-graph ===\" find \u003chome\u003e -max..."
+    },
+    {
+      "seq": 8,
+      "kind": "mention",
+      "symbols": [
+        "Umbra"
+      ]
+    },
+    {
+      "seq": 9,
+      "ts": "2026-09-04T17:51:41Z",
+      "kind": "command",
+      "cmd": "head -20 \u003chome\u003e/Downloads/HANDOFF.md; echo \"=====KICKOFF=====\"; head -15 \u003chome\u003e/Downloads/KICKOFF_PROMPT.md; echo \"=====..."
+    },
+    {
+      "seq": 10,
+      "kind": "mention",
+      "symbols": [
+        "Umbra"
+      ]
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-04T17:51:50Z",
+      "kind": "command",
+      "cmd": "cd \"\u003crepo\u003e/files (1)/docs\" \u0026\u0026 for f in PRD.md ARCHITECTURE.md SECURITY_AND_ACCESS.md FRONTEND_SPEC.md; do echo \"===== $f..."
+    },
+    {
+      "seq": 12,
+      "ts": "2026-09-04T17:51:59Z",
+      "kind": "command",
+      "cmd": "ls \u003chome\u003e/.local/bin 2\u003e/dev/null | head -20; echo \"--- npm global ---\"; npm ls -g --depth=0 2\u003e/dev/null | head -20; echo..."
+    },
+    {
+      "seq": 14,
+      "kind": "mention",
+      "symbols": [
+        "Umbra",
+        "command",
+        "enabled"
+      ]
+    },
+    {
+      "seq": 17,
+      "ts": "2026-09-04T17:54:44Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 echo \"--- gh ---\" \u0026\u0026 (command -v gh \u0026\u0026 gh auth status 2\u003e\u00261 | head -10) || echo \"gh: NOT FOUND\" echo \"--- gi..."
+    },
+    {
+      "seq": 19,
+      "ts": "2026-09-04T17:54:57Z",
+      "kind": "command",
+      "cmd": "echo \"--- entireio/entire-graph ---\"; gh repo view entireio/entire-graph 2\u003e\u00261 | head -8 echo \"--- entireio org ---\"; gh ..."
+    },
+    {
+      "seq": 21,
+      "ts": "2026-09-04T17:55:12Z",
+      "kind": "command",
+      "cmd": "git init -q -b main \u0026\u0026 mkdir -p umbra/docs \u0026\u0026 cp \"files (1)/docs/\"*.md umbra/docs/ \u0026\u0026 rm -rf \"files (1)\" \u0026\u0026 ls -R . | he..."
+    },
+    {
+      "seq": 23,
+      "ts": "2026-09-04T17:55:21Z",
+      "kind": "command",
+      "cmd": "cat \u003e README.md \u003c\u003c'EOF' # Umbra Umbra is a plugin for the Entire CLI that finds the code an AI agent's change affects bu..."
+    },
+    {
+      "seq": 24,
+      "ts": "2026-09-04T17:55:26Z",
+      "kind": "command",
+      "cmd": "gh repo create Umbra --private --source=. --remote=origin --push --description \"Finds the code an AI agent's change affe..."
+    },
+    {
+      "seq": 26,
+      "ts": "2026-09-04T17:55:37Z",
+      "kind": "command",
+      "cmd": "echo \"--- cli releases ---\"; gh release list --repo entireio/cli --limit 5 2\u003e\u00261 | head echo \"--- latest assets ---\"; gh ..."
+    },
+    {
+      "seq": 29,
+      "ts": "2026-09-04T17:55:49Z",
+      "kind": "command",
+      "cmd": "cd /tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad 2\u003e/dev/null || cd /tmp gh..."
+    },
+    {
+      "seq": 31,
+      "ts": "2026-09-04T17:56:03Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad mkdir -p \"$SP/dl\" ..."
+    },
+    {
+      "seq": 32,
+      "ts": "2026-09-04T17:56:24Z",
+      "kind": "command",
+      "cmd": "set -e SP=/tmp/claude-1000/-home-\u003cuser\u003e-Desktop-Umbra/8017734d-cdf6-4a18-b2f8-f4b5f637ec35/scratchpad install -m755 \"$SP..."
+    },
+    {
+      "seq": 34,
+      "kind": "mention",
+      "symbols": [
+        "enabled"
+      ]
+    },
+    {
+      "seq": 35,
+      "ts": "2026-09-04T17:56:30Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\" echo \"--- top-level commands ---\"; entire --help 2\u003e\u00261 | sed -n '1,60p'"
+    },
+    {
+      "seq": 36,
+      "ts": "2026-09-04T17:56:34Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire auth status 2\u003e\u00261 | head -15"
+    },
+    {
+      "seq": 37,
+      "ts": "2026-09-04T17:56:41Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; entire enable --help 2\u003e\u00261 | head -40"
+    },
+    {
+      "seq": 39,
+      "ts": "2026-09-04T17:56:50Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire enable --agent claude-code --telemetry=false 2\u003e\u00261 | tail -30 echo..."
+    },
+    {
+      "seq": 40,
+      "ts": "2026-09-04T17:56:52Z",
+      "kind": "quoted",
+      "paths": [
+        ".entire/settings.json"
+      ]
+    },
+    {
+      "seq": 42,
+      "ts": "2026-09-04T17:56:57Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- capabilities ---\"; entire graph capabilities --json 2\u003e\u00261 | hea..."
+    },
+    {
+      "seq": 44,
+      "ts": "2026-09-04T17:57:14Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/docs \u0026\u0026 cat PRD.md"
+    },
+    {
+      "seq": 45,
+      "ts": "2026-09-04T17:57:16Z",
+      "kind": "command",
+      "cmd": "cat ARCHITECTURE.md"
+    },
+    {
+      "seq": 46,
+      "ts": "2026-09-04T17:57:18Z",
+      "kind": "command",
+      "cmd": "cat SECURITY_AND_ACCESS.md"
+    },
+    {
+      "seq": 47,
+      "ts": "2026-09-04T17:57:21Z",
+      "kind": "command",
+      "cmd": "cat FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 48,
+      "ts": "2026-09-04T17:57:25Z",
+      "kind": "command",
+      "cmd": "grep -n '^#\\{1,3\\} ' FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 49,
+      "ts": "2026-09-04T17:57:29Z",
+      "kind": "command",
+      "cmd": "sed -n '15,51p;303,347p' FRONTEND_SPEC.md"
+    },
+    {
+      "seq": 51,
+      "ts": "2026-09-04T17:57:32Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e; entire graph agent-guide 2\u003e\u00261 | head -80"
+    },
+    {
+      "seq": 53,
+      "ts": "2026-09-04T17:57:58Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e mkdir -p umbra/fixtures/app/app umbra/fixtures/app/tests cat \u003e umbra/fixtures/app/app/__init__.py \u003c\u003c'PY..."
+    },
+    {
+      "seq": 54,
+      "ts": "2026-09-04T17:58:13Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e app/service.py \u003c\u003c'PY' \"\"\"Order totals and the rounding rules that go with them..."
+    },
+    {
+      "seq": 55,
+      "ts": "2026-09-04T17:58:34Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e tests/__init__.py \u003c\u003c'PY' PY cat \u003e tests/test_service.py \u003c\u003c'PY' \"\"\"Totals and r..."
+    },
+    {
+      "seq": 57,
+      "kind": "mention",
+      "symbols": [
+        "pytest"
+      ]
+    },
+    {
+      "seq": 58,
+      "ts": "2026-09-04T17:58:42Z",
+      "kind": "command",
+      "cmd": "set -e cd \u003crepo\u003e/umbra/fixtures/app cat \u003e pytest.ini \u003c\u003c'INI' [pytest] testpaths = tests python_files = test_*.py python_..."
+    },
+    {
+      "seq": 59,
+      "ts": "2026-09-04T17:58:54Z",
+      "kind": "command",
+      "cmd": "./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -20"
+    },
+    {
+      "seq": 61,
+      "ts": "2026-09-04T17:59:09Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"umbra: fixture app for the probe A small Python ord..."
+    },
+    {
+      "seq": 62,
+      "ts": "2026-09-04T17:59:15Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- checkpoint list ---\"; entire checkpoint list --json 2\u003e\u00261 | hea..."
+    },
+    {
+      "seq": 63,
+      "kind": "mention",
+      "symbols": [
+        "checkpoints",
+        "hooks"
+      ]
+    },
+    {
+      "seq": 64,
+      "ts": "2026-09-04T17:59:28Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e echo \"--- .entire ---\"; ls -la .entire/ 2\u003e/dev/null; echo; cat .entire/settings.json 2\u003e/dev/null | head -40 ec..."
+    },
+    {
+      "seq": 65,
+      "ts": "2026-09-04T17:59:34Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e; ls .git/hooks/ | grep -v sample; echo \"--- post-commit ---\"; cat .git/hooks/post-commit 2\u003e/dev/null | head -2..."
+    },
+    {
+      "seq": 66,
+      "ts": "2026-09-04T17:59:42Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e echo \"--- last commit body ---\"; git log -1 --format=%B echo \"--- prepar..."
+    },
+    {
+      "seq": 67,
+      "ts": "2026-09-04T17:59:47Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import --help 2\u003e\u00261 | head -30"
+    },
+    {
+      "seq": 68,
+      "kind": "mention",
+      "symbols": [
+        "hooks"
+      ]
+    },
+    {
+      "seq": 69,
+      "ts": "2026-09-04T17:59:56Z",
       "kind": "read",
-      "path": "app/api.py"
+      "path": "umbra/fixtures/app/app/service.py"
+    },
+    {
+      "seq": 70,
+      "kind": "mention",
+      "symbols": [
+        "compute_total"
+      ]
+    },
+    {
+      "seq": 71,
+      "ts": "2026-09-04T18:00:03Z",
+      "kind": "read",
+      "path": "umbra/fixtures/app/app/api.py",
+      "range": [
+        1,
+        12
+      ]
+    },
+    {
+      "seq": 73,
+      "ts": "2026-09-04T18:00:24Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" --include=*.py ."
+    },
+    {
+      "seq": 74,
+      "ts": "2026-09-04T18:00:26Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 grep -rn \"compute_total\" app tests"
+    },
+    {
+      "seq": 76,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/app/refunds.py"
+      ],
+      "symbols": [
+        "apply_refund"
+      ]
+    },
+    {
+      "seq": 77,
+      "ts": "2026-09-04T18:01:05Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/service.py"
+    },
+    {
+      "seq": 78,
+      "ts": "2026-09-04T18:01:07Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 79,
+      "ts": "2026-09-04T18:01:11Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 80,
+      "ts": "2026-09-04T18:01:13Z",
+      "kind": "edit",
+      "path": "umbra/fixtures/app/app/api.py"
+    },
+    {
+      "seq": 82,
+      "ts": "2026-09-04T18:01:16Z",
+      "kind": "command",
+      "cmd": "./.venv/bin/python -m pytest tests/test_api.py 2\u003e\u00261 | tail -8"
+    },
+    {
+      "seq": 83,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/tests/test_api.py"
+      ]
+    },
+    {
+      "seq": 84,
+      "ts": "2026-09-04T18:01:25Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e \u0026\u0026 git add -A \u0026\u0026 git -c commit.gpgsign=false commit -q -m \"make the tax rate explicit on compute_total compute..."
+    },
+    {
+      "seq": 85,
+      "ts": "2026-09-04T18:01:30Z",
+      "kind": "command",
+      "cmd": "cd \u003crepo\u003e/umbra/fixtures/app \u0026\u0026 ./.venv/bin/python -m pytest -q 2\u003e\u00261 | tail -12"
+    },
+    {
+      "seq": 87,
+      "kind": "mention",
+      "paths": [
+        "umbra/fixtures/app/tests/test_api.py"
+      ]
+    },
+    {
+      "seq": 88,
+      "ts": "2026-09-04T18:01:38Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --help 2\u003e\u00261 | head -30"
+    },
+    {
+      "seq": 89,
+      "ts": "2026-09-04T18:01:42Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code --dry-run 2\u003e\u00261 | head -20"
+    },
+    {
+      "seq": 90,
+      "ts": "2026-09-04T18:01:47Z",
+      "kind": "command",
+      "cmd": "export PATH=\"$HOME/.local/bin:$PATH\"; cd \u003crepo\u003e entire import claude-code 2\u003e\u00261 | head -20 echo \"=== checkpoint list ===\"..."
     }
   ],
-  "t0": 3,
+  "t0": 77,
   "execution": {
     "selected": [
-      "tests/test_api.py::test_handle_order",
-      "tests/test_api.py::test_quote_single_line",
-      "tests/test_refunds.py::test_apply_refund_caps_at_paid",
-      "tests/test_refunds.py::test_apply_refund_normal",
       "tests/test_service.py::test_empty_is_zero",
       "tests/test_service.py::test_negative",
+      "tests/test_service.py::test_rounding",
+      "tests/test_api.py::test_handle_order",
+      "tests/test_api.py::test_quote_single_line",
       "tests/test_service.py::test_round_money_places",
-      "tests/test_service.py::test_rounding"
+      "tests/test_refunds.py::test_apply_refund_normal",
+      "tests/test_refunds.py::test_apply_refund_caps_at_paid"
     ],
     "new_failures": [
+      "tests/test_refunds.py::test_apply_refund_caps_at_paid",
+      "tests/test_refunds.py::test_apply_refund_normal",
       "tests/test_service.py::test_empty_is_zero",
       "tests/test_service.py::test_negative",
       "tests/test_service.py::test_rounding"
@@ -807,14 +1055,14 @@
     "fixed": [],
     "sweep": true,
     "leaks": [],
-    "verdict": "REGRESSION in 3 tests"
+    "verdict": "REGRESSION in 5 tests: tests/test_refunds.py::test_apply_refund_caps_at_paid, tests/test_refunds.py::test_apply_refund_normal, tests/test_service.py::test_empty_is_zero, tests/test_service.py::test_negative, tests/test_service.py::test_rounding"
   },
   "summary": {
-    "lit": 5,
-    "penumbra": 1,
-    "umbra": 10,
+    "lit": 2,
+    "penumbra": 3,
+    "umbra": 6,
     "unknown": 0,
-    "illumination": 0.3125
+    "illumination": 0.18181818181818182
   },
   "layout": {
     "view_box": [
@@ -842,202 +1090,154 @@
       }
     ],
     "sources": {
-      "gh/example/repo:Python:app/service.py:function:compute_total": {
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:handle_order": {
         "x": 600,
+        "y": 344
+      },
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/api.py:function:quote": {
+        "x": 656,
+        "y": 400
+      },
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:compute_total": {
+        "x": 600,
+        "y": 456
+      },
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:summarize": {
+        "x": 544,
         "y": 400
       }
     },
     "nodes": {
-      "gh/example/repo:Python:app/api.py:function:handle_order": {
-        "x": 491.49,
-        "y": 530.86,
-        "angle": 219.66666666666666,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:app/api.py:function:quote": {
-        "x": 434.81,
-        "y": 440.17,
-        "angle": 256.3333333333333,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:app/refunds.py:function:apply_refund": {
-        "x": 608.9,
-        "y": 569.77,
-        "angle": 177,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/refunds.py:function:apply_refund": {
+        "x": 617.77,
+        "y": 569.07,
+        "angle": 174,
         "ring": 170,
         "depth": 1,
         "anchor": "below",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:app/report.py:function:line_text": {
-        "x": 322.26,
-        "y": 364.49,
-        "angle": 277.2857142857143,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:apply_tax": {
+        "x": 389.48,
+        "y": 215.38,
+        "angle": 311.25,
         "ring": 280,
         "depth": 2,
         "anchor": "left",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:app/report.py:function:line_total": {
-        "x": 721.6,
-        "y": 518.8,
-        "angle": 134.33333333333334,
-        "ring": 170,
-        "depth": 1,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:app/service.py:function:apply_tax": {
-        "x": 461.82,
-        "y": 156.47,
-        "angle": 330.42857142857144,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "left",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:app/service.py:function:round_money": {
-        "x": 451.31,
-        "y": 317.58,
-        "angle": 298.99999999999994,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/app/service.py:function:round_money": {
+        "x": 515,
+        "y": 252.78,
+        "angle": 330,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:app/service.py:function:summarize": {
-        "x": 529.95,
-        "y": 245.1,
-        "angle": 335.66666666666663,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_handle_order": {
+        "x": 473.67,
+        "y": 513.75,
+        "angle": 228,
         "ring": 170,
         "depth": 1,
         "anchor": "left",
         "toward": {
           "x": 600,
+          "y": 344
+        }
+      },
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_api.py:function:test_quote_single_line": {
+        "x": 430.93,
+        "y": 382.23,
+        "angle": 276,
+        "ring": 170,
+        "depth": 1,
+        "anchor": "left",
+        "toward": {
+          "x": 656,
           "y": 400
         }
       },
-      "gh/example/repo:Python:tests/test_api.py:function:test_handle_order": {
-        "x": 614.65,
-        "y": 679.62,
-        "angle": 177.00000000000003,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_caps_at_paid": {
+        "x": 800.56,
+        "y": 595.38,
+        "angle": 134.25,
         "ring": 280,
         "depth": 2,
-        "anchor": "below",
+        "anchor": "right",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:tests/test_api.py:function:test_quote_single_line": {
-        "x": 404.99,
-        "y": 600.93,
-        "angle": 224.14285714285717,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_refunds.py:function:test_apply_refund_normal": {
+        "x": 420.96,
+        "y": 615.28,
+        "angle": 219.75,
         "ring": 280,
         "depth": 2,
         "anchor": "left",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_caps_at_paid": {
-        "x": 872.51,
-        "y": 335.65,
-        "angle": 76.71428571428572,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:tests/test_refunds.py:function:test_apply_refund_normal": {
-        "x": 832.52,
-        "y": 555.99,
-        "angle": 123.85714285714286,
-        "ring": 280,
-        "depth": 2,
-        "anchor": "right",
-        "toward": {
-          "x": 600,
-          "y": 400
-        }
-      },
-      "gh/example/repo:Python:tests/test_service.py:function:test_empty_is_zero": {
-        "x": 769.93,
-        "y": 404.94,
-        "angle": 91.66666666666666,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_empty_is_zero": {
+        "x": 747.22,
+        "y": 485,
+        "angle": 120,
         "ring": 170,
         "depth": 1,
         "anchor": "right",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:tests/test_service.py:function:test_negative": {
-        "x": 739.26,
-        "y": 302.49,
-        "angle": 55,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_negative": {
+        "x": 761.68,
+        "y": 347.47,
+        "angle": 72,
         "ring": 170,
         "depth": 1,
         "anchor": "right",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:tests/test_service.py:function:test_round_money_places": {
-        "x": 711.97,
-        "y": 143.36,
-        "angle": 23.571428571428573,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_round_money_places": {
+        "x": 790.06,
+        "y": 194.39,
+        "angle": 42.75,
         "ring": 280,
         "depth": 2,
         "anchor": "right",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       },
-      "gh/example/repo:Python:tests/test_service.py:function:test_rounding": {
-        "x": 653.47,
-        "y": 238.63,
-        "angle": 18.333333333333332,
+      "gh/u7k4rs6/Umbra:Python:umbra/fixtures/app/tests/test_service.py:function:test_rounding": {
+        "x": 669.15,
+        "y": 244.7,
+        "angle": 24,
         "ring": 170,
         "depth": 1,
-        "anchor": "above",
+        "anchor": "right",
         "toward": {
           "x": 600,
-          "y": 400
+          "y": 456
         }
       }
     },
@@ -1048,12 +1248,28 @@
     "read evidence is file and line-range based; a mention in the agent's text is attention, not reading, and is the weakest tier",
     "fault lines and beacons are matched by a regex window around the call site, not by a parser",
     "ranking weights are hand set and printed; they are a heuristic, not a measurement",
-    "the fixture is seeded to produce lit, penumbra and umbra nodes and failing shadowed tests"
+    "relations not traversed: CONFIGURES, CONSTRUCTS, EMITS, HANDLES_GRAPHQL, HANDLES_GRPC, HANDLES_ROUTE, HANDLES_TOOL, HANDLES_TRPC, HTTP_CALLS, LISTENS_ON, RESOURCE_DEPENDS_ON, SIMILAR_TO"
   ],
   "commands_run": [
-    "entire graph snapshot --repo . --format ndjson",
-    "entire graph commit HEAD --repo . --json",
-    "entire graph impact --symbol compute_total --repo . --format json",
-    "entire checkpoint explain \u003cid\u003e --raw-transcript"
+    "entire checkpoint list --json",
+    "git -C \u003crepo\u003e rev-parse --verify 0063443^{commit}",
+    "git -C \u003crepo\u003e rev-list --parents -n 1 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
+    "git -C \u003crepo\u003e log -1 --format=%B 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
+    "git -C \u003crepo\u003e log -1 --format=%cI 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head 00634433c2bc2ac6d1da8e76f45847e7f6702a36",
+    "git -C \u003crepo\u003e worktree add --detach \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base faf4dc616ae391650ddd4680657d64b79d9d248f",
+    "entire graph capabilities --json",
+    "entire graph snapshot --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format ndjson",
+    "entire graph commit 00634433c2bc2ac6d1da8e76f45847e7f6702a36 --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --json",
+    "entire graph impact --symbol handle_order --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 14",
+    "entire graph impact --symbol quote --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/api.py --line 26",
+    "entire graph impact --symbol compute_total --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 20",
+    "entire graph impact --symbol summarize --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head --format json --file umbra/fixtures/app/app/service.py --line 33",
+    "entire checkpoint explain b20f84567474 --raw-transcript",
+    "entire checkpoint explain b20f84567474 --short",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v tests/test_service.py::test_empty_is_zero tests/test_service.py::test_negative tests/test_service.py::test_rounding tests/test_api.py::test_handle_order tests/test_api.py::test_quote_single_line tests/test_service.py::test_round_money_places tests/test_refunds.py::test_apply_refund_normal tests/test_refunds.py::test_apply_refund_caps_at_paid --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/baseline.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/base/umbra/fixtures/app --test pytest -v --record-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json",
+    "entire graph verify --repo \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/head/umbra/fixtures/app --test pytest -v --pre-edit-baseline \u003chome\u003e/.local/share/entire/plugins/data/umbra/wt/00634433c2bc2ac6d1da8e76f45847e7f6702a36/sweep.json"
   ]
 }
