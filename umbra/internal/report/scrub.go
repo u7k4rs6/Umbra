@@ -20,8 +20,8 @@ var tokenREs = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}`),
 	regexp.MustCompile(`(?i)\b(api[_-]?key|secret|password|token)\s*[:=]\s*\S+`),
 	regexp.MustCompile(`(?i)-----BEGIN [A-Z ]*PRIVATE KEY-----`),
-	// A long unbroken run of base64-ish characters is almost never prose.
-	regexp.MustCompile(`\b[A-Za-z0-9+/]{40,}={0,2}\b`),
+	// A long unbroken run of base64 is handled separately, in redactBase64,
+	// because it needs a condition a single pattern cannot express here.
 }
 
 // Scrubber removes identifying and secret-shaped text.
@@ -69,7 +69,46 @@ func (s *Scrubber) Clean(text string) string {
 	for _, re := range tokenREs {
 		text = re.ReplaceAllString(text, "<redacted>")
 	}
-	return text
+	return redactBase64(text)
+}
+
+// base64RE finds a long unbroken run of base64 characters, which is almost
+// never prose.
+//
+// The slash is deliberately not in the class. Base64 may contain one, but a
+// file path is a long run of letters, digits and slashes, so including it
+// redacted every worktree path in the reproduce list. A real encoded secret
+// still trips this on the runs between its slashes.
+var base64RE = regexp.MustCompile(`\b[A-Za-z0-9+]{40,}={0,2}\b`)
+
+// redactBase64 removes long base64 runs, but leaves a run that is entirely
+// hexadecimal alone.
+//
+// A git object id is forty hex characters and matches the base64 shape
+// exactly. Redacting it would take out every commit in the reproduce list,
+// and the whole point of that list is that a reader can check a line without
+// trusting the report. A secret encoded in base64 uses the full alphabet, so
+// requiring one character outside the hex range keeps the guard useful.
+func redactBase64(text string) string {
+	return base64RE.ReplaceAllStringFunc(text, func(run string) string {
+		if isHex(run) {
+			return run
+		}
+		return "<redacted>"
+	})
+}
+
+func isHex(s string) bool {
+	for _, r := range s {
+		switch {
+		case r >= '0' && r <= '9':
+		case r >= 'a' && r <= 'f':
+		case r >= 'A' && r <= 'F':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // Sentence scrubs and caps the one transcript-derived sentence Umbra ever

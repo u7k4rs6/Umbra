@@ -185,7 +185,11 @@ func (a ClaudeCode) toolUse(b block, root string, ts time.Time, next func() int)
 		if in.FilePath == "" {
 			return nil
 		}
-		ev := Event{Seq: next(), TS: ts, Kind: Read, Path: rel(root, in.FilePath), ToolID: b.ID}
+		path := rel(root, in.FilePath)
+		if path == "" {
+			return nil
+		}
+		ev := Event{Seq: next(), TS: ts, Kind: Read, Path: path, ToolID: b.ID}
 		// offset and limit are present only for a partial read, which is what
 		// makes the glance tier possible. offset is 1 based.
 		if in.Offset != nil && in.Limit != nil {
@@ -218,7 +222,11 @@ func (a ClaudeCode) toolUse(b block, root string, ts time.Time, next func() int)
 		if p == "" {
 			return nil
 		}
-		return &Event{Seq: next(), TS: ts, Kind: Edit, Path: rel(root, p), ToolID: b.ID}
+		rp := rel(root, p)
+		if rp == "" {
+			return nil
+		}
+		return &Event{Seq: next(), TS: ts, Kind: Edit, Path: rp, ToolID: b.ID}
 
 	case "Bash":
 		var in pathInput
@@ -283,20 +291,28 @@ func parseTime(s string) time.Time {
 	return time.Time{}
 }
 
-// rel makes an absolute path repository relative. A path already relative is
-// returned cleaned. A path outside the repository is returned unchanged, and
-// will simply not match anything in the field.
+// rel makes an absolute path repository relative.
+//
+// A path outside the repository returns the empty string and the caller drops
+// it. It can never match a symbol in the field, so it is noise, and carrying
+// it into a report would leak the shape of the machine the session ran on:
+// a search that happened to list files in another project would put those
+// paths in the timeline. Only when the repository root is unknown is an
+// absolute path passed through, because then nothing can be judged.
 func rel(root, p string) string {
 	if p == "" {
 		return ""
 	}
 	p = filepath.Clean(p)
-	if root == "" || !filepath.IsAbs(p) {
+	if !filepath.IsAbs(p) {
 		return filepath.ToSlash(strings.TrimPrefix(p, "./"))
 	}
-	r, err := filepath.Rel(filepath.Clean(root), p)
-	if err != nil || strings.HasPrefix(r, "..") {
+	if root == "" {
 		return filepath.ToSlash(p)
+	}
+	r, err := filepath.Rel(filepath.Clean(root), p)
+	if err != nil || r == ".." || strings.HasPrefix(r, "../") {
+		return ""
 	}
 	return filepath.ToSlash(r)
 }
