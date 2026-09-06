@@ -21,6 +21,15 @@
   --amber-4: #7A2F08;
   --amber-5: #3A1604;
 
+  /* The focus ring is the one thing on this page that is not in the warm ramp.
+   * Phase 16 pulled it into the ramp to keep the page to a single hue, and the
+   * screenshots in phase 17 showed what that cost: the ring came out the exact
+   * colour of the divider, of a pressed beat's marker and of a pressed legend
+   * orb's border, so on those three controls focus was invisible. A ring has
+   * to be findable before it is tasteful. This is FRONTEND_SPEC.md's own focus
+   * colour, put back. */
+  --focus-ring: #9CC4FF;
+
   --ground: #000000;
   --ink: #F3EAE0;
   --ink-2: #9A8F84;
@@ -52,7 +61,7 @@
   --unknown: #5E564E;
   --fail: var(--amber-3);
   --pass: var(--ink);
-  --focus: var(--amber-2);
+  --focus: var(--focus-ring);
   /* The corona behind the map is the light on this page, so the map's own
    * field is turned down to keep the two from adding into a haze. */
   --glow-peak: 0.16;
@@ -74,7 +83,7 @@
   --unknown: #9A9088;
   --fail: #8A3D06;
   --pass: #14100C;
-  --focus: #8A3D06;
+  --focus: #1A4F9C;
   --glow-peak: 0.14;
   --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
   --ground: #F7F3ED;
@@ -492,7 +501,7 @@ footer p { color: var(--ink-2); font-size: 13px; }
     --unknown: #9A9088;
     --fail: #8A3D06;
     --pass: #14100C;
-    --focus: #8A3D06;
+    --focus: #1A4F9C;
     --glow-peak: 0.14;
     --pool-ink: color-mix(in srgb, var(--ink) 18%, transparent);
   }

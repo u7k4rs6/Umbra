@@ -58,3 +58,19 @@ why the shadow pools there are darker than the paper rather than lighter. In
 `landing-night-greyscale.png` the three states are still separable: a lit node
 is a filled white disc, a penumbra node a half disc, an umbra node an outlined
 hatched disc, and the legend orbs differ in radius as well as in value.
+
+## Phase 17: the two visual checks
+
+| File | What it is for |
+|---|---|
+| `ground-black.png` | the hero on the current pure black |
+| `ground-nearblack.png` | the same hero, same playhead, on FRONTEND_SPEC.md's `#10141C` |
+| `focus-nav.png` | focus on a nav link |
+| `focus-copy.png` | focus on the install copy button |
+| `focus-divider.png` | focus on the day and night divider |
+
+The two ground renders are meant to be compared at the corona's outer falloff,
+not at its centre, which is identical in both. NOTES.md carries the luminance
+samples. The three focus renders were taken after the ring was moved back out
+of the warm ramp; the version that prompted the change had a ring the same
+colour as the divider it surrounded.

@@ -903,6 +903,64 @@ the landing page has no docket and no detail panel, which is what the spec's
 own landing-page section describes. The map is still one tab stop and its nodes
 still carry their labels.
 
+## Phase 17: two visual checks
+
+### Ground colour, measured rather than argued
+
+The hero rendered twice at the same viewport and the same playhead, once on the
+current pure black and once on FRONTEND_SPEC.md's `#10141C`:
+`docs/renders/ground-black.png` and `docs/renders/ground-nearblack.png`.
+
+Sampling the luminance along the horizontal from the eclipse centre outwards,
+the corona's geometry is identical in both, reaching the ground at the same
++372px. What differs is whether the tail can be seen getting there.
+
+| Distance from the limb | On black | On `#10141C` |
+|---|---|---|
+| ground level | 0.00 | 19.73 |
+| +60px | 14.05 above ground, rgb 20,13,7 | 11.98 above ground, rgb 34,31,32 |
+| +120px | 32.17 above ground | 28.31 above ground, rgb 60,46,33 |
+| +200px | 2.49 above ground | 1.49 above ground, rgb 20,21,27 |
+| +280px and beyond | 0.00 | 0.00 |
+
+Two things go wrong on the lifted ground. The tail is clamped: from +200px out
+it sits within 1.5 luminance units of the ground, so the last 170px of corona
+is in the pixels but not in the eye, and the light reads as stopping at +200px
+rather than fading to nothing. And the warm tail desaturates: at +60px it
+renders rgb 34,31,32, which is neutral grey, because a low-alpha warm layer
+summed with a blue-black ground lands off the warm axis. At +200px the blue
+channel is actually **lower** than the ground's own, so the faintest corona is
+a cool smudge rather than warm light.
+
+**Pure black holds the corona better**, and the reason is specific to this
+page: the corona is the light source here, and a light field is only as long as
+the floor it falls to. The spec's argument for the blue-black is that a neutral
+near-black with one neon accent reads as a template, and that argument is
+answered by the full warm ramp rather than by lifting the floor. Not changed.
+
+### Focus visibility, and one thing put back
+
+Three focus positions captured: `docs/renders/focus-nav.png`,
+`focus-copy.png`, `focus-divider.png`.
+
+On the nav link and the copy button the amber ring was findable, roughly 7 to 1
+against black. On the divider it was not, and the screenshot says why in one
+look: the ring came out `rgb(255, 163, 60)`, which is the exact colour of the
+divider line it surrounds, so focus read as a second decorative line. The same
+collision was measured on a pressed beat, whose selected marker is that colour,
+and on a pressed legend orb, whose border is too.
+
+**Fixed by restoring a distinct focus hue**, not by thickening the ring:
+`--focus-ring: #9CC4FF` for night and `#1A4F9C` for day and print, which are
+FRONTEND_SPEC.md's own focus colours. The ring stays 2px with a 2px offset,
+4px on the divider.
+
+This is a deviation from the phase 16 direction, which asked for one warm hue
+and no third hue anywhere. It is recorded as a deviation in both directions: it
+breaks the one-hue rule on purpose, and it puts the spec's value back. A focus
+ring the same colour as the control it marks is not a focus ring, and this page
+is the only place where the two rules could not both hold.
+
 ## Before this repository is ever made public
 
 It is private, and the phase 12 scrub pass found one reason it should stay that
