@@ -52,6 +52,11 @@ func Packet(w io.Writer, a *Analysis) error {
 		fmt.Fprintf(b, "The session's own account, %s:\n\n> %s\n\n", a.SessionSaidFrom, a.SessionSaid)
 		fmt.Fprintf(b, "That sentence is displayed, never checked. This packet reports what the session did.\n\n")
 	}
+	fmt.Fprintf(b, "How the session worked: %s.\n\n", CoverageLine(a))
+	if note := CoverageNote(a); note != "" {
+		fmt.Fprintf(b, "> %s\n\n", note)
+	}
+
 	counts := map[string]int{}
 	for _, e := range a.Timeline {
 		counts[e.Kind]++

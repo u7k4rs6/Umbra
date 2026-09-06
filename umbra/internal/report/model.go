@@ -3,6 +3,7 @@ package report
 import (
 	"github.com/u7k4rs6/Umbra/umbra/internal/graph"
 	"github.com/u7k4rs6/Umbra/umbra/internal/shadow"
+	"github.com/u7k4rs6/Umbra/umbra/internal/transcript"
 )
 
 // Analysis is everything a renderer needs. It is built once and handed to
@@ -44,6 +45,9 @@ type Analysis struct {
 	Timeline []TimelineEvent
 	Cut      int
 	HasCut   bool
+	// Coverage is how the session worked: how many of its tool events were
+	// file reads and edits, and how many were shell commands.
+	Coverage transcript.Coverage
 
 	Execution   Execution
 	Layout      *Layout

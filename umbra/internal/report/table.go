@@ -70,6 +70,13 @@ func Table(w io.Writer, a *Analysis, o TableOptions) error {
 			fmt.Fprintf(b, "              %s\n", dim(o, "from "+a.SessionSaidFrom))
 		}
 	}
+	fmt.Fprintf(b, "coverage  %s\n", CoverageLine(a))
+	if note := CoverageNote(a); note != "" {
+		for _, line := range wrapAt(note, 76) {
+			fmt.Fprintf(b, "          %s\n", dim(o, line))
+		}
+	}
+
 	for _, n := range a.Notes {
 		fmt.Fprintf(b, "note   %s\n", n)
 	}
@@ -271,4 +278,24 @@ func shortSHA(s string) string {
 		return "(no commit)"
 	}
 	return s
+}
+
+// wrapAt breaks a sentence into lines no longer than n, so a note reads in a
+// terminal without relying on the terminal to wrap it.
+func wrapAt(text string, n int) []string {
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return nil
+	}
+	var out []string
+	line := words[0]
+	for _, w := range words[1:] {
+		if len(line)+1+len(w) > n {
+			out = append(out, line)
+			line = w
+			continue
+		}
+		line += " " + w
+	}
+	return append(out, line)
 }
