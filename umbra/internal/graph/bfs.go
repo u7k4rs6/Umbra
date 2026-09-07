@@ -17,7 +17,18 @@ type Reach struct {
 	// CallSite is the line of the call into the source, when the first hop
 	// carried one.
 	CallSite int
-	// Weakest is the quality of the least confident edge on the path.
+	// Heuristic is set when any hop was a relation type the provider documents
+	// as heuristic, or was resolved by anything other than a parse.
+	// LastHopHeuristic says whether the doubt is on this node's own edge or
+	// inherited from further up the chain, and HeuristicVia names the first
+	// hop that introduced it.
+	Heuristic        bool
+	LastHopHeuristic bool
+	HeuristicVia     string
+	// Warnings are every per-relation warning code the provider attached to
+	// any hop on the path, deduplicated.
+	Warnings []string
+	// Weakest is the quality of the least resolved edge on the path.
 	//
 	// Relation, Family and CallSite above describe the FIRST hop, because that
 	// is the hop the ranker weighs. Quality is carried the other way, from the
@@ -54,13 +65,17 @@ func (f *Field) Dependents(sources []string, depth int, rm *RelationMap) []Reach
 
 	for _, src := range ordered {
 		type item struct {
-			id       string
-			depth    int
-			relation string
-			family   Family
-			path     []string
-			callSite int
-			weakest  EdgeQuality
+			id           string
+			depth        int
+			relation     string
+			family       Family
+			path         []string
+			callSite     int
+			weakest      EdgeQuality
+			heuristic    bool
+			lastHop      bool
+			heuristicVia string
+			warnings     []string
 		}
 		seen := map[string]bool{src: true}
 		queue := []item{{id: src, depth: 0, path: []string{src}}}
@@ -113,12 +128,35 @@ func (f *Field) Dependents(sources []string, depth int, rm *RelationMap) []Reach
 					callSite: callSite,
 					weakest:  weaker(cur.weakest, e.Quality),
 				}
+				// A hop is heuristic when the provider calls the relation type
+				// heuristic, or when it resolved the edge by something other
+				// than a parse. Either way the chain is only as trustworthy as
+				// that hop, so the flag travels and the first one to set it is
+				// named.
+				hopHeuristic := rm.IsHeuristic(e.Relation) ||
+					(e.Quality.Known() && !ResolutionIsStructural(e.Quality.Resolution))
+				next.lastHop = hopHeuristic
+				next.heuristic = cur.heuristic || hopHeuristic
+				next.heuristicVia = cur.heuristicVia
+				if hopHeuristic && !cur.heuristic {
+					// Name the hop, not the relation type: a reader chasing
+					// this wants to know which link in the chain to check.
+					next.heuristicVia = e.From
+				}
+				next.warnings = cur.warnings
+				for _, w := range e.Quality.WarningCodes {
+					if !containsString(next.warnings, w) {
+						next.warnings = append(append([]string(nil), next.warnings...), w)
+					}
+				}
 				queue = append(queue, next)
 
 				r := Reach{
 					ID: next.id, Source: src, Relation: next.relation, Family: next.family,
 					Depth: next.depth, Path: next.path, CallSite: next.callSite,
-					Weakest: next.weakest,
+					Weakest: next.weakest, Heuristic: next.heuristic,
+					LastHopHeuristic: next.lastHop, HeuristicVia: next.heuristicVia,
+					Warnings: next.warnings,
 				}
 				if prev, ok := best[next.id]; !ok || better(r, prev) {
 					best[next.id] = r
@@ -278,8 +316,29 @@ func weaker(carried, next EdgeQuality) EdgeQuality {
 	if !carried.Known() {
 		return next
 	}
+	// Resolution first, confidence second. The provider's resolution is a
+	// named category with an order the vocabulary in evidence.go defines;
+	// confidence is a float it attaches on top and is not derivable from it.
+	// Ranking by the category and using the number only to break a tie is what
+	// the fork's implementation did, and it is the better key: a name_only
+	// guess at 0.85 is weaker evidence than an exact match at 0.8.
+	if nr, cr := ResolutionRank(next.Resolution), ResolutionRank(carried.Resolution); nr != cr {
+		if nr < cr {
+			return next
+		}
+		return carried
+	}
 	if next.Confidence < carried.Confidence {
 		return next
 	}
 	return carried
+}
+
+func containsString(list []string, want string) bool {
+	for _, x := range list {
+		if x == want {
+			return true
+		}
+	}
+	return false
 }

@@ -74,9 +74,17 @@ func ParseCapabilities(blob []byte) (*Capabilities, error) {
 
 // RelationMap is the resolved mapping for one installed Graph.
 type RelationMap struct {
-	byName  map[string]Family
-	Used    []string
-	Ignored []string
+	byName map[string]Family
+	// heuristic is the set the provider documents as derived rather than
+	// parsed. Capabilities has carried it since the first commit of this
+	// package and nothing read it until now, so a relation the provider itself
+	// calls a guess arrived in the field under the same certainty as a call it
+	// resolved to a definition.
+	heuristic map[string]bool
+	// Heuristic is the same set, sorted, for the header.
+	Heuristic []string
+	Used      []string
+	Ignored   []string
 }
 
 // NewRelationMap resolves the installed relation names into families.
@@ -85,7 +93,14 @@ type RelationMap struct {
 // and the report header names it, so a reader can see what the map does not
 // account for.
 func NewRelationMap(c *Capabilities) *RelationMap {
-	m := &RelationMap{byName: map[string]Family{}}
+	m := &RelationMap{byName: map[string]Family{}, heuristic: map[string]bool{}}
+	if c != nil {
+		for _, name := range c.HeuristicRelations {
+			m.heuristic[name] = true
+			m.Heuristic = append(m.Heuristic, name)
+		}
+		sort.Strings(m.Heuristic)
+	}
 	names := []string(nil)
 	if c != nil {
 		names = c.SupportedRelationTypes
@@ -145,4 +160,24 @@ func (c *Capabilities) Offline() bool {
 		}
 	}
 	return true
+}
+
+// IsHeuristic reports whether the installed Graph documents this relation type
+// as heuristic rather than parsed. On the build in use that is HANDLES_ROUTE,
+// HTTP_CALLS, EMITS, LISTENS_ON, HANDLES_TOOL, SIMILAR_TO and TESTS.
+//
+// Co-change is heuristic by construction rather than by declaration: it is
+// derived from commit history, carries the resolution git_history, and is
+// therefore never structural whatever capabilities lists.
+func (m *RelationMap) IsHeuristic(name string) bool {
+	if m == nil {
+		return false
+	}
+	if m.heuristic[name] {
+		return true
+	}
+	if f, ok := m.byName[name]; ok && f == FamilyCoChange {
+		return true
+	}
+	return false
 }

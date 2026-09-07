@@ -40,8 +40,39 @@ type Node struct {
 
 	Dependents int
 	CallSite   int
-	Score      float64
-	Factors    map[string]float64
+
+	// What the provider said about the relations this node was reached
+	// through. Carried from graph.Reach and never used by Score: the six
+	// ranking factors are unchanged, and this is a separate axis the reader
+	// sees beside the score rather than inside it.
+	Resolution string
+	Confidence float64
+	// HeuristicEdge is set when any hop on the path was resolved by anything
+	// other than a parse, or was a relation type the provider documents as
+	// heuristic. HeuristicVia names the first such hop, and LastHopHeuristic
+	// says whether the doubt is on this node's own edge or inherited from
+	// further up the chain.
+	HeuristicEdge    bool
+	LastHopHeuristic bool
+	HeuristicVia     string
+	// EdgeWarnings are the provider's per-relation warning codes on the path.
+	EdgeWarnings []string
+	// FileIncomplete is set when the snapshot reported a partial failure or a
+	// warning against this node's own file, or its language is one the
+	// provider indexes inventory-only.
+	FileIncomplete bool
+	// IncompleteWhy is the provider's own code and effect sentence for that,
+	// so the report quotes the tool rather than paraphrasing it.
+	IncompleteWhy string
+
+	// Evidence is how much of this node's presence in the field the graph can
+	// vouch for, and EvidenceWhy is the one sentence that explains it. Set by
+	// ClassifyEvidence after the states are decided; it never changes a state
+	// and never enters Score.
+	Evidence    Evidence
+	EvidenceWhy string
+	Score       float64
+	Factors     map[string]float64
 	// Beacon is the annotation comment line when the node is pinned.
 	Beacon string
 

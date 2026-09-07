@@ -64,6 +64,9 @@ type EdgeQuality struct {
 	Scope      string
 	Resolution string
 	TargetKind string
+	// WarningCodes are the provider's own per-relation warnings, kept so a
+	// report can quote the tool's code rather than paraphrase it.
+	WarningCodes []string
 }
 
 // Scope and TargetKind values worth naming, since two of them are load bearing.
@@ -100,6 +103,14 @@ type Field struct {
 
 	// Relations counts each relation name seen, for the header.
 	Relations map[string]int
+	// Resolutions counts each resolution seen, so the header can say how much
+	// of the field the provider parsed and how much it guessed.
+	Resolutions map[string]int
+	// Meta is what the snapshot said about its own completeness: the profile,
+	// the warnings, the partial failures and the records this loader could
+	// not use. An empty field built from nothing readable used to look
+	// exactly like a clean one.
+	Meta *SnapshotMeta
 }
 
 // snapshot record shapes, exactly as the Step 0 probe observed them.
@@ -122,15 +133,28 @@ type snapRecord struct {
 	Language      string `json:"language"`
 
 	// relation
-	FromID     string         `json:"from_id"`
-	ToID       string         `json:"to_id"`
-	Type       string         `json:"type"`
-	Evidence   []snapEvidence `json:"evidence"`
-	Confidence float64        `json:"confidence"`
-	Reason     string         `json:"reason"`
-	Scope      string         `json:"relation_scope"`
-	Resolution string         `json:"resolution"`
-	TargetKind string         `json:"target_kind"`
+	FromID       string         `json:"from_id"`
+	ToID         string         `json:"to_id"`
+	Type         string         `json:"type"`
+	Evidence     []snapEvidence `json:"evidence"`
+	Confidence   float64        `json:"confidence"`
+	Reason       string         `json:"reason"`
+	Scope        string         `json:"relation_scope"`
+	Resolution   string         `json:"resolution"`
+	TargetKind   string         `json:"target_kind"`
+	WarningCodes []string       `json:"warning_codes"`
+
+	// header and summary. The header line carries no record_type at all and
+	// is identified by its schema_version; the summary carries record_type
+	// "summary" and is the only record with the counts filled in.
+	SchemaVersion   string            `json:"schema_version"`
+	ProviderVersion string            `json:"provider_version"`
+	Profile         string            `json:"profile"`
+	Commit          string            `json:"commit"`
+	LanguageTiers   map[string]string `json:"language_tiers"`
+	Warnings        []Warning         `json:"warnings"`
+	PartialFailures []PartialFailure  `json:"partial_failures"`
+	Stats           Stats             `json:"stats"`
 }
 
 type snapEvidence struct {
@@ -148,11 +172,13 @@ type snapEvidence struct {
 // load, so a snapshot with one bad line still produces a field.
 func LoadSnapshot(ndjson []byte) (*Field, error) {
 	f := &Field{
-		Symbols:   map[string]*Symbol{},
-		In:        map[string][]Edge{},
-		Out:       map[string][]Edge{},
-		ByFile:    map[string][]string{},
-		Relations: map[string]int{},
+		Symbols:     map[string]*Symbol{},
+		In:          map[string][]Edge{},
+		Out:         map[string][]Edge{},
+		ByFile:      map[string][]string{},
+		Relations:   map[string]int{},
+		Resolutions: map[string]int{},
+		Meta:        &SnapshotMeta{},
 	}
 	files := map[string]bool{}
 
@@ -166,15 +192,32 @@ func LoadSnapshot(ndjson []byte) (*Field, error) {
 		}
 		var r snapRecord
 		if err := json.Unmarshal(line, &r); err != nil {
+			// Counted, not silently skipped. A snapshot whose records all
+			// failed to parse produced an empty field, and an empty field is
+			// indistinguishable from a clean one.
+			f.Meta.Malformed++
+			continue
+		}
+		if r.RecordType == "" && r.SchemaVersion != "" {
+			// The header line, which carries no record_type.
+			f.Meta.SchemaVersion = r.SchemaVersion
+			f.Meta.ProviderVersion = r.ProviderVersion
+			f.Meta.Profile = r.Profile
+			f.Meta.Commit = r.Commit
+			mergeMeta(f.Meta, r)
 			continue
 		}
 		switch r.RecordType {
+		case "summary":
+			f.Meta.SawSummary = true
+			mergeMeta(f.Meta, r)
 		case "file":
 			if r.Path != "" {
 				files[r.Path] = true
 			}
 		case "symbol":
 			if r.ID == "" || r.FilePath == "" {
+				f.Meta.Dropped++
 				continue
 			}
 			s := &Symbol{
@@ -196,11 +239,13 @@ func LoadSnapshot(ndjson []byte) (*Field, error) {
 			files[s.File] = true
 		case "relation":
 			if r.FromID == "" || r.ToID == "" {
+				f.Meta.Dropped++
 				continue
 			}
 			e := Edge{From: r.FromID, To: r.ToID, Relation: r.Type, Quality: EdgeQuality{
 				Confidence: r.Confidence, Reason: r.Reason, Scope: r.Scope,
 				Resolution: r.Resolution, TargetKind: r.TargetKind,
+				WarningCodes: r.WarningCodes,
 			}}
 			for _, ev := range r.Evidence {
 				if ev.Kind == "call_site" && ev.StartLine > 0 {
@@ -211,6 +256,9 @@ func LoadSnapshot(ndjson []byte) (*Field, error) {
 			f.Out[e.From] = append(f.Out[e.From], e)
 			f.In[e.To] = append(f.In[e.To], e)
 			f.Relations[e.Relation]++
+			if e.Quality.Resolution != "" {
+				f.Resolutions[e.Quality.Resolution]++
+			}
 		}
 	}
 	if err := sc.Err(); err != nil {
@@ -312,4 +360,33 @@ func (f *Field) Vocabulary() ([]string, []string) {
 	}
 	sort.Strings(syms)
 	return f.Files, syms
+}
+
+// mergeMeta takes the completeness fields from whichever record carried them.
+// The header writes them empty because the counts are not known until the walk
+// finishes; the summary writes them filled. Neither is allowed to erase what
+// the other reported.
+func mergeMeta(m *SnapshotMeta, r snapRecord) {
+	if len(r.LanguageTiers) > 0 {
+		m.LanguageTiers = r.LanguageTiers
+	}
+	if len(r.Warnings) > 0 {
+		m.Warnings = append(m.Warnings, r.Warnings...)
+	}
+	if len(r.PartialFailures) > 0 {
+		m.PartialFailures = append(m.PartialFailures, r.PartialFailures...)
+	}
+	if r.Stats.Files > 0 || r.Stats.Symbols > 0 || r.Stats.CompletenessLevel != "" {
+		m.Stats = r.Stats
+	}
+}
+
+// ResolutionNames lists the resolutions present, sorted, for the header.
+func (f *Field) ResolutionNames() []string {
+	out := make([]string, 0, len(f.Resolutions))
+	for name := range f.Resolutions {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out
 }

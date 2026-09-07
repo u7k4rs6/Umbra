@@ -21,6 +21,10 @@ type BuildInput struct {
 	// HeadRoot is the worktree the call-site windows are read from.
 	HeadRoot string
 	Scars    map[string]int
+	// Evidence carries the run-wide degradation into node classification, so
+	// a node found under an analysis the provider flagged is not presented
+	// with the same certainty as one found under a clean run.
+	Evidence EvidenceInput
 }
 
 // Build turns reached symbols into classified, ranked nodes.
@@ -46,6 +50,14 @@ func Build(in BuildInput) []*Node {
 			Path:       r.Path,
 			Dependents: len(in.Field.In[r.ID]),
 			CallSite:   r.CallSite,
+			// The provider's own account of the path, carried beside the score
+			// and never inside it. Score reads none of these.
+			Resolution:       r.Weakest.Resolution,
+			Confidence:       r.Weakest.Confidence,
+			HeuristicEdge:    r.Heuristic,
+			LastHopHeuristic: r.LastHopHeuristic,
+			HeuristicVia:     r.HeuristicVia,
+			EdgeWarnings:     r.Warnings,
 		}
 
 		// The exact call line comes from impact; the snapshot's evidence only
@@ -58,6 +70,7 @@ func Build(in BuildInput) []*Node {
 
 		n.State, n.Tier = Classify(in.Examined, sym.File, sym.Name, sym.Span)
 		n.Exposures = exposuresFor(in.Examined, sym.File, sym.Name)
+		n.Evidence, n.EvidenceWhy = ClassifyEvidence(n, in.Evidence)
 
 		if n.Tier != TierNone {
 			addModifier(n, string(n.Tier))
