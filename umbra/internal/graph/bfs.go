@@ -17,6 +17,15 @@ type Reach struct {
 	// CallSite is the line of the call into the source, when the first hop
 	// carried one.
 	CallSite int
+	// Weakest is the quality of the least confident edge on the path.
+	//
+	// Relation, Family and CallSite above describe the FIRST hop, because that
+	// is the hop the ranker weighs. Quality is carried the other way, from the
+	// weakest hop, because a path is only as followable as its worst link and
+	// a reader asking "can I trust this chain" wants the floor rather than the
+	// entry. There was no weakest-hop rule in this walk before: nothing was
+	// carried but the first hop, and resolution was not read at all.
+	Weakest EdgeQuality
 }
 
 // Dependents walks the field outward from each source over incoming edges,
@@ -51,6 +60,7 @@ func (f *Field) Dependents(sources []string, depth int, rm *RelationMap) []Reach
 			family   Family
 			path     []string
 			callSite int
+			weakest  EdgeQuality
 		}
 		seen := map[string]bool{src: true}
 		queue := []item{{id: src, depth: 0, path: []string{src}}}
@@ -101,12 +111,14 @@ func (f *Field) Dependents(sources []string, depth int, rm *RelationMap) []Reach
 					family:   family,
 					path:     append(append([]string(nil), cur.path...), e.From),
 					callSite: callSite,
+					weakest:  weaker(cur.weakest, e.Quality),
 				}
 				queue = append(queue, next)
 
 				r := Reach{
 					ID: next.id, Source: src, Relation: next.relation, Family: next.family,
 					Depth: next.depth, Path: next.path, CallSite: next.callSite,
+					Weakest: next.weakest,
 				}
 				if prev, ok := best[next.id]; !ok || better(r, prev) {
 					best[next.id] = r
@@ -212,4 +224,23 @@ func (f *Field) HasOutgoingCalls(id string, rm *RelationMap) bool {
 		}
 	}
 	return false
+}
+
+// weaker returns whichever of two edge qualities a reader should be told
+// about: the one the provider was least sure of.
+//
+// An unknown quality, which is what a fixture-built edge or an older snapshot
+// carries, never displaces a known one, so a graph assembled in a test behaves
+// as it always did.
+func weaker(carried, next EdgeQuality) EdgeQuality {
+	if !next.Known() {
+		return carried
+	}
+	if !carried.Known() {
+		return next
+	}
+	if next.Confidence < carried.Confidence {
+		return next
+	}
+	return carried
 }

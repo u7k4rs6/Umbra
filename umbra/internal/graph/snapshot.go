@@ -42,6 +42,51 @@ type Edge struct {
 	// Snapshot evidence spans the calling function, so this is a starting
 	// point that graph impact refines to the exact line.
 	CallSite int
+	// Quality is what Graph published about how it resolved this edge. Every
+	// relation record carries all five fields; the snapshot loader used to
+	// discard them, which is why a report could not tell an edge into the
+	// repository from one leaving it. See NOTES phase 25 stage 1 for the
+	// measured distributions.
+	Quality EdgeQuality
+}
+
+// EdgeQuality is the provider's own account of one edge.
+//
+// Measured across three repositories and 21,000 edges: Scope is one of
+// external, module, file or workspace and separates a same-repo target from an
+// external one with no exceptions; TargetKind is one of symbol, external,
+// file, config or route and names synthesised targets; Reason is a closed set
+// of 87 phrases with nothing interpolated, so it is safe to render; Confidence
+// is not derivable from Resolution.
+type EdgeQuality struct {
+	Confidence float64
+	Reason     string
+	Scope      string
+	Resolution string
+	TargetKind string
+}
+
+// Scope and TargetKind values worth naming, since two of them are load bearing.
+const (
+	ScopeExternal      = "external"
+	TargetKindExternal = "external"
+	TargetKindSymbol   = "symbol"
+)
+
+// LeavesRepo reports whether this edge points outside the repository.
+//
+// Graph reports a call it could not resolve as external, the same as a call to
+// the standard library, so this means "the target is not a symbol here" and
+// not "resolution failed". Both are the same thing for a reader trying to
+// follow the edge.
+func (q EdgeQuality) LeavesRepo() bool {
+	return q.Scope == ScopeExternal || q.TargetKind == TargetKindExternal
+}
+
+// Known reports whether the provider said anything about this edge, which is
+// false for an edge built by a test fixture or an older snapshot.
+func (q EdgeQuality) Known() bool {
+	return q.Scope != "" || q.TargetKind != "" || q.Resolution != ""
 }
 
 // Field is the loaded graph: symbols, adjacency in both directions, and the
@@ -77,10 +122,15 @@ type snapRecord struct {
 	Language      string `json:"language"`
 
 	// relation
-	FromID   string         `json:"from_id"`
-	ToID     string         `json:"to_id"`
-	Type     string         `json:"type"`
-	Evidence []snapEvidence `json:"evidence"`
+	FromID     string         `json:"from_id"`
+	ToID       string         `json:"to_id"`
+	Type       string         `json:"type"`
+	Evidence   []snapEvidence `json:"evidence"`
+	Confidence float64        `json:"confidence"`
+	Reason     string         `json:"reason"`
+	Scope      string         `json:"relation_scope"`
+	Resolution string         `json:"resolution"`
+	TargetKind string         `json:"target_kind"`
 }
 
 type snapEvidence struct {
@@ -148,7 +198,10 @@ func LoadSnapshot(ndjson []byte) (*Field, error) {
 			if r.FromID == "" || r.ToID == "" {
 				continue
 			}
-			e := Edge{From: r.FromID, To: r.ToID, Relation: r.Type}
+			e := Edge{From: r.FromID, To: r.ToID, Relation: r.Type, Quality: EdgeQuality{
+				Confidence: r.Confidence, Reason: r.Reason, Scope: r.Scope,
+				Resolution: r.Resolution, TargetKind: r.TargetKind,
+			}}
 			for _, ev := range r.Evidence {
 				if ev.Kind == "call_site" && ev.StartLine > 0 {
 					e.CallSite = ev.StartLine
