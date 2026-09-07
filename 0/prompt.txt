@@ -341,3 +341,34 @@ the recorded scenarios expresses either.
 
 Report with: the stage 1 distributions, confirmation that stage 2 changed no
 output, what stage 3 now says that it could not say before, and the test count.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Two tasks,
+both writing and verification. No feature work.
+
+No em dashes. go test ./... green. Commit separately.
+
+1. The weakest-hop claim. Stage 2 of the last task found that the walk carried
+   only the first hop and read no resolution at all. BUILDATHON.md's curveball
+   section says commit e41af1db kept resolution and confidence and had the walk
+   carry the weakest hop along each path, and the partial-analysis fixture
+   asserts that a path is only as resolved as its weakest hop.
+   Find out which is true. Read e41af1db, the bfs.go code as it stood then and
+   as it stands now, and the fixture assertion. Three possibilities: the rule
+   exists somewhere I did not look, the rule exists for resolution but not for
+   confidence, or the document claims a behaviour that never shipped and the
+   fixture passes for another reason.
+   Report which before changing anything. If the document is wrong, correct it
+   in place with a short, plainly worded note saying what shipped and what did
+   not, dated. Do not quietly delete the claim, and do not patch the code to
+   make the old claim true retroactively.
+
+2. Upstream report. Add the target_kind gap: a call the resolver could not
+   resolve is reported as external, identical to a genuine stdlib or third-party
+   call, so no consumer can tell a real external dependency from a resolution
+   failure. Include the measured scope and kind distributions, note that this is
+   a single added value rather than a resolver change, and connect it to the
+   module-object issue, since a consumer cannot size that bug's impact without
+   it. Decide whether it reads better as a fifth issue or appended to the
+   module-object one, and say why.
