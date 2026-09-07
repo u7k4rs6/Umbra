@@ -1,0 +1,25 @@
+Partial analysis. The graph side is fixtures/partial, captured in
+internal/graph/testdata/partial-snapshot.ndjson, not the fixture app.
+
+compute_total gains a parameter. Three things are true of the same run at once:
+
+1. RateCard.apply and line_total are resolved exactly and must still classify
+   exactly as they did before the evidence tiers existed: confirmed.
+2. quote reaches the change through a method call the parser resolved by
+   inferring the constructor's type, which upstream reports as type_inferred.
+   invoice reaches it only through quote, so its own hop is exact and the chain
+   it hangs off is not.
+3. dispatch.py reaches compute_total four ways at runtime, through a dispatch
+   table, through getattr and through importlib, and the graph draws not one
+   edge for any of them. The four tests in test_dispatch.py that exercise those
+   paths are absent from the field entirely. The report has to say the field is
+   a lower bound rather than report a clean selection.
+
+rate_table.min.json is one line over the provider's minified threshold and is
+in a language the provider indexes inventory-only, so partial_failures is
+non-empty and one language in the snapshot has no relations at all.
+
+legacy_rates.cob is COBOL, which the provider tiers inventory-only. Measured
+rather than assumed: an inventory-only file on its own does NOT produce a
+partial failure. It produces a file record, a symbol and no relations. The
+non-empty partial_failures comes from the minified JSON.
