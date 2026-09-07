@@ -50,6 +50,12 @@ type Analysis struct {
 	Nodes      []*shadow.Node
 	Summary    shadow.Summary
 
+	// Reach says how much of the call graph around the change the provider
+	// could follow. It exists so a thin field can be told from a followable
+	// one: an edge leaving the repository and an absent dependent look the
+	// same in a docket, and on real code the first is the common case.
+	Reach ReachSummary
+
 	Timeline []TimelineEvent
 	Cut      int
 	HasCut   bool
@@ -120,6 +126,34 @@ func (e Execution) UnnamedNote() string {
 	return fmt.Sprintf(
 		"%d further failing test(s) were counted by verify but not named, so this leak list is incomplete",
 		e.UnnamedFailures)
+}
+
+// ReachSummary counts the outgoing calls of the changed symbols and their
+// dependents by whether the provider could resolve them inside the repository.
+//
+// Leaving is not a defect count. Some of those calls genuinely go to the
+// standard library. What it measures is how much of the local call graph a
+// reader can follow, which is the number a thin field has to be read against.
+type ReachSummary struct {
+	Inside  int `json:"inside"`
+	Leaving int `json:"leaving"`
+	// Unknown counts edges the provider published no quality for, which is
+	// what a graph assembled inside a test carries.
+	Unknown int `json:"unknown,omitempty"`
+}
+
+// Any reports whether the walk saw any call edge at all.
+func (r ReachSummary) Any() bool { return r.Inside+r.Leaving+r.Unknown > 0 }
+
+// Line is the one sentence every surface uses, so the four cannot drift.
+func (r ReachSummary) Line() string {
+	total := r.Inside + r.Leaving
+	if total == 0 {
+		return ""
+	}
+	return fmt.Sprintf(
+		"%d of %d call(s) from the changed code and its dependents resolve inside the repository; %d leave it",
+		r.Inside, total, r.Leaving)
 }
 
 // UnresolvedSource is a changed symbol the graph could not be asked about.

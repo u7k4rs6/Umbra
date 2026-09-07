@@ -19,6 +19,7 @@ type jsonReport struct {
 	SessionSaid     string             `json:"session_said,omitempty"`
 	SessionSaidFrom string             `json:"session_said_from,omitempty"`
 	Coverage        jsonCoverage       `json:"coverage"`
+	Reach           ReachSummary       `json:"reach"`
 	Notes           []string           `json:"notes,omitempty"`
 	Sources         []jsonSource       `json:"sources"`
 	Unresolved      []UnresolvedSource `json:"unresolved,omitempty"`
@@ -151,6 +152,7 @@ func buildJSON(a *Analysis) jsonReport {
 			Mentions: a.Coverage.Mentions, Commands: a.Coverage.Commands,
 			Thin: a.Coverage.Thin(), Line: CoverageLine(a), Note: CoverageNote(a),
 		},
+		Reach:       a.Reach,
 		Notes:       a.Notes,
 		Timeline:    a.Timeline,
 		T0:          a.Cut,

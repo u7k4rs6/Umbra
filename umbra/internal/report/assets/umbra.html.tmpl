@@ -30,6 +30,7 @@
   </div>
 
   <p class="coverage">How the session worked: {{.CoverageLine}}.</p>
+  {{if .ReachText}}<p class="coverage">How far the graph could follow: {{.ReachText}}.</p>{{end}}
   {{if .CoverageNote}}<p class="notice coverage-note">{{.CoverageNote}}</p>{{end}}
 
   {{range .A.Notes}}<p class="notice">{{.}}</p>{{end}}

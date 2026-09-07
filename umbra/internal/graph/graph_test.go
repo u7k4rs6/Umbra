@@ -775,3 +775,152 @@ func TestBindFallsBackToTheBareNameWithoutAQualifiedName(t *testing.T) {
 		t.Fatalf("bound to %q, want x", got.Symbol)
 	}
 }
+
+// Edge quality
+//
+// Every relation record the provider writes carries confidence, reason,
+// relation_scope, resolution and target_kind, and LoadSnapshot discarded all
+// five until phase 25. Two of them separate a target inside the repository
+// from one outside it, which is the difference between "nothing depends on
+// this" and "the call goes somewhere I cannot follow". On real Python that
+// second case is 79 percent of the calls leaving the tests in two of the three
+// repositories measured, so it is not an edge case.
+
+const qualitySnapshot = `{"record_type":"symbol","id":"r:Python:app/a.py:function:caller","kind":"function","name":"caller","qualified_name":"caller","file_path":"app/a.py","start_line":1,"end_line":9,"language":"Python"}
+{"record_type":"symbol","id":"r:Python:app/a.py:function:inside","kind":"function","name":"inside","qualified_name":"inside","file_path":"app/a.py","start_line":12,"end_line":14,"language":"Python"}
+{"record_type":"external","id":"external:symbol:pkg.outside","kind":"symbol","value":"pkg.outside","external":true}
+{"record_type":"relation","from_id":"r:Python:app/a.py:function:caller","to_id":"r:Python:app/a.py:function:inside","type":"CALLS","confidence":0.92,"reason":"direct call expression resolved to same-file symbol","relation_scope":"file","resolution":"exact","target_kind":"symbol"}
+{"record_type":"relation","from_id":"r:Python:app/a.py:function:caller","to_id":"external:symbol:pkg.outside","type":"CALLS","confidence":0.78,"reason":"call expression resolved to imported external symbol","relation_scope":"external","resolution":"import_external","target_kind":"external"}
+`
+
+func qualityField(t *testing.T) (*Field, *RelationMap) {
+	t.Helper()
+	f, err := LoadSnapshot([]byte(qualitySnapshot))
+	if err != nil {
+		t.Fatalf("LoadSnapshot: %v", err)
+	}
+	caps, err := ParseCapabilities(read(t, "capabilities.json"))
+	if err != nil {
+		t.Fatalf("ParseCapabilities: %v", err)
+	}
+	return f, NewRelationMap(caps)
+}
+
+func TestLoadSnapshotReadsEdgeQuality(t *testing.T) {
+	f, _ := qualityField(t)
+	out := f.Out["r:Python:app/a.py:function:caller"]
+	if len(out) != 2 {
+		t.Fatalf("expected two outgoing edges, got %d", len(out))
+	}
+	var sawInside, sawOutside bool
+	for _, e := range out {
+		if !e.Quality.Known() {
+			t.Fatalf("edge to %s carries no quality", e.To)
+		}
+		switch e.Quality.TargetKind {
+		case TargetKindSymbol:
+			sawInside = true
+			if e.Quality.Confidence != 0.92 || e.Quality.Resolution != "exact" || e.Quality.Scope != "file" {
+				t.Fatalf("same-repo edge quality = %+v", e.Quality)
+			}
+			if e.Quality.LeavesRepo() {
+				t.Fatal("a same-repo edge must not read as leaving the repository")
+			}
+		case TargetKindExternal:
+			sawOutside = true
+			if !e.Quality.LeavesRepo() {
+				t.Fatal("an external edge must read as leaving the repository")
+			}
+			if e.Quality.Reason == "" {
+				t.Fatal("the provider's reason was discarded")
+			}
+		}
+	}
+	if !sawInside || !sawOutside {
+		t.Fatal("both edges must be present with their quality")
+	}
+}
+
+func TestCallSplitCountsWhereTheCallsGo(t *testing.T) {
+	f, rm := qualityField(t)
+	inside, leaving, unknown := f.CallSplit("r:Python:app/a.py:function:caller", rm)
+	if inside != 1 || leaving != 1 || unknown != 0 {
+		t.Fatalf("split = inside %d, leaving %d, unknown %d; want 1, 1, 0", inside, leaving, unknown)
+	}
+}
+
+// A graph a test assembled by hand carries no quality at all, and must not be
+// reported as though every one of its edges left the repository.
+func TestCallSplitCountsAnUnlabelledEdgeAsUnknown(t *testing.T) {
+	f := &Field{
+		Symbols: map[string]*Symbol{"a": {ID: "a"}, "b": {ID: "b"}},
+		Out:     map[string][]Edge{"a": {{From: "a", To: "b", Relation: "CALLS"}}},
+		In:      map[string][]Edge{},
+	}
+	caps, err := ParseCapabilities(read(t, "capabilities.json"))
+	if err != nil {
+		t.Fatalf("ParseCapabilities: %v", err)
+	}
+	inside, leaving, unknown := f.CallSplit("a", NewRelationMap(caps))
+	if inside != 0 || leaving != 0 || unknown != 1 {
+		t.Fatalf("split = %d, %d, %d; want 0, 0, 1", inside, leaving, unknown)
+	}
+	if _, all := f.CallsAllLeaveRepo("a", NewRelationMap(caps)); all {
+		t.Fatal("an unlabelled edge must not be reported as leaving the repository")
+	}
+}
+
+// The case the click experiment hit: a symbol that makes calls, all of which
+// go somewhere the snapshot cannot show you.
+func TestCallsAllLeaveRepoOnlyWhenEveryCallDoes(t *testing.T) {
+	f, rm := qualityField(t)
+	caller := "r:Python:app/a.py:function:caller"
+	if _, all := f.CallsAllLeaveRepo(caller, rm); all {
+		t.Fatal("a caller with one same-repo call has not lost all its calls")
+	}
+
+	// Drop the same-repo edge and only the external one remains.
+	var only []Edge
+	for _, e := range f.Out[caller] {
+		if e.Quality.LeavesRepo() {
+			only = append(only, e)
+		}
+	}
+	f.Out[caller] = only
+	n, all := f.CallsAllLeaveRepo(caller, rm)
+	if !all || n != 1 {
+		t.Fatalf("all = %v, n = %d; want true, 1", all, n)
+	}
+}
+
+// The weakest hop, not the first, is what the walk carries for quality.
+func TestDependentsCarriesTheWeakestHopQuality(t *testing.T) {
+	strong := EdgeQuality{Confidence: 0.92, Resolution: "exact", Scope: "file", TargetKind: TargetKindSymbol}
+	weak := EdgeQuality{Confidence: 0.62, Resolution: "name_only", Scope: "module", TargetKind: TargetKindSymbol}
+	f := &Field{
+		Symbols: map[string]*Symbol{"src": {ID: "src"}, "mid": {ID: "mid"}, "far": {ID: "far"}},
+		In: map[string][]Edge{
+			"src": {{From: "mid", To: "src", Relation: "CALLS", Quality: strong}},
+			"mid": {{From: "far", To: "mid", Relation: "CALLS", Quality: weak}},
+		},
+		Out: map[string][]Edge{},
+	}
+	caps, err := ParseCapabilities(read(t, "capabilities.json"))
+	if err != nil {
+		t.Fatalf("ParseCapabilities: %v", err)
+	}
+	got := f.Dependents([]string{"src"}, 2, NewRelationMap(caps))
+	for _, r := range got {
+		if r.ID == "far" {
+			if r.Weakest.Resolution != "name_only" || r.Weakest.Confidence != 0.62 {
+				t.Fatalf("far carried %+v, want the weaker hop", r.Weakest)
+			}
+			// The first hop still decides the relation, unchanged.
+			if r.Depth != 2 {
+				t.Fatalf("far depth = %d", r.Depth)
+			}
+			return
+		}
+	}
+	t.Fatal("far was not reached")
+}

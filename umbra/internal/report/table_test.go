@@ -1,6 +1,7 @@
 package report
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -454,5 +455,71 @@ func TestAResolvedRunSaysNothingAboutUnresolvedSymbols(t *testing.T) {
 	out := render(t, a, TableOptions{UTF8: true})
 	if strings.Contains(out, "never looked up") {
 		t.Fatalf("a clean run must not mention unresolved symbols:\n%s", out)
+	}
+}
+
+// The reach line. An edge leaving the repository and an absent dependent look
+// identical in a docket, and on real Python the first is the common case, so
+// every surface says how much of the local call graph could be followed.
+func TestReachLineAppearsOnEverySurface(t *testing.T) {
+	a := mkAnalysis()
+	a.Reach = ReachSummary{Inside: 41, Leaving: 55}
+
+	out := render(t, a, TableOptions{UTF8: true})
+	if !strings.Contains(out, "reach") {
+		t.Fatalf("the terminal table has no reach line:\n%s", out)
+	}
+	if !strings.Contains(out, "41 of 96") || !strings.Contains(out, "55 leave it") {
+		t.Fatalf("the reach line does not carry the counts:\n%s", out)
+	}
+
+	var b strings.Builder
+	if err := Packet(&b, Seal(a, nil)); err != nil {
+		t.Fatalf("Packet: %v", err)
+	}
+	if !strings.Contains(b.String(), "41 of 96") {
+		t.Fatalf("the packet has no reach line:\n%s", b.String())
+	}
+
+	var h strings.Builder
+	if err := HTML(&h, Seal(a, nil)); err != nil {
+		t.Fatalf("HTML: %v", err)
+	}
+	if !strings.Contains(h.String(), "41 of 96") {
+		t.Fatal("the map header has no reach line")
+	}
+
+	blob, err := MarshalJSON(Seal(a, nil))
+	if err != nil {
+		t.Fatalf("MarshalJSON: %v", err)
+	}
+	if !strings.Contains(string(blob), `"reach"`) {
+		t.Fatal("the JSON record has no reach block")
+	}
+	var record struct {
+		Reach ReachSummary `json:"reach"`
+	}
+	if err := json.Unmarshal(blob, &record); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if record.Reach.Inside != 41 || record.Reach.Leaving != 55 {
+		t.Fatalf("the JSON reach block = %+v, want 41 inside and 55 leaving", record.Reach)
+	}
+}
+
+// A run where every call resolved says so, and a run with no call edges at all
+// says nothing rather than printing a zero.
+func TestReachLineIsSilentWhenThereAreNoCallEdges(t *testing.T) {
+	a := mkAnalysis()
+	a.Reach = ReachSummary{}
+	out := render(t, a, TableOptions{UTF8: true})
+	if strings.Contains(out, "reach") {
+		t.Fatalf("a run with no call edges must not print a reach line:\n%s", out)
+	}
+
+	a.Reach = ReachSummary{Inside: 7}
+	out = render(t, a, TableOptions{UTF8: true})
+	if !strings.Contains(out, "7 of 7") || !strings.Contains(out, "0 leave it") {
+		t.Fatalf("a fully resolved run must still say so:\n%s", out)
 	}
 }

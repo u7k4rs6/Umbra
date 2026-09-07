@@ -84,6 +84,18 @@ func reasonFor(testID string, in ForensicsInput, sources map[string]bool) string
 		return "reaches only through " + string(fam)
 	}
 
+	// 3b. It does make calls, and every one of them leaves the repository.
+	//
+	// This sits after the structural check on purpose. A test that really does
+	// reach the change over a relation Umbra does not traverse has a path, and
+	// naming that path is more useful than naming the calls that failed. This
+	// only catches what would otherwise fall through to reason 4 and be
+	// reported as a co-change miss, which describes the wrong thing: the calls
+	// exist and none of them can be followed.
+	if n, all := in.Field.CallsAllLeaveRepo(sym.ID, in.RelMap); all {
+		return fmt.Sprintf("all %d call(s) from this test leave the repository, so no path into the change is visible", n)
+	}
+
 	// 4. Outside everything Umbra can see.
 	if in.CoChangeFiles != nil && !in.CoChangeFiles[sym.File] {
 		return "test file not in the co-change set"

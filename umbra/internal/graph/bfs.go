@@ -226,6 +226,45 @@ func (f *Field) HasOutgoingCalls(id string, rm *RelationMap) bool {
 	return false
 }
 
+// CallSplit counts the outgoing calls of a symbol by whether the target is a
+// symbol in this repository or something outside it.
+//
+// Unknown counts edges the provider published no quality for, which is what a
+// graph assembled inside a test carries. Counting them separately keeps a
+// fixture from being reported as if every one of its edges left the repository.
+func (f *Field) CallSplit(id string, rm *RelationMap) (inside, leaving, unknown int) {
+	for _, e := range f.Out[id] {
+		fam, ok := rm.Family(e.Relation)
+		if !ok || fam != FamilyCalls {
+			continue
+		}
+		switch {
+		case !e.Quality.Known():
+			unknown++
+		case e.Quality.LeavesRepo():
+			leaving++
+		default:
+			inside++
+		}
+	}
+	return inside, leaving, unknown
+}
+
+// CallsAllLeaveRepo reports whether a symbol makes calls and every one of them
+// goes somewhere this repository cannot show you.
+//
+// This is the difference between "nothing depends on it" and "the calls are
+// there and none of them can be followed", which the first real-repo run could
+// not tell apart: 79 percent of the calls leaving the tests in two of three
+// repositories measured resolve to a node outside the snapshot.
+func (f *Field) CallsAllLeaveRepo(id string, rm *RelationMap) (int, bool) {
+	inside, leaving, unknown := f.CallSplit(id, rm)
+	if leaving == 0 || inside > 0 || unknown > 0 {
+		return leaving, false
+	}
+	return leaving, true
+}
+
 // weaker returns whichever of two edge qualities a reader should be told
 // about: the one the provider was least sure of.
 //

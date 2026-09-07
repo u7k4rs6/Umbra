@@ -98,6 +98,9 @@ func Table(w io.Writer, sd Sealed, o TableOptions) error {
 
 	// The light line.
 	writeLightLine(b, a, o)
+	if line := a.Reach.Line(); line != "" {
+		fmt.Fprintf(b, "reach  %s\n", dim(o, line))
+	}
 	b.WriteString("\n")
 
 	// The docket.

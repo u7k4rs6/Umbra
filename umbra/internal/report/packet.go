@@ -57,6 +57,9 @@ func Packet(w io.Writer, sd Sealed) error {
 		fmt.Fprintf(b, "That sentence is displayed, never checked. This packet reports what the session did.\n\n")
 	}
 	fmt.Fprintf(b, "How the session worked: %s.\n\n", CoverageLine(a))
+	if line := a.Reach.Line(); line != "" {
+		fmt.Fprintf(b, "How far the graph could follow: %s.\n\n", line)
+	}
 	if note := CoverageNote(a); note != "" {
 		fmt.Fprintf(b, "> %s\n\n", note)
 	}

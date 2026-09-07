@@ -199,3 +199,122 @@ func TestSplitTestID(t *testing.T) {
 		}
 	}
 }
+
+// A test that makes calls, every one of which leaves the repository, used to
+// fall through to reason 4 and be reported as not being in the co-change set.
+// That describes the wrong thing: the calls are there and none can be followed.
+// On pallets/click this was the common case, not the exception.
+func TestLeakReasonNamesCallsThatLeaveTheRepository(t *testing.T) {
+	external := graph.EdgeQuality{
+		Confidence: 0.78, Resolution: "import_external",
+		Scope: graph.ScopeExternal, TargetKind: graph.TargetKindExternal,
+	}
+	field := &graph.Field{
+		Symbols: map[string]*graph.Symbol{
+			"src":  {ID: "src", Name: "compute_total", File: "app/service.py", Span: [2]int{1, 5}},
+			"test": {ID: "test", Name: "test_thing", File: "tests/test_thing.py", Span: [2]int{1, 4}, IsTest: true},
+		},
+		ByFile: map[string][]string{
+			"app/service.py":      {"src"},
+			"tests/test_thing.py": {"test"},
+		},
+		In: map[string][]graph.Edge{},
+		Out: map[string][]graph.Edge{
+			"test": {
+				{From: "test", To: "external:symbol:click.command", Relation: "CALLS", Quality: external},
+				{From: "test", To: "external:symbol:click.echo", Relation: "CALLS", Quality: external},
+			},
+		},
+	}
+	leaks := Forensics([]string{"tests/test_thing.py::test_thing"}, ForensicsInput{
+		Field: field, RelMap: graph.NewRelationMap(&graph.Capabilities{SupportedRelationTypes: []string{"CALLS", "DATA_FLOWS", "USES_TYPE"}}), SourceIDs: []string{"src"},
+		Selected: map[string]bool{}, MaxDepth: 2,
+	})
+	if len(leaks) != 1 {
+		t.Fatalf("expected one leak, got %d", len(leaks))
+	}
+	got := leaks[0].Reason
+	if !strings.Contains(got, "leave the repository") {
+		t.Fatalf("reason = %q, want it to say the calls leave the repository", got)
+	}
+	if !strings.Contains(got, "2 call") {
+		t.Fatalf("reason = %q, want the count of unfollowable calls", got)
+	}
+	if strings.Contains(got, "co-change") {
+		t.Fatalf("reason = %q, which is the sentence this replaces", got)
+	}
+}
+
+// A test with a same-repo call keeps whatever reason it had. This is the
+// negative half: the new reason must not swallow the existing ones.
+func TestLeakReasonUnchangedWhenACallStaysInTheRepository(t *testing.T) {
+	external := graph.EdgeQuality{Scope: graph.ScopeExternal, TargetKind: graph.TargetKindExternal}
+	inside := graph.EdgeQuality{Scope: "file", TargetKind: graph.TargetKindSymbol, Confidence: 0.92}
+	field := &graph.Field{
+		Symbols: map[string]*graph.Symbol{
+			"src":   {ID: "src", Name: "compute_total", File: "app/service.py", Span: [2]int{1, 5}},
+			"other": {ID: "other", Name: "helper", File: "app/other.py", Span: [2]int{1, 3}},
+			"test":  {ID: "test", Name: "test_thing", File: "tests/test_thing.py", Span: [2]int{1, 4}, IsTest: true},
+		},
+		ByFile: map[string][]string{
+			"app/service.py":      {"src"},
+			"app/other.py":        {"other"},
+			"tests/test_thing.py": {"test"},
+		},
+		In: map[string][]graph.Edge{},
+		Out: map[string][]graph.Edge{
+			"test": {
+				{From: "test", To: "external:symbol:click.echo", Relation: "CALLS", Quality: external},
+				{From: "test", To: "other", Relation: "CALLS", Quality: inside},
+			},
+		},
+	}
+	leaks := Forensics([]string{"tests/test_thing.py::test_thing"}, ForensicsInput{
+		Field: field, RelMap: graph.NewRelationMap(&graph.Capabilities{SupportedRelationTypes: []string{"CALLS", "DATA_FLOWS", "USES_TYPE"}}), SourceIDs: []string{"src"},
+		Selected: map[string]bool{}, MaxDepth: 2,
+	})
+	if len(leaks) != 1 {
+		t.Fatalf("expected one leak, got %d", len(leaks))
+	}
+	if strings.Contains(leaks[0].Reason, "leave the repository") {
+		t.Fatalf("reason = %q, but one call stays in the repository", leaks[0].Reason)
+	}
+}
+
+// The new reason sits after the structural check. A test that genuinely does
+// reach the change over a relation the selection does not traverse has a path,
+// and naming the path is more useful than naming the calls that failed.
+func TestStructuralPathOutranksTheCallsLeaveRepoReason(t *testing.T) {
+	external := graph.EdgeQuality{Scope: graph.ScopeExternal, TargetKind: graph.TargetKindExternal}
+	structural := graph.EdgeQuality{Scope: "file", TargetKind: graph.TargetKindSymbol, Confidence: 0.9}
+	field := &graph.Field{
+		Symbols: map[string]*graph.Symbol{
+			"src":  {ID: "src", Name: "compute_total", File: "app/service.py", Span: [2]int{1, 5}},
+			"test": {ID: "test", Name: "test_thing", File: "tests/test_thing.py", Span: [2]int{1, 4}, IsTest: true},
+		},
+		ByFile: map[string][]string{"app/service.py": {"src"}, "tests/test_thing.py": {"test"}},
+		In:     map[string][]graph.Edge{},
+		Out: map[string][]graph.Edge{
+			"test": {
+				// Every CALL leaves the repository ...
+				{From: "test", To: "external:symbol:click.echo", Relation: "CALLS", Quality: external},
+				// ... but a type edge really does reach the source.
+				{From: "test", To: "src", Relation: "USES_TYPE", Quality: structural},
+			},
+		},
+	}
+	leaks := Forensics([]string{"tests/test_thing.py::test_thing"}, ForensicsInput{
+		Field:     field,
+		RelMap:    graph.NewRelationMap(&graph.Capabilities{SupportedRelationTypes: []string{"CALLS", "DATA_FLOWS", "USES_TYPE"}}),
+		SourceIDs: []string{"src"}, Selected: map[string]bool{}, MaxDepth: 2,
+	})
+	if len(leaks) != 1 {
+		t.Fatalf("expected one leak, got %d", len(leaks))
+	}
+	if strings.Contains(leaks[0].Reason, "leave the repository") {
+		t.Fatalf("reason = %q, but a real structural path exists and should be named", leaks[0].Reason)
+	}
+	if !strings.Contains(leaks[0].Reason, "reaches only through") {
+		t.Fatalf("reason = %q, want the structural path", leaks[0].Reason)
+	}
+}

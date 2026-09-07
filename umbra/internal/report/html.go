@@ -31,6 +31,7 @@ type htmlData struct {
 	CoverageLine     string
 	CoverageNote     string
 	IlluminationText string
+	ReachText        string
 	ProbeText        string
 	SweepText        string
 	Reproduce        string
@@ -77,6 +78,7 @@ func HTML(w io.Writer, sd Sealed) error {
 		CoverageLine:     CoverageLine(a),
 		CoverageNote:     CoverageNote(a),
 		IlluminationText: illuminationText(a),
+		ReachText:        a.Reach.Line(),
 		ProbeText:        probeText(a),
 		SweepText:        sweepText(a),
 		Reproduce:        reproduce(a),

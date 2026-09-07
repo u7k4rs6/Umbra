@@ -206,6 +206,8 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	shadow.SortDocket(a.Nodes)
 	a.Summary = shadow.Summarize(a.Nodes)
 
+	a.Reach = reachSummary(field, relMap, a)
+
 	a.Limitations = limitations(a, caps, examined)
 	if ex, ok := run.(*runner.Exec); ok {
 		for _, c := range ex.Calls() {
@@ -421,4 +423,35 @@ func moduleGranularity(sources []graph.Source) int {
 		}
 	}
 	return n
+}
+
+// reachSummary counts, over the changed symbols and every node in the field,
+// how many outgoing calls the provider resolved inside the repository and how
+// many left it.
+//
+// It is deliberately the neighbourhood of the change rather than the whole
+// repository: a reader is asking how followable this blast radius is, not how
+// followable the project is. Each symbol is counted once.
+func reachSummary(field *graph.Field, relMap *graph.RelationMap, a *report.Analysis) report.ReachSummary {
+	seen := map[string]bool{}
+	var out report.ReachSummary
+	add := func(id string) {
+		if id == "" || seen[id] {
+			return
+		}
+		seen[id] = true
+		in, leaving, unknown := field.CallSplit(id, relMap)
+		out.Inside += in
+		out.Leaving += leaving
+		out.Unknown += unknown
+	}
+	for _, s := range a.Sources {
+		add(s.Symbol)
+	}
+	for _, n := range a.Nodes {
+		if n.Symbol != nil {
+			add(n.Symbol.ID)
+		}
+	}
+	return out
 }
