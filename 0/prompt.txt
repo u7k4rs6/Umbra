@@ -171,3 +171,55 @@ Do not touch ranking weights and do not touch the echo rule. Both are still
 waiting on a correct field.
 
 No em dashes. go test ./... green. Commit separately from the experiment append.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md (all three passes) and the NOTES entry for
+de4dc60 before starting.
+
+Task: find out whether the two Python resolution findings from the click run are
+click's import style or Graph's Python resolution. This is measurement. Change
+no product code, touch no weights, fix nothing.
+
+The two findings to test:
+  A. 79% of calls leaving tests/ attached to external click.* nodes rather than
+     to the definitions in the same repository.
+  B. self.ctx.get_usage() produced no edge, which is why UsageError.show was
+     unreachable at any depth.
+
+No em dashes. go test ./... green. One commit at the end.
+
+1. Pick two more Python repositories, deliberately different from click and from
+   each other. At least one should use a different test import style, and at
+   least one should be an application or service rather than a library, since
+   click is a library that imports itself by name in its own tests. Propose them
+   with line counts, test-suite size and why each is a useful contrast, and say
+   which you would pick, before cloning.
+
+2. For each, snapshot with the graph plugin and measure finding A directly from
+   the snapshot, no session or checkpoint needed:
+   - calls leaving the test directory that attach to an external node
+   - calls leaving the test directory that attach to a same-repo definition
+   - the same split for non-test source files, since if the ratio is similar
+     outside tests then this is not about tests at all
+   Report raw counts, not just percentages, and state the exact query you used
+   so the number is reproducible.
+
+3. For finding B, search each repository for attribute-chain calls of the shape
+   self.x.y() and sample at least ten. For each, record whether Graph produced
+   an edge, and if it did, what it attached to. Then do the same for a matched
+   sample of direct self.y() calls, so the comparison isolates the chain rather
+   than self. If chains resolve in one repository and not another, find out what
+   differs.
+
+4. Do not run a full Umbra analysis on these. No session, no checkpoint, no
+   probes. The question is about the field, and the snapshot answers it.
+
+5. Write umbra/experiments/python-resolution.md with the three repositories side
+   by side, the raw numbers, the query used, the attribute-chain sample, and a
+   plain verdict on each finding: is it click, or is it Graph's Python
+   resolution. If the answer is mixed, say what predicts it.
+
+Report with: the repositories chosen and why, the counts for A across all three,
+the chain sample for B, and the verdict.
