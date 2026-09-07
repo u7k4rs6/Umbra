@@ -1916,3 +1916,43 @@ pipeline; `/usr/bin/grep` on the identical input returned 7. A verification
 that says "this never existed" is exactly the kind that has to be checked
 against something known to be present before it is believed, and that check is
 what caught it.
+
+## Phase 27: one grep is not a count, when the haystack is JSON
+
+2026-09-07. From the fork checkpoint audit. Recording it here because it is the
+third time a verification in this project has returned a confident number that
+was wrong, and the three have nothing in common except that the check was never
+tested against something known to be present.
+
+Scanning the fork's checkpoint transcripts for the owner's email address with
+
+```
+[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}
+```
+
+found **78** occurrences of `utkarshbahuguna10@gmail.com`. The real figure is
+**117**. The other 39 are the same address written
+`u003cutkarshbahuguna10@gmail.com`, because the transcripts are JSON and the
+`<` of a `<addr>` author line is escaped to `<`, which the pattern then
+reads as part of the local part.
+
+It surfaced only because the distinct-value tally printed
+`u003cutkarshbahuguna10@gmail.com` as its own row next to the plain form, and
+the two looked like one address typed twice. A scan that had reported a single
+total would have said 78 and been believed.
+
+**The rule this gives.** A pattern scan over an encoded haystack measures the
+encoding as much as the content. Before trusting a count of something private,
+print the distinct values rather than the total, because a total cannot show
+you the near-miss and a value list can. `scripts/checkpoint-refs-audit.sh`
+prints totals only, so its email column has always been a lower bound on any
+transcript that JSON-escapes an angle bracket, which is all of them.
+
+Not fixed here. The audit records the corrected number and this records why the
+uncorrected one looked right.
+
+The other two of the three, for whoever is counting: the refs audit that
+reported thirty refs of zero bytes because `git ls-tree` is scoped to the
+working directory, and the phase 26 history sweep that reported zero matches
+for a word in the very commit that introduced it, because the shell's `grep`
+function miscounts `-c` in a pipeline.
