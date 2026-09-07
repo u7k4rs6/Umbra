@@ -280,3 +280,64 @@ Where we may have the wrong end of it, say so.
 Before writing, verify the graph version and platform, and re-run one
 reproduction per finding to confirm each still holds on the current build. If
 any no longer reproduces, say so and leave it out.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/python-resolution.md, in particular the final finding, then
+umbra/internal/graph/snapshot.go (LoadSnapshot), evidence.go, and
+umbra/internal/shadow/evidence.go.
+
+Problem: the snapshot's CALLS records carry confidence, reason, relation_scope,
+resolution and target_kind. LoadSnapshot parses none of the five. Our evidence
+tiers are therefore built from less than the provider publishes, and pass 1 of
+the click experiment wrongly concluded this build had no confidence data at all,
+which was true of graph impact and false of the snapshot.
+
+Goal: consume what the provider already gives us. This is a real change, not a
+measurement, so take it in three stages and stop after stage 1 if what you find
+contradicts the premise.
+
+No em dashes. go test ./... green before every commit. Commit each stage
+separately.
+
+STAGE 1, establish what the fields actually contain.
+  Across the three repositories already cloned, and per relation type, record
+  the distribution of all five fields: which values occur, how often, and how
+  they correlate with each other. Specifically answer:
+  - what values relation_scope takes, and whether it distinguishes a same-repo
+    target from an external one
+  - what target_kind takes, and whether it identifies an unresolved or
+    synthesised target
+  - whether reason is free text or a closed set
+  - how snapshot confidence and resolution compare to the resolution values we
+    already read from graph impact, and whether they ever disagree for the same
+    edge
+  Write it into NOTES before writing product code. If the fields turn out not to
+  carry what this task assumes, stop and report rather than building on it.
+
+STAGE 2, parse them and carry them through.
+  Add all five to the edge record in LoadSnapshot and carry them along the walk
+  exactly as resolution is carried today, including the weakest-hop rule. Do not
+  change what the tiers mean yet. This stage must be behaviour-preserving:
+  rerun the recorded scenarios and the click experiment and confirm every state,
+  tier, rank and probe selection is unchanged. If anything moves, find out why
+  before continuing.
+
+STAGE 3, use them, narrowly.
+  The one change worth making now: an edge whose target is external or
+  unresolved is currently indistinguishable in the report from an edge to a
+  real same-repo dependent, and from the click work we know that is 79% of test
+  calls in two of three repositories. Use relation_scope and target_kind to say
+  so explicitly, in the terminal, JSON, HTML and packet. A reviewer should be
+  able to tell "this call goes somewhere I cannot see" from "this call has no
+  dependents".
+  Do NOT rework the three evidence tiers, do not touch ranking weights, and do
+  not touch the echo rule. Those still wait on the upstream answers.
+
+Known-positives for anything stage 3 adds, each proved to fail when reverted.
+Add fixtures covering an external target and an unresolved one, since nothing in
+the recorded scenarios expresses either.
+
+Report with: the stage 1 distributions, confirmation that stage 2 changed no
+output, what stage 3 now says that it could not say before, and the test count.
