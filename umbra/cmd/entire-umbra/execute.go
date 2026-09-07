@@ -99,6 +99,13 @@ func sweep(ctx context.Context, o *Options, run runner.Runner, pair *checkpoint.
 	noteUnnamed(a, v)
 
 	changed := append(append([]string(nil), v.NewlyFailing...), v.NewlyPassing...)
+
+	if sweepIsInconclusive(v, changed) {
+		a.Execution.SweepInconclusive = true
+		a.Execution.SweepInconclusiveReason = InconclusiveSweepReason
+		return nil
+	}
+
 	leaks := shadow.Forensics(changed, shadow.ForensicsInput{
 		Field:         st.Field,
 		RelMap:        st.RelMap,
@@ -125,6 +132,25 @@ func sweep(ctx context.Context, o *Options, run runner.Runner, pair *checkpoint.
 		}
 	}
 	return nil
+}
+
+// InconclusiveSweepReason is the one sentence a reader gets when the sweep
+// compared nothing.
+const InconclusiveSweepReason = "the runner printed no per-test ids, so the sweep could not compare any test against the baseline; add -v to the runner"
+
+// sweepIsInconclusive reports whether the sweep audited nothing at all.
+//
+// Saying "0 leaks" for such a run would be indistinguishable from a clean
+// audit, which is the strongest claim the report can make out of the weakest
+// evidence it has.
+//
+// The count is what separates this from an incomplete list. When verify
+// reports a total but drops the id list for exceeding its byte budget, changed
+// is empty and yet the number of failures is known. That is incomplete, it
+// still prints a number, and UnnamedFailures carries it. Only when there is
+// nothing at all to count is the audit inconclusive.
+func sweepIsInconclusive(v graph.Verdict, changed []string) bool {
+	return v.Degraded && len(changed) == 0 && v.UnnamedFailing() == 0
 }
 
 // noteUnnamed records how many newly failing tests verify counted but could

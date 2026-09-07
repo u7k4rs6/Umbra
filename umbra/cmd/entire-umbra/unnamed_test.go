@@ -101,3 +101,27 @@ func TestModuleGranularityCountsWholeFileChanges(t *testing.T) {
 		t.Fatalf("a symbol-level source counted as %d, want 0", got)
 	}
 }
+
+// The guard that decides between an inconclusive audit and an incomplete list.
+// Without a test here, removing the guard from sweep() broke nothing, which is
+// the definition of a check that is not yet a check.
+func TestSweepIsInconclusiveOnlyWhenThereIsNothingToCount(t *testing.T) {
+	cases := []struct {
+		name    string
+		v       graph.Verdict
+		changed []string
+		want    bool
+	}{
+		{"degraded, no ids, no count", graph.Verdict{Degraded: true}, nil, true},
+		{"degraded, no ids, but a count is known",
+			graph.Verdict{Degraded: true, FailingCount: 51}, nil, false},
+		{"degraded, but ids came back", graph.Verdict{Degraded: true}, []string{"a"}, false},
+		{"not degraded, nothing changed", graph.Verdict{}, nil, false},
+		{"a clean run", graph.Verdict{}, []string{"a"}, false},
+	}
+	for _, c := range cases {
+		if got := sweepIsInconclusive(c.v, c.changed); got != c.want {
+			t.Fatalf("%s: sweepIsInconclusive = %v, want %v", c.name, got, c.want)
+		}
+	}
+}

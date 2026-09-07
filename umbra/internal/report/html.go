@@ -150,6 +150,9 @@ func sweepText(a *Analysis) string {
 	case !a.Execution.Sweep:
 		return "no sweep"
 	}
+	if !a.Execution.AuditConclusive() {
+		return "full sweep, audit inconclusive"
+	}
 	word := "leaks"
 	if len(a.Execution.Leaks) == 1 {
 		word = "leak"

@@ -236,6 +236,18 @@ func writeExecution(b *strings.Builder, a *Analysis, o TableOptions) {
 	if a.Run == "none" {
 		return
 	}
+	// No number when nothing could be compared. Zero would read as a clean
+	// audit and the sweep audited nothing.
+	if !e.AuditConclusive() {
+		fmt.Fprintf(b, "sweep   full suite  %s\n", "audit inconclusive")
+		if e.SweepInconclusiveReason != "" {
+			fmt.Fprintf(b, "        %s\n", dim(o, e.SweepInconclusiveReason))
+		}
+		if e.SweepCut {
+			fmt.Fprintf(b, "        %s\n", dim(o, "the sweep was cut short by its timeout"))
+		}
+		return
+	}
 	word := "leaks"
 	if len(e.Leaks) == 1 {
 		word = "leak"

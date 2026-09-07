@@ -161,7 +161,10 @@ func Packet(w io.Writer, sd Sealed) error {
 		fmt.Fprintf(b, "%d test(s) were already failing before this change and are not counted against it.\n\n",
 			len(a.Execution.PreExisting))
 	}
-	if a.Execution.Sweep {
+	if a.Execution.Sweep && !a.Execution.AuditConclusive() {
+		fmt.Fprintf(b, "The full suite was swept after the selected tests, but the **audit is inconclusive**: %s.\n\n",
+			a.Execution.SweepInconclusiveReason)
+	} else if a.Execution.Sweep {
 		word := "leaks"
 		if len(a.Execution.Leaks) == 1 {
 			word = "leak"

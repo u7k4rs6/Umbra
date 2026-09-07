@@ -98,6 +98,21 @@ type Execution struct {
 	// Degraded is set when verify could not parse per-test ids, which happens
 	// when the runner is not verbose.
 	Degraded bool `json:"degraded,omitempty"`
+	// SweepInconclusive is set when the sweep ran but produced no comparable
+	// test ids and no count either, so nothing can be said about leaks.
+	//
+	// Zero is the wrong answer here. A sweep that compared ids and found
+	// nothing is a clean audit; a sweep that could not compare anything has
+	// audited nothing. Both used to print "0 leaks", which makes the strongest
+	// claim the report can make out of the weakest evidence it has.
+	//
+	// This is not the same as an incomplete list. Incomplete means verify
+	// counted failures it did not name, which is UnnamedFailures below and
+	// still prints a number. Inconclusive means there was nothing to count.
+	SweepInconclusive bool `json:"sweep_inconclusive,omitempty"`
+	// SweepInconclusiveReason says why, in one line, so the reader is not left
+	// to guess what went wrong.
+	SweepInconclusiveReason string `json:"sweep_inconclusive_reason,omitempty"`
 	// UnnamedFailures is how many newly failing tests verify counted but did
 	// not name. Its id lists cap at twenty and its whole verdict caps in
 	// bytes, so a large regression arrives as a number with a short list, or
@@ -105,6 +120,11 @@ type Execution struct {
 	// list is not.
 	UnnamedFailures int `json:"unnamed_failures,omitempty"`
 }
+
+// AuditConclusive reports whether the leak count means anything at all. Every
+// renderer asks this before printing a number, and prints none when it is
+// false.
+func (e Execution) AuditConclusive() bool { return !e.SweepInconclusive }
 
 // SweepNamedEverything reports whether the leak list is the whole story.
 //
