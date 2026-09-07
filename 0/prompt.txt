@@ -223,3 +223,60 @@ No em dashes. go test ./... green. One commit at the end.
 
 Report with: the repositories chosen and why, the counts for A across all three,
 the chain sample for B, and the verdict.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/python-resolution.md and the NOTES entry for de4dc60.
+
+Task: draft an upstream bug report for the entire-graph maintainers covering
+four findings. Writing only. Change no product code.
+
+No em dashes. Commit the draft to umbra/experiments/upstream-report.md. Do not
+open an issue or post anything; I will do that after reading it.
+
+Format it as separate issues in one file, since they should probably be filed
+separately. For each: a one-line summary, the version and platform, a minimal
+reproduction someone can run without our repository, what was observed, what was
+expected, and the impact in one sentence. Keep each under a page.
+
+The four:
+
+1. Calls through a module or package object do not resolve to same-repo
+   definitions. Lead with the three-file probe, since it isolates this from
+   layout, test style and repository size. Include the table of the three call
+   shapes and their edges, and note that CONSTRUCTS degrades to an external
+   CALLS, so the relation type is lost as well as the target. Include the raw
+   counts from all three repositories as supporting evidence, with the exact
+   query, and note that the source/test split rules out a test-specific cause.
+
+2. Attribute chains produce no edge. 27 chain sites, 27 non-edges, against a
+   matched control of 31 of 36 resolved in the same files and functions at
+   type_inferred 0.82 to 0.9. State the inference plainly: self gets a type,
+   self.<attribute> does not. Include a minimal reproduction. Mention that our
+   first measurement of this was wrong because we indexed by the evidence span,
+   which covers the calling function rather than the call, and that we corrected
+   it, so a reader knows the control is sound.
+
+3. graph commit cannot distinguish a method-body change from a class-level
+   change. The two change lists are byte-identical, sorted and serialised.
+   Include the probe class and the twelve one-kind changes. State the
+   consequence for a consumer: any rule that drops the rolled-up container also
+   drops it when a real class-level edit occurred. List the four things that
+   would resolve it, framed as options for them rather than demands: an end line
+   or changed-line range, a member-exclusive body hash, field records for
+   modified class attributes, or something else they prefer.
+
+4. A class decorator produces no class entity. Adding @dataclass reports
+   body_changed on the module and nothing for the class. Confirmed with two
+   decorator forms. Note that this is a common edit, so the change is invisible
+   rather than merely coarse.
+
+Tone: this is a report from a consumer who has read the docs and measured
+carefully, not a complaint. Say what we tried, including the surfaces we checked
+and ruled out (graph diff, body_hash, --depth), so they do not repeat our work.
+Where we may have the wrong end of it, say so.
+
+Before writing, verify the graph version and platform, and re-run one
+reproduction per finding to confirm each still holds on the current build. If
+any no longer reproduces, say so and leave it out.
