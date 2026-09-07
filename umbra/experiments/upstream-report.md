@@ -1,13 +1,13 @@
 # Draft bug reports for the entire-graph maintainers
 
-Four findings, written as four separate issues because they have different
+Five findings, written as five separate issues because they have different
 causes and could be fixed independently. Nothing here has been filed. This is a
 draft for review.
 
 Context, once, so it does not need repeating in each issue. We build a tool
 that takes the dependents of a changed symbol from `entire graph` and ranks
 them, so we are a consumer of `snapshot`, `commit` and `impact` rather than of
-the CLI's own output. All four findings came out of running against real
+the CLI's own output. All five findings came out of running against real
 repositories and were then reduced to minimal reproductions that do not involve
 our code. Every reproduction below was re-run against the build named in each
 issue on the day this was written.
@@ -23,7 +23,7 @@ $ go version -m $(command -v entire-graph)
     dep  github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82
 ```
 
-That may be worth a one-line fix on its own, but it is not one of the four
+That may be worth a one-line fix on its own, but it is not one of the five
 below.
 
 Where we think we may have the wrong end of something, we say so in the issue.
@@ -157,6 +157,12 @@ Sample own-package externals: `click.Command`, `click.Context`,
 package object, which is the ordinary style, the test suite is largely
 disconnected from the source in the graph, so test-reachability queries and
 anything built on them see almost nothing.
+
+**See also Issue 5.** The counts above took a workaround to produce. Because a
+call you could not resolve is reported as `external`, the same as a call to the
+standard library, we had to split the external destinations by string-matching
+the repository's own package name against the external node's `value`. Without
+Issue 5 a consumer cannot size this bug at all.
 
 ---
 
@@ -446,13 +452,120 @@ edit as having no dependents at all.
 
 ---
 
+## Issue 5: an unresolved call is reported as `external`, identical to a real third-party call
+
+**Summary.** `target_kind` and `relation_scope` use the value `external` both
+for a call that genuinely leaves the repository and for a call the resolver
+could not resolve, so no consumer can tell a real external dependency from a
+resolution failure.
+
+**Version.** As Issue 1.
+
+### Minimal reproduction
+
+```
+pkg/__init__.py     from pkg.core import helper as helper
+pkg/core.py         def helper(a):
+                        return a + 1
+
+tests/test_both.py  import os.path
+                    import pkg
+
+                    def test_two_calls_that_are_not_the_same_thing():
+                        a = os.path.join("x", "y")   # genuinely third party
+                        b = pkg.helper(1)            # this repo, one dir away
+                        return a, b
+```
+
+```sh
+git init && git add -A && git commit -m probe
+entire graph snapshot --repo . --format ndjson
+```
+
+### Observed
+
+The two CALLS edges are identical on every field:
+
+```
+target=os.path.join   target_kind=external  relation_scope=external  resolution=import_external  confidence=0.78
+target=pkg.helper     target_kind=external  relation_scope=external  resolution=import_external  confidence=0.78
+```
+
+One of those is a dependency on the standard library. The other is a function
+defined in the same repository, re-exported explicitly by `pkg/__init__.py`,
+which Issue 1 shows resolves correctly when it is called by a bare name. There
+is nothing in the record to separate them.
+
+### Expected
+
+A distinct value, so the two cases can be told apart. One added enum value on
+`target_kind`, say `unresolved`, would be enough, or a boolean alongside it. We
+are not asking for a `resolution` change and not asking for the call to
+resolve; that is Issue 1. This is the case where you already know you failed
+and the output does not say so.
+
+### The measured distributions
+
+`target_kind` across all relation types, three repositories pooled:
+
+| value | count |
+|---|---|
+| `symbol` | 15,899 |
+| `external` | **5,616** |
+| `file` | 1,624 |
+| `config` | 348 |
+| `route` | 159 |
+
+`relation_scope` on `CALLS`, 7,058 edges pooled:
+
+| value | count | destination |
+|---|---|---|
+| `external` | **3,977** | external record, 3,977 of 3,977 |
+| `module` | 1,647 | a symbol, 1,647 of 1,647 |
+| `file` | 1,188 | a symbol, 1,188 of 1,188 |
+| `workspace` | 246 | a symbol, 246 of 246 |
+
+Both fields separate "is the target a symbol here" perfectly and neither
+separates "did resolution fail". `external` is doing two jobs.
+
+### Why this blocks sizing Issue 1
+
+Splitting the external `CALLS` leaving `tests/` by whether the external node's
+`value` starts with the repository's own top-level package name:
+
+| Repo | own package | genuinely foreign | own-package share |
+|---|---|---|---|
+| `pallets/click` `562e458` | 1,313 | 209 | **86.3%** |
+| `encode/httpx` `b5addb6` | 750 | 215 | **77.7%** |
+| `pre-commit/pre-commit` `a9bba55` | 292 | 294 | 49.8% |
+
+In click's test suite, 86 percent of what the graph calls an external call is
+the project's own code. That number is the size of Issue 1, and producing it
+required guessing from a string. The guess is fragile in both directions: a
+project whose package name differs from its import name is undercounted, and a
+vendored or namespace package is overcounted. A consumer should not have to do
+this, and a maintainer reading a bug report should not have to trust it.
+
+**Impact.** Every consumer that wants to distinguish "this call leaves the
+repository" from "this call could not be resolved" has to reimplement the same
+string heuristic against the external node's name, and none of them can be
+right about it.
+
 ## Reproduction summary
 
-All four probes are a handful of files in a fresh git repository and need
+All five probes are a handful of files in a fresh git repository and need
 nothing from us. In order: the three-file import probe, the two-class chain
-probe, the `Widget` class with two commits, and the same class with a decorator
-added. Every one was re-run against
+probe, the `Widget` class with two commits, the same class with a decorator
+added, and the two-call probe in Issue 5. Every one was re-run against
 `v0.4.1-nightly.202609050613.0a448c50.0.20260905152923-3a2a715fad19` before
-this was written, and all four still reproduce.
+this was written, and all five still reproduce.
 
 We have not filed these yet and are happy to split, merge or drop any of them.
+
+**On splitting Issue 5 from Issue 1.** They are the same area and it would be
+reasonable to fold them together. We kept them apart because the fixes are not
+the same size: Issue 1 is a resolver change and Issue 5 is a single added value
+in an existing enum. Bundled, the cheap one is likely to wait for the expensive
+one, and the cheap one is the one that lets everybody else measure the
+expensive one. If you would rather have them as one issue, say so and we will
+merge them.
