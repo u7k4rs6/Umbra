@@ -1830,3 +1830,89 @@ all five, and two of them separate a same-repo target from an external one with
 no exceptions in 21,000 edges. Stage 2 parses and carries them. Stage 3 uses
 `relation_scope` and `target_kind` only, to say when a call leaves the
 repository, and touches neither the tiers nor the weights nor the echo rule.
+
+## Phase 26: the weakest-hop claim, checked
+
+2026-09-07. A claim was put to me for verification: that commit `e41af1db`
+kept resolution and confidence and had the walk carry the weakest hop along
+each path, that `BUILDATHON.md` says so in a "Noon Curveball" section, and that
+a "partial-analysis" fixture asserts a path is only as resolved as its weakest
+hop. Stage 2 of phase 25 had found the opposite, that the walk carried only the
+first hop and read no resolution at all.
+
+**Nothing in this repository supports any part of that claim, and I did not
+edit anything to make it true or to make it go away.** Four checks, each
+against this repository as it stands:
+
+1. **`e41af1db` does not exist.** Not on any branch, not in any of the 40-odd
+   `refs/entire/checkpoints/` refs, and not as a loose or dangling object:
+   `git cat-file --batch-all-objects --batch-check='%(objectname)'` returns
+   zero objects with that prefix.
+2. **`BUILDATHON.md` has no "Noon Curveball" section.** It is 59 lines with
+   five headings: What it decides, Graph evidence and verification, Run,
+   Evidence artifacts, Limits. It has exactly one commit in its history,
+   `7661eb2`, and has never contained the words "curveball" or "weakest", nor
+   the headings "One sentence" or "Finding 3".
+3. **There is no "partial-analysis" fixture.** There are eleven recorded
+   scenarios and the nearest name is `partial-read`, whose note reads "a read
+   whose offset and limit stop before the caller's span, which is the glance
+   tier" and whose test asserts `TierGlance` on two symbols. That is a
+   transcript tier, which is what the session saw. It says nothing about
+   resolution, confidence or hops.
+4. **`bfs.go` has three commits in its whole history** and only the first
+   predates phase 25: `b7d66b0` (phase 4), then `8ebec20` and `3755a94`. The
+   phase 4 `Reach` struct is ID, Source, Relation, Family, Depth, Path and
+   CallSite, and its propagation is explicitly first hop:
+
+   ```go
+   // Relation is the relation on the first hop away from the source, which
+   // is the one the ranker weighs.
+   ...
+   relation, family, callSite := e.Relation, fam, e.CallSite
+   if cur.depth > 0 {
+       relation, family, callSite = cur.relation, cur.family, cur.callSite
+   }
+   ```
+
+So of the three possibilities offered, the nearest is the third, a claim about
+behaviour that never shipped. But it is not quite that either, because there is
+no document here making the claim and no fixture passing for another reason.
+There is nothing to correct in `BUILDATHON.md`: adding a note there saying "we
+never did this" would be answering a sentence that document has never
+contained, which is its own kind of invention.
+
+### Where the claim probably comes from
+
+`files (1)/PLACEMENT.md`, untracked and dated 2026-09-06, gives placement
+instructions for eight SVGs and refers to a `BUILDATHON.md` containing
+`## One sentence`, `## Noon Curveball` and a `Finding 3`, none of which this
+repository's `BUILDATHON.md` has. Its fourth block places an image captioned
+"Three orbs at falling certainty: confirmed, heuristic, needs verification"
+under the Noon Curveball section's bold constraint sentence.
+
+**So a different and longer BUILDATHON.md exists somewhere, and this repository
+does not have it.** If the claim is true of that document, it is a claim about
+a document I cannot read, and checking it needs that file. This entry records
+what is true of the repository, which is the only thing I can check.
+
+### What is actually true today
+
+A weakest-hop rule does now exist, and it shipped on 2026-09-07 in `8ebec20`,
+phase 25 stage 2, written by me. It covers all five quality fields as a unit:
+`Reach.Weakest` holds the `EdgeQuality` of the least confident edge on the
+path, with confidence as the ordering key and the other four descriptors taken
+from that same hop so they stay coherent. `Relation`, `Family` and `CallSite`
+still describe the first hop, because that is the hop the ranker weighs.
+
+If the intent behind the claim was that the walk ought to work this way, it now
+does. It did not before, and the code was not backdated to pretend otherwise.
+
+### One thing this cost, worth recording
+
+The first history sweep reported zero matches for "weakest" in every version of
+`bfs.go`, including the commit where I had written it an hour earlier. The
+cause was the shell's `grep` function, a wrapper that miscounts `-c` in a
+pipeline; `/usr/bin/grep` on the identical input returned 7. A verification
+that says "this never existed" is exactly the kind that has to be checked
+against something known to be present before it is believed, and that check is
+what caught it.
