@@ -432,3 +432,7 @@ verdict on the second remote.
 The inventory is already done and committed as a7420f5. Do NOT redo it. Read
 umbra/experiments/repo-inventory.md as input and begin at task 1, the
 checkpoint-branch audit.
+
+---
+
+So: run --skip-push-sessions on the fork, note the encoding lesson, and get on with tasks 2 and 3, which are the actual merge.
