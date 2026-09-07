@@ -587,3 +587,331 @@ and prints no `NEWLY FAILING` line, and `entire umbra` reports zero leaks.
 Tooling: Entire CLI 0.10.5, entire-graph
 `v0.4.1-nightly.202609030616.ddcebd05`, Umbra at `7661eb2`, Python 3.14.4,
 pytest 9.1.1, Linux.
+
+---
+
+# Second pass, after the two fixes
+
+Everything above is the first pass and is left exactly as written. This section
+is a re-run of the same experiment on the same input after `44cecd0` (the
+sweep's parser) and `e18fd58` (binding a changed method). It is measurement,
+not fixing: no ranking weight was touched, nothing was tuned, and the defects
+found here are recorded rather than repaired.
+
+**The input is byte-identical.** Same clone of `pallets/click`, same commit
+`562e458`, same three imported checkpoints, same pairing with `65ddfb5e3bd3`,
+same runner. The snapshot confirms it: 158 files, 3,310 symbols, 9,582
+relations, and the same count for every relation kind. Any difference below is
+attributable to the two fixes.
+
+## The two number sets, side by side
+
+| | First pass | Second pass |
+|---|---|---|
+| Snapshot | 158 files, 3,310 symbols, 9,582 relations | **identical, every relation count too** |
+| `graph snapshot`, cold | 2.92s | 3.17s |
+| `graph snapshot`, warm | 0.10s to 0.14s | 0.10s to 0.13s |
+| `graph commit --json` | 0.17s | 0.14s |
+| `graph impact`, per call | 3.11s, 3.14s | 3.00s, 3.03s, 3.08s |
+| `graph impact`, calls made | **5** | **6** |
+| Whole run, wall clock | **28s** | **29s** |
+| Field size | 16 nodes | **15 nodes** |
+| Nodes in shadow | 13 | 13 |
+| Lit | 3 | **2** |
+| Penumbra | 12 | 12 |
+| Umbra | 1 | 1 |
+| Unknown | 0 | 0 |
+| Examined | 19% | **13%** |
+| Coverage line | 3 reads, 4 edits, 0 searches, 43 shell commands | identical |
+| Evidence tiers | 1 glance, 11 echo, 1 umbra, 3 lit | 1 glance, 11 echo, 1 umbra, **2 lit** |
+| Relation mix | 4 direct caller, 12 type consumer | **4 direct caller, 10 type consumer, 1 transitive caller** |
+| Probes selected | 1 | 1 |
+| Probes cracked | 0 | 0 |
+| Sweep | full suite, 0 leaks | full suite, 0 leaks |
+| Verdict | NO EFFECT | NO EFFECT |
+
+Three of those differences are the fix and one is noise.
+
+**The sixth impact call is the fix, visible in the command list.** The first
+pass queried `wrap_text`, `HelpFormatter` and the three added tests. The second
+pass queries those five and `HelpFormatter.write_usage`, which is the method
+that actually changed and which the first pass never asked about.
+
+**The field lost a node and the lost node is `HelpFormatter.write_usage`
+itself.** In the first pass it did not bind, so it was not recognised as a
+changed symbol and instead appeared as a *dependent* of `wrap_text`, lit,
+because `formatting.py` was read in full. It is now a source, and a source is
+not its own dependent. That is why lit fell from 3 to 2 and examined from 19%
+to 13%: the numerator and the denominator both lost the same node. **Nothing
+was examined less.** The illumination fraction went down because the field got
+more correct, which is worth knowing about that metric.
+
+**Two relation labels changed and both are truer.** `Command.format_usage`
+moved from `type consumer` to `direct caller`, and `Command.get_usage` from
+`type consumer` to `transitive caller`. Both now sit on the `CALLS` edges Graph
+always had; before, they arrived only over `PARAM_TYPE` and `USES_TYPE` from
+the enclosing class.
+
+**Wall clock is a wash.** One more three-second impact call, one second more
+total. The impact calls are still the run: six index rebuilds of the same index
+at about 3s each is roughly 18 of the 29 seconds, and each still reports
+`query_latency_ms: 1`.
+
+## The docket, before and after
+
+| Rank | First pass | Second pass |
+|---|---|---|
+| 1 | `CustomFormatter` 7.755, type consumer, umbra | **`Command.format_usage` 7.995, direct caller, echo** |
+| 2 | `test_wrap_text_visible_width` 7.5 | `CustomFormatter` 7.755, type consumer, umbra |
+| 3 | `Command.format_usage` 5.33, type consumer | `test_wrap_text_visible_width` 7.5 |
+| 4 | `Command.format_options` 5.019 | `Command.format_options` 5.019 |
+| 5 | `Command.format_arguments` 4.651 | `Command.format_arguments` 4.651 |
+| 6 to 11 | `format_commands`, `format_epilog`, `format_help`, `format_help_text`, **`get_usage` 4.651**, `make_formatter` | `format_commands`, `format_epilog`, `format_help`, `format_help_text`, `make_formatter`, `get_help` |
+| 12 | `get_help` 4.2 | `Group.format_options` 3.619 |
+| 13 | `Group.format_options` 3.619 | **`Command.get_usage` 3.488, transitive caller** |
+
+Exactly two nodes in this field can actually reach the changed method.
+`format_usage` went from tenth-of-thirteen scoring band to first. **`get_usage`
+went from tenth to last.** Its edge became more accurate and its rank got
+worse, because a transitive caller is weighted 1.5 and a type consumer 2. A
+truer description of the same relationship demoted it below six nodes the
+change cannot touch. That is not a tuning complaint; it is a measurement, and
+it says the weight table and the relation taxonomy disagree with each other.
+
+## Step 3: the two questions the bind defect was hiding
+
+### Does `UsageError.show` appear? No, and depth is not the reason.
+
+`src/click/exceptions.py:106` reads `echo(f"{self.ctx.get_usage()}\n{hint}", ...)`,
+so every parameter error in every click program prints a usage line built by
+the method that changed. It is absent from the field.
+
+The first pass guessed this was the `--depth 2` limit. **It is not.** The
+snapshot carries five outgoing edges from `UsageError.show` and not one of them
+reaches `get_usage`:
+
+```
+UsageError.show  CALLS     -> gettext.gettext                (external)
+UsageError.show  CALLS     -> echo                           src/click/utils.py
+UsageError.show  CALLS     -> get_text_stderr                src/click/_compat.py
+UsageError.show  CALLS     -> ClickException.format_message   src/click/exceptions.py
+UsageError.show  OVERRIDES -> ClickException.show             src/click/exceptions.py
+```
+
+Graph resolved the module-level functions and the `self.` method call on the
+same line, and produced nothing for `self.ctx.get_usage()`. The pattern is
+specific and nameable: **a method call on an attribute whose type is not
+annotated produces no edge**, while a call on `self` and a call on an imported
+function both do.
+
+Replaying Umbra's own traversal outside the tool confirms it is not depth. From
+these three sources the closure is 17 dependents at depth 2, 19 at depth 3, and
+**19 at depth 4 and at depth 6**. It saturates and never contains
+`UsageError.show`. Raising `--depth` cannot reach a node with no path to it.
+
+### Do the 46 `Usage:` assertions appear? No, and none is selected.
+
+Forty-six assertions across six test files, and not one of their test functions
+enters the field at any depth. Only five symbols under `tests/` appear anywhere
+in the closure at any depth: `test_wrap_text_visible_width`,
+`test_wrap_text_break_on_hyphens` (itself a source, being one of the added
+tests), `CustomFormatter`, and at depth 3 the two `OptParseCommand` overrides
+in `test_commands.py`, which are class methods rather than tests. None of the
+46 is among them.
+
+The reason is visible in their edges. A representative one:
+
+```
+test_basic_functionality (tests/test_formatting.py)
+    CONTAINS -> cli            tests/test_formatting.py
+    CALLS    -> click.command  (external)
+```
+
+Its whole graph presence is its own nested `cli` function and a call to an
+**external** node. The call that actually runs the code under test,
+`runner.invoke(cli, [...])`, produces no edge at all: `runner` is a pytest
+fixture parameter with no inferable type, which is the same shape of miss as
+`self.ctx` above.
+
+Measured across the whole suite, edges leaving symbols in `tests/`:
+
+| Destination | CALLS edges |
+|---|---|
+| external `click.*` | **1,522** |
+| in-repo `src/` | 326 |
+| within `tests/` | 74 |
+
+**Seventy-nine percent of the calls click's test suite makes are attributed to
+external nodes rather than to the definitions in the same repository.** The
+cause is the import style against a `src/` layout: inside the package,
+`from .utils import echo` resolves to `src/click/utils.py`, which is why
+`UsageError.show` has an in-repo `echo` edge. From the tests, `import click`
+then `click.command(...)` resolves to an external `click.command`, and 495
+external nodes in this snapshot are exactly that. The tests are not far from
+the source in the graph; for four calls in five they are attached to a
+different node entirely.
+
+The `TESTS` relation does not rescue it either. There are 18 in the whole
+repository, all name matches of the `test_echo -> echo` shape, and Graph's own
+`capabilities` lists `TESTS` under `heuristic_relation_types`. None touches the
+formatter.
+
+So probe selection selects one test out of 2,059, and that one arrives through
+`wrap_text`, a module-level function, over the only kind of edge that survives
+in this codebase.
+
+## Step 4: the top five, re-judged against source
+
+Judged fresh against the current edges, not carried over.
+
+### 1. `Command.format_usage`, `src/click/core.py:1163`, direct caller, echo, 7.995. **Right.**
+
+Its body is two lines and the second is
+`formatter.write_usage(ctx.command_path, " ".join(pieces))`. It is the only
+call site in click of the method that changed, and every usage line the library
+prints goes through it. It is first, it is labelled by the `CALLS` edge, and no
+weight was touched to put it there.
+
+One thing to record. It leads by 0.24, about three percent, and it does that
+while carrying a 0.7 echo multiplier. Without that multiplier it would score
+11.42 and lead by nearly half. It is first on the correct answer by a margin
+thin enough that a node with one more dependent would have taken it.
+
+### 2. `CustomFormatter`, `tests/test_custom_classes.py:52`, type consumer, umbra, 7.755. **Defensible, and now visibly overweighted.**
+
+Unchanged in score between the passes; it is second only because something
+correct overtook it. It is the repository's only `HelpFormatter` subclass and
+was never opened, so surfacing it answers a question a reviewer should ask. But
+it overrides `write_heading` alone and its test asserts on a styled heading, so
+this change cannot reach it, and it still outranks nine `core.py` methods on a
+far-field multiplier of 1.5 awarded for sitting in `tests/` rather than `src/`,
+which is a fact about directory layout rather than about risk.
+
+There is also a labelling error underneath it. The snapshot edge is `EXTENDS`.
+`internal/graph/relations.go` puts `EXTENDS`, `INHERITS`, `IMPLEMENTS` and
+`OVERRIDES` in the type-use family, so a subclass is reported as a "type
+consumer" and weighted 2, the same as a function that merely takes a
+`HelpFormatter` parameter. Inheriting a class and accepting one as an argument
+are not the same dependency, and the report cannot currently tell a reader
+which it has.
+
+### 3. `test_wrap_text_visible_width`, `tests/test_formatting.py:487`, direct caller, glance, 7.5, passed. **Right.**
+
+The only test in click that calls `wrap_text` directly, and `wrap_text` is the
+function whose signature and `TextWrapper` construction changed. The `glance`
+tier is right and non-obvious: the file was read at lines 505 to 604 and this
+test begins at 487, so it is inside a file the session opened and outside the
+part it saw. Selected as the sole probe, ran, passed. Unchanged and still the
+soundest row in the table.
+
+### 4. `Command.format_options`, `src/click/core.py:1300`, type consumer, echo, 5.019. **Wrong.**
+
+It calls `formatter.write_dl(opts)` and never touches `write_usage`. `write_dl`
+calls `wrap_text` with the default `break_on_hyphens=True`, which this change
+deliberately left alone, so there is no input for which its output differs
+before and after the commit. It is in the field over a `PARAM_TYPE` edge from
+its `formatter: HelpFormatter` parameter, and nothing more.
+
+The bind fix could not help it, and the second pass makes the reason plain.
+`graph commit` reports **both** `class HelpFormatter` and
+`method HelpFormatter.write_usage` as changed, because the class body contains
+the method. Umbra treats the class as an independent source, and at depth 1
+every method in `core.py` that takes a `HelpFormatter` parameter becomes its
+dependent. **Ten of the thirteen shadowed nodes are manufactured by that
+roll-up**, and none of them can be affected by the edit that actually happened.
+
+### 5. `Command.format_arguments`, `src/click/core.py:1312`, type consumer, echo, 4.651. **Wrong, same cause.**
+
+Also `write_dl`. It is tied at 4.651 with `format_commands`, `format_epilog`,
+`format_help`, `format_help_text` and `make_formatter`, none of which the
+change can reach, and that whole tie sits above `Command.get_usage` at 3.488,
+which renders the usage line the change alters. The ordering inside the block
+is broken by path and name, so within the `core.py` group the ranking still
+carries no information about which nodes the change can reach.
+
+**Scorecard: two right, one defensible, two wrong**, against one right, one
+defensible and three wrong in the first pass. The improvement is real and it is
+entirely at the top: the node that matters most is now first and correctly
+described.
+
+## Step 5: the echo demotion, measured
+
+**It still fires, on eleven of the thirteen shadowed nodes, and it fires on a
+node carrying a direct-caller edge.**
+
+The evidence is the same event as in the first pass, and the report still
+states it plainly: `the session named src/click/core.py in its own words and
+never opened it`. It is timeline sequence 15, a mention of six paths in a
+sentence comparing three candidate repositories, written before this repository
+was cloned. `src/click/core.py` was never read and never edited: the timeline
+carries no read or edit event for it at all. The cut is at sequence 54, so the
+mention precedes the change by thirty-nine events.
+
+What it costs, exactly, from the report's own factors:
+
+| Node | Relation | Factors | Score with echo | Score without |
+|---|---|---|---|---|
+| `Command.format_usage` | **direct caller** | relation 3, dependents 3.807, state 0.7 | **7.995** | **11.42** |
+| `Command.get_usage` | transitive caller | relation 1.5, dependents 3.322, state 0.7 | 3.488 | 4.98 |
+| nine `core.py` methods | type consumer | relation 2, state 0.7 | 3.619 to 5.019 | 5.17 to 7.17 |
+
+So the answer to the question as posed: **yes, a node with a direct structural
+edge is being demoted by a prose mention alone**, and the mention in question
+was made before the repository existed on this machine. `Command.format_usage`
+survives it and is still first, but by 0.24 rather than by 3.67.
+
+No weight was changed, and no recommendation is made here. The data is: the
+demotion is real, it applies uniformly to every node in a mentioned file
+regardless of the edge that put the node in the field, and in this run it very
+nearly cost the correct answer its place.
+
+## The corrected conclusion
+
+The first pass concluded: **"the fixture validated the pipeline and could not
+validate the analysis"**, and summarised it as the machinery generalising while
+the analysis did not.
+
+**That sentence was wrong in the way it apportioned blame, and it named the
+wrong half.** Corrected:
+
+- **The machinery generalises.** Unchanged, and the second pass confirms it:
+  resolution, worktrees, the transcript adapter, the classifier, tiers, the
+  scrubber, the renderers, exit codes and the notes all ran clean on an
+  unfamiliar 28,000-line repository, twice, with byte-identical input producing
+  a byte-identical snapshot.
+- **The ranking generalises better than the first pass could measure.** Most of
+  what looked like bad ranking was one binding defect. Fixing it moved the one
+  node that matters from third to first, with a true `CALLS` label, without
+  touching a single weight. The first pass judged the ranking model on a field
+  built from the wrong edges and blamed the model for it.
+- **The field construction does not generalise, and that is the real finding.**
+  Which symbols enter the blast radius is still wrong on real code, for three
+  reasons this pass measured rather than guessed: a class-level source rolls up
+  a method change and manufactures ten dependents that cannot be affected; the
+  most important behavioural dependent is absent at any depth because the edge
+  does not exist; and 79 percent of the calls the test suite makes are
+  attributed to external nodes, so no test reaches the change and probe
+  selection selects one of 2,059.
+
+So it is neither "the analysis did not generalise" nor "the binding did not".
+It is: **the binding defect was hiding how good the ranking already was, and
+fixing it exposed that the field it ranks is the part that does not
+generalise.** Ranking a set is only as good as the set, and on real code the
+set is currently built from a class roll-up plus whatever edges a
+tree-sitter-based resolver can see through attribute access, which in an
+idiomatic Python project with a `src/` layout and a fixture-driven test suite
+is not much.
+
+The two fixes were worth making and neither is sufficient. The next question is
+not a weight; it is whether a changed class should be a source at all when the
+change is entirely inside one of its methods.
+
+## Second pass, reproducing
+
+```sh
+cd ~/umbra-experiment/click            # the pass-one clone, untouched
+entire umbra 562e458 --test "click-pytest -v" --out ./out2
+```
+
+Umbra at `e18fd58`. Everything else as in the first-pass reproduce section
+above.

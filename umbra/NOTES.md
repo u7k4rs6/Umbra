@@ -1530,3 +1530,33 @@ The echo demotion of the twelve `core.py` nodes and the absent
 `UsageError.show` are both downstream of this bug and are now standing on
 different edges than when they were judged. They are left exactly as they were,
 to be re-judged against the corrected field rather than tuned around here.
+
+## Open question, not investigated: does span containment drift?
+
+Recorded from the second real-repo pass so it is not lost. **Do not treat this
+as a finding; nothing here was measured.**
+
+Phase 23 made source resolution depend on file, then qualified name, then span
+containment, and containment is what decides between two symbols of one
+qualified name in one file. The line it contains comes from `graph commit`,
+which reports `after_start_line` and `before_start_line` for the change. The
+spans it is contained by come from `graph snapshot`, which Umbra takes at the
+head worktree.
+
+Those two are consistent as long as the head snapshot and the head side of the
+diff describe the same tree, and in every run so far they have. The case worth
+checking eventually is the one where they might not: a changed entity for which
+Graph reports only `before_start_line`, because the symbol was removed or
+because the diff attributed it to the parent, while the snapshot is at head.
+`ParseCommitJSON` already prefers `after_start_line` and falls back to
+`before_start_line`, so a parent line number can reach a head span. With one
+symbol of a name the fallback is harmless, since a single match binds without
+consulting the line at all. With two symbols of one name in one file it decides
+which one, and a parent-side line number in a file that moved could put the
+change inside the wrong span, or inside neither, which now reports the source
+as ambiguous rather than binding it.
+
+What would settle it: a commit that both moves a symbol and leaves two symbols
+of one qualified name in the file, run against a head snapshot, checking
+whether the bound symbol is the intended one. `fixtures/app` has no such case
+and neither did click.
