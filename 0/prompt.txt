@@ -1,0 +1,173 @@
+You are in the Umbra repository. Read umbra/experiments/first-real-repo.md
+(defect 2), then umbra/internal/graph/verify.go and the ParseVerdict path.
+
+Fix: the sweep reports zero leaks when the suite has seventeen or more failures.
+graph verify prints "NEWLY FAILING (n):" with ids only when n is at most 16, and
+above that prints only the VERDICT line. ParseVerdict reads ids from the list
+only, so above the threshold it sees none and the sweep reports a clean audit.
+The audit fails exactly when the selection is worst.
+
+Do this:
+- Read the actual output shapes first, at 15, 17 and 55 failures, and record
+  them verbatim in the commit message or NOTES. Do not guess the format.
+- Prefer a JSON or machine-readable form of verify if one exists; check
+  --help and capabilities before parsing human output. Say what you found.
+- Make the count authoritative even when ids are unavailable. If verify reports
+  a failure count but no ids, the sweep must report that it could not name the
+  leaks and how many there are. It must never report zero leaks from a run whose
+  ids it could not read. This is the same rule as the inconclusive-sweep fix
+  already in the codebase; reuse that path rather than inventing a second one.
+- Known-positive tests at 15, 17 and 55 failures, each proved to fail without
+  the fix. The 15 case must still name leaks with forensics as it does today.
+
+No em dashes. go test ./... green. Commit separately from any other work.
+
+---
+
+after that, You are in the Umbra repository. Read umbra/experiments/first-real-repo.md
+(defect 1 and defect 3), then umbra/internal/graph/bind.go, snapshot.go, and
+analyze.go around line 117.
+
+Problem: graph commit names a changed method as HelpFormatter.write_usage while
+the snapshot's Name field carries the bare write_usage. Bind compares on Name,
+the match fails, and the impact query is skipped entirely, so a changed method's
+dependents are never traversed. Every changed symbol in our fixture is a
+module-level function, where the two forms are identical, which is why nothing
+caught this. The central case of the product has never run end to end.
+
+Investigate before designing:
+- Collect the real shapes. For a class method, a nested function, a module-level
+  function, a method on a nested class, and whatever else the provider emits,
+  record what graph commit calls it and what the snapshot Name and any qualified
+  or container fields hold. Do this across at least two languages if the
+  provider supports it. Write the table into NOTES before writing code.
+- Check whether the snapshot already carries a container, parent or qualified
+  name field that makes this a lookup rather than a string problem. Prefer using
+  a field the provider publishes over reconstructing one ourselves.
+
+Then implement resolution, with the file path as a disambiguator, since we
+already learned from the graph def case that a bare name can match many
+definitions. A match must be unambiguous or it is not a match.
+
+Two rules on failure:
+- If a changed symbol cannot be bound, that is not silence. The report must say
+  the symbol could not be resolved and name it, distinct from "no dependents
+  were found". Absence of information and a finding of no dependents are
+  different sentences and defect 3 is exactly this confusion. Fix that wording
+  everywhere the report can say something was not found.
+- Never skip the impact query silently. Log or surface every skip.
+
+Fixtures: add a changed symbol that is a method on a class, and one nested
+inside another function, to the recorded scenarios, because nothing in the suite
+currently exercises either. Known-positive tests proved to fail without the fix.
+
+Do not touch ranking weights in this pass. The echo demotion and the missing
+UsageError.show are downstream of this bug and must be re-judged after it is
+fixed, not tuned around now.
+
+No em dashes. go test ./... green. Commit separately.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md and the NOTES entries for commits 44cecd0
+(sweep) and e18fd58 (bind) before starting.
+
+Task: re-run the real-repo experiment now that binding works, and judge the
+result honestly. This is measurement, not fixing. Do not change ranking weights,
+do not tune anything, and do not fix defects you find. Collect and report.
+
+No em dashes. go test ./... green. One commit at the end.
+
+1. Re-run the same experiment: same repository (pallets/click), same commit, same
+   session and checkpoint as the first pass. Nothing about the input changes, so
+   any difference in output is attributable to the two fixes.
+
+2. Report the same numbers as the first pass so the two are directly comparable:
+   field size, snapshot and impact timings, state breakdown, coverage line,
+   probes selected, cracked, sweep result, evidence tiers, and total wall clock.
+   Put them beside the first pass numbers, not in place of them.
+
+3. Answer the two questions the bind defect was hiding:
+   - Does UsageError.show now appear in the field, and at what depth and
+     relation?
+   - Do the 46 Usage: assertions appear, and are any of them selected as probes?
+   If they still do not appear, find out why and say so plainly. That answer is
+   as valuable as the other one.
+
+4. Re-judge the top five ranked dependents against source, exactly as in the
+   first pass: right, defensible, or wrong, with the reasoning. Do not carry
+   over the earlier judgements; the edges changed, so judge what is there now.
+
+5. The echo question, measured not tuned. In the first pass, Command.format_usage
+   was demoted to echo because core.py was named in prose before the repository
+   was cloned, and it should have been first. It is now first. So report whether
+   the echo demotion still fires on any node, and if so, whether any node
+   carrying a direct-caller edge is being demoted by a prose mention alone. Do
+   not change the weight either way. The open question is whether a mention
+   should be able to demote a node with a direct structural edge at all, and
+   that is a rule change we will decide together after seeing the data.
+
+6. Update umbra/experiments/first-real-repo.md in place with a clearly marked
+   second pass section. Keep the original findings and judgements intact above
+   it, since the value is in the before and after sitting together. Correct the
+   first pass's conclusion explicitly: state whether "the machinery generalises,
+   the analysis did not" still holds, or whether the analysis generalised and the
+   binding did not.
+
+7. Record one open question in NOTES for later, do not investigate it now:
+   resolution now depends on the snapshot and the commit agreeing about line
+   numbers, via span containment. Note the case worth checking eventually, which
+   is whether that ever drifts when the snapshot is taken at head and the change
+   is read from the parent.
+
+Report with: the two number sets side by side, the answers to step 3, the five
+judgements, the echo finding, and the corrected conclusion.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md, especially the pass 2 conclusion, then
+umbra/internal/graph/sources.go and the Bind path from commit e18fd58.
+
+Problem: when an agent changes one method, graph commit reports both the method
+and its enclosing class as changed. Umbra takes both as sources, so the field
+becomes everything touching the class rather than everything reaching the edit.
+On the click experiment, ten of thirteen shadowed nodes were manufactured this
+way, and the two nodes that actually reach the changed code ranked first and
+thirteenth.
+
+Fix: a changed container is not a source when every change inside it falls
+within the span of a member that is itself already a source.
+
+Before writing code:
+- Establish what graph commit gives you to decide this with. You already resolve
+  by file, qualified name, then span containment, so the spans are available.
+  Confirm whether the change kinds and line ranges are precise enough to tell
+  "the class body changed" from "a method inside the class changed", and write
+  what you find into NOTES. If they are not, say so and stop rather than
+  approximating.
+- Check the cases that must keep the class as a source: a changed class
+  attribute, a changed base class list, a new or removed method, a decorator on
+  the class, and a change spanning both a method and class-level code.
+
+Then implement it, with two requirements:
+- The report must say why each source is in the field, so a reviewer can see
+  that a class was kept or dropped and on what rule. Do not make this silent.
+- Dropping a source must never drop a dependent that another source still
+  reaches. Verify the union, not the per-source sets.
+
+Fixtures and tests: the current recorded scenarios cannot express this, since
+the method-on-a-class fixture from e18fd58 is the only one close. Add cases for
+each keep-the-class situation above plus the drop case, and known-positives that
+fail without the fix. Do not weaken any existing assertion.
+
+Then re-run the click experiment a third time with nothing else changed, and
+report field size, the state breakdown, the top five with judgements, and how
+many of the previous ten manufactured nodes are gone. Append it to
+first-real-repo.md as pass 3, keeping passes 1 and 2 intact.
+
+Do not touch ranking weights and do not touch the echo rule. Both are still
+waiting on a correct field.
+
+No em dashes. go test ./... green. Commit separately from the experiment append.
