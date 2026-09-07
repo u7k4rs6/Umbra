@@ -82,6 +82,10 @@ func (a ClaudeCode) Parse(jsonl []byte) (*Session, error) {
 	// Tool uses awaiting their result, so a Grep can take the paths its
 	// result listed and a Read can be linked to the content it returned.
 	pending := map[string]*Event{}
+	// Tool ids whose result came back an error. Their events are dropped
+	// after the scan rather than during it, because pending holds pointers
+	// into the event slice.
+	failedTools := map[string]bool{}
 	sessions := map[string]bool{}
 
 	sc := bufio.NewScanner(bytes.NewReader(jsonl))
@@ -139,6 +143,17 @@ func (a ClaudeCode) Parse(jsonl []byte) (*Session, error) {
 					continue
 				}
 				sawResult = true
+
+				// A tool call that came back an error is not evidence that the
+				// session saw anything. The read is recorded when the call is
+				// made, before the result arrives, so a read of a path that
+				// does not exist used to mark its node lit. Remember the id and
+				// drop the read once the scan is done.
+				if b.IsError {
+					failedTools[b.ToolUseID] = true
+					continue
+				}
+
 				text := resultText(b.Content)
 				if text == "" {
 					continue
@@ -168,6 +183,20 @@ func (a ClaudeCode) Parse(jsonl []byte) (*Session, error) {
 	}
 	if err := sc.Err(); err != nil {
 		return nil, err
+	}
+
+	// Drop reads whose result was an error. This can only ever move a node
+	// toward shadow, never away from it: it removes evidence of inspection, it
+	// never adds any.
+	if len(failedTools) > 0 {
+		kept := s.Events[:0]
+		for _, ev := range s.Events {
+			if ev.Kind == Read && ev.ToolID != "" && failedTools[ev.ToolID] {
+				continue
+			}
+			kept = append(kept, ev)
+		}
+		s.Events = kept
 	}
 
 	for id := range sessions {
