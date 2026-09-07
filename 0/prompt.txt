@@ -123,3 +123,51 @@ No em dashes. go test ./... green. One commit at the end.
 
 Report with: the two number sets side by side, the answers to step 3, the five
 judgements, the echo finding, and the corrected conclusion.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md, especially the pass 2 conclusion, then
+umbra/internal/graph/sources.go and the Bind path from commit e18fd58.
+
+Problem: when an agent changes one method, graph commit reports both the method
+and its enclosing class as changed. Umbra takes both as sources, so the field
+becomes everything touching the class rather than everything reaching the edit.
+On the click experiment, ten of thirteen shadowed nodes were manufactured this
+way, and the two nodes that actually reach the changed code ranked first and
+thirteenth.
+
+Fix: a changed container is not a source when every change inside it falls
+within the span of a member that is itself already a source.
+
+Before writing code:
+- Establish what graph commit gives you to decide this with. You already resolve
+  by file, qualified name, then span containment, so the spans are available.
+  Confirm whether the change kinds and line ranges are precise enough to tell
+  "the class body changed" from "a method inside the class changed", and write
+  what you find into NOTES. If they are not, say so and stop rather than
+  approximating.
+- Check the cases that must keep the class as a source: a changed class
+  attribute, a changed base class list, a new or removed method, a decorator on
+  the class, and a change spanning both a method and class-level code.
+
+Then implement it, with two requirements:
+- The report must say why each source is in the field, so a reviewer can see
+  that a class was kept or dropped and on what rule. Do not make this silent.
+- Dropping a source must never drop a dependent that another source still
+  reaches. Verify the union, not the per-source sets.
+
+Fixtures and tests: the current recorded scenarios cannot express this, since
+the method-on-a-class fixture from e18fd58 is the only one close. Add cases for
+each keep-the-class situation above plus the drop case, and known-positives that
+fail without the fix. Do not weaken any existing assertion.
+
+Then re-run the click experiment a third time with nothing else changed, and
+report field size, the state breakdown, the top five with judgements, and how
+many of the previous ten manufactured nodes are gone. Append it to
+first-real-repo.md as pass 3, keeping passes 1 and 2 intact.
+
+Do not touch ranking weights and do not touch the echo rule. Both are still
+waiting on a correct field.
+
+No em dashes. go test ./... green. Commit separately from the experiment append.
