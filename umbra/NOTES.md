@@ -1560,3 +1560,130 @@ What would settle it: a commit that both moves a symbol and leaves two symbols
 of one qualified name in the file, run against a head snapshot, checking
 whether the bound symbol is the intended one. `fixtures/app` has no such case
 and neither did click.
+
+## Phase 24: the class roll-up, and why it was not fixed
+
+Pass 2 of the real-repo experiment ended on a question: should a changed class
+be a source at all when the change is entirely inside one of its methods? On
+`pallets/click`, ten of thirteen shadowed nodes were methods in `core.py` that
+merely take a `HelpFormatter` parameter, pulled in because `graph commit`
+reported the enclosing class as changed alongside the method that actually
+changed.
+
+The proposed rule was: **a changed container is not a source when every change
+inside it falls within the span of a member that is itself already a source.**
+
+**That rule cannot be evaluated from anything the installed tools publish, so
+it was not implemented.** No code changed in this phase. What follows is the
+measurement that settles it, so the next person does not have to repeat it.
+
+### The probe
+
+A repository with one class carrying two attributes, two methods and a base
+class, committed once as a baseline, then twelve commits each making one kind
+of change. It lives at `~/umbra-experiment/container-probe` and is not
+committed here; the recipe is a `Widget(Base)` class with `limit`, `label`,
+`render` and `measure`, plus a free function, which is enough to produce every
+row below.
+
+Everything is `entire graph commit <sha> --repo . --json`, unedited:
+
+| Case | What changed | What `graph commit` reports |
+|---|---|---|
+| A | one method body | `body_changed class Widget` **and** `body_changed method Widget.render` |
+| B | one class attribute value | `body_changed class Widget` alone |
+| C | **a method body and a class attribute** | `body_changed class Widget` **and** `body_changed method Widget.render` |
+| D | the base class list | `signature_changed class Widget`, with `old_signature` and `new_signature` |
+| E | a method added | `body_changed class Widget` and `added method Widget.extra` |
+| F | a method removed | `body_changed class Widget` and `removed method Widget.measure` |
+| G | a class decorator added | `body_changed module base.py`, and **no class or member change at all** |
+| H | a method signature | `body_changed class Widget` and `signature_changed method Widget.render` |
+| I | the class docstring | `body_changed class Widget` alone |
+| J | a method body and a **new** attribute | as A, with the method's `after_start_line` shifted by one |
+| K | a method body and a **removed** attribute | as A, with the method's `after_start_line` shifted by minus one |
+
+### The line that decides it
+
+**A and C are byte-identical.** Sorted and serialised, the change list for "a
+method body changed" and for "a method body changed and so did a class
+attribute" is the same document:
+
+```
+[{"after_start_line":12,"before_start_line":12,"dependents_count":0,
+  "kind":"class","name":"Widget","type":"body_changed"},
+ {"after_start_line":18,"before_start_line":18,"dependents_count":1,
+  "kind":"method","name":"Widget.render","type":"body_changed"}]
+```
+
+A is a pure roll-up and the class should be dropped. C carries a real
+class-level change and the class must be kept. The output does not distinguish
+them, so any rule that drops the class in A also drops it in C, and dropping it
+in C loses every dependent of a genuine class-level edit. That is a silent
+false negative in the direction this product exists to prevent.
+
+### Why the line numbers do not rescue it
+
+`before_start_line` and `after_start_line` are **start** lines only. There is no
+end line, no changed-line range and no per-hunk detail: the six keys above are
+the entire change record, and Umbra's `commitJSON` already parses all six.
+
+The shifts in J and K look like a signal and are not. A shift means lines were
+added or removed somewhere above the member in the file, which includes above
+the class entirely and inside a different method, so it does not localise
+anything. And the case that matters, C, changes a class attribute in place and
+produces **no shift at all**, identical to A.
+
+### Two other surfaces, checked rather than assumed
+
+- **`entire graph diff --base X --head Y --json`** returns the same schema and
+  is byte-identical for A and C as well. It is not a finer instrument; the
+  help text calls it an alias for the same analysis.
+- **The snapshot's `body_hash`** is the obvious remaining candidate, since a
+  class-level hash that excluded member bodies would settle this immediately.
+  It does not exclude them. Snapshotting the baseline and all three cases:
+
+  | Symbol | A, method only | B, attribute only | C, both |
+  |---|---|---|---|
+  | `Widget` | **changed** | **changed** | **changed** |
+  | `Widget.render` | changed | same | changed |
+  | `Widget.measure` | same | same | same |
+
+  The class hash moves whenever anything inside it moves, so it separates
+  "something in this class changed" from "nothing did", and never separates a
+  roll-up from a class-level edit.
+
+### What would settle it, none of which is available today
+
+One of: an end line or a changed-line range on each change record; a
+member-exclusive body hash for a container; a `field` change record for a
+changed class attribute, which `FoldFields` shows the provider does emit for
+some kinds and did not emit for any case here; or Umbra reading and diffing the
+two worktrees' source text itself, which means reconstructing what the provider
+should publish and is the mistake phase 23 recorded as worth avoiding.
+
+### The cases that must keep the class, for whenever this is revisited
+
+Collected while probing, and useful regardless:
+
+- **B and I keep it and are unambiguous.** A class-level change with no member
+  change reported is decidable today: there is no member source to attribute
+  the class change to, so the class stays.
+- **D keeps it and is unambiguous.** A base class list change arrives as
+  `signature_changed` on the class with both signatures, which no member
+  roll-up produces.
+- **E and F are roll-ups by construction** but adding or removing a member also
+  changes the class's own shape, so a rule would have to decide deliberately
+  rather than fall through.
+- **G cannot be reached at all.** A class decorator produces a module-level
+  change and no class entity, which is the module-granularity degradation
+  already recorded as defect 3 in the experiment. Two separate decorator forms
+  were tried and both behave this way.
+
+### Where this leaves the field
+
+The ten manufactured nodes on click are still there and are still wrong. What
+this phase establishes is that they cannot be removed correctly with the
+information the installed Graph provides, and that removing them incorrectly
+would trade a visible over-report for an invisible under-report. Ranking
+weights and the echo rule remain untouched and remain waiting on a correct
+field, which is now blocked on the provider rather than on Umbra.
