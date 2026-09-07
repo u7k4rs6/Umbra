@@ -1687,3 +1687,146 @@ information the installed Graph provides, and that removing them incorrectly
 would trade a visible over-report for an invisible under-report. Ranking
 weights and the echo rule remain untouched and remain waiting on a correct
 field, which is now blocked on the provider rather than on Umbra.
+
+## Phase 25, stage 1: what the five snapshot fields actually contain
+
+`python-resolution.md` ended on a finding about ourselves: the snapshot's
+relation records carry `confidence`, `reason`, `relation_scope`, `resolution`
+and `target_kind`, and `LoadSnapshot` parses none of them. Before consuming
+them, this is what they hold. Measured over the three repositories already
+cloned for that experiment: `pallets/click` `562e458`, `encode/httpx`
+`b5addb6`, `pre-commit/pre-commit` `a9bba55`.
+
+Two corrections to the framing before the numbers.
+
+**There is no `evidence.go` in either package.** The tier code is
+`internal/shadow/classify.go` and `state.go`.
+
+**The five fields are not a better version of our evidence tiers; they are a
+different axis.** `Classify(e *Examined, file, symbolName, span)` takes only the
+examined set, so lit, penumbra and umbra and the five penumbra tiers describe
+what the session looked at. `confidence` and `resolution` describe how sure
+Graph is about an edge. Both are evidence and neither substitutes for the
+other, which is one more reason not to rework the tiers on the back of this.
+
+### The fields are on every relation type, always
+
+Not just `CALLS`. Across the three snapshots, all five fields are present on
+100 percent of the records of all twenty relation types observed, from `DEFINES`
+at 7,057 records down to `HANDLES_TOOL` at 1.
+
+### relation_scope: four values, and it separates same-repo from external exactly
+
+Pooled `CALLS`, 7,058 edges: `external` 3,977, `module` 1,647, `file` 1,188,
+`workspace` 246.
+
+Cross-tabulated against whether the `to_id` is a symbol record or an external
+record, per repository:
+
+| relation_scope | destination is a symbol | destination is external |
+|---|---|---|
+| `external` | **0** | **3,977** |
+| `module` | 1,647 | 0 |
+| `file` | 1,188 | 0 |
+| `workspace` | 246 | 0 |
+
+Not one exception in 7,058 edges across three repositories. `relation_scope ==
+"external"` is exactly "the target is outside this repository", and it is
+available without building a symbol table first, which is what makes it worth
+reading.
+
+### target_kind: five values, and it names synthesised targets
+
+Across all relation types: `symbol` 15,899, `external` 5,616, `file` 1,624,
+`config` 348, `route` 159. For `CALLS` only the first two occur, and they line
+up with the destination as cleanly as `relation_scope` does: `symbol` 3,081 all
+same-repo, `external` 3,977 all external.
+
+`file`, `config` and `route` are synthesised or non-symbol targets:
+`CONFIGURES` points at a `config`, `HANDLES_ROUTE` at a `route`, `IMPORTS` and
+`FILE_CHANGES_WITH` at a `file`.
+
+**There is no `unresolved` value.** A call Graph could not resolve is reported
+as `external`, the same as a call to the standard library. So `target_kind`
+answers "is the target a real symbol in this repository" and does not
+separately answer "did resolution fail". For the click case both readings are
+the same thing from the graph's point of view, which is what makes it usable
+for stage 3, but it is worth knowing that `click.command` and `os.path.join`
+are indistinguishable at this field alone.
+
+### reason: a closed set of 87 phrases, finer grained than resolution
+
+87 distinct strings across all relation types, 18 for `CALLS`. Nothing is
+interpolated into them: the longest is 88 characters, `method call on this/self
+resolved to the enclosing type (inherited from a base type)`, and the only
+strings containing a slash are phrases like `GitHub Actions workflow/job
+configures automation`. No symbol name, path or line number appears in any of
+them, so they are safe to carry into a report without scrubbing.
+
+It is **not** a pure function of `(type, resolution)`: 14 of the 43 observed
+pairs map to more than one reason. `('CALLS', 'type_inferred')` alone covers
+eight phrases, separating a call on `self` from one on a typed parameter from
+one on a chained constructor. So `reason` is the finest-grained of the five and
+is the field that would say *why* a resolution happened, if we ever want that.
+
+### resolution and confidence
+
+`CALLS` resolutions: `import_external` 3,977, `import_resolved` 1,395, `exact`
+881, `type_inferred` 513, `pattern` 203, `name_only` 89. Two more appear on
+other relation types, `git_history` and `package`.
+
+Only eight combinations of the three categorical fields occur for `CALLS`, and
+they are consistent:
+
+```
+3977  import_external  scope=external   target_kind=external
+1395  import_resolved  scope=module     target_kind=symbol
+ 881  exact            scope=file       target_kind=symbol
+ 307  type_inferred    scope=file       target_kind=symbol
+ 206  type_inferred    scope=module     target_kind=symbol
+ 203  pattern          scope=workspace  target_kind=symbol
+  46  name_only        scope=module     target_kind=symbol
+  43  name_only        scope=workspace  target_kind=symbol
+```
+
+`confidence` is **not** derivable from `resolution`. Over all relation types
+`exact` takes nine distinct confidences from 0.7 to 1.0 and `pattern` takes
+sixteen from 0.6 to 1.0. It is independent information, not a lookup.
+
+### The comparison with graph impact, which cannot be made
+
+The task asked how snapshot `confidence` and `resolution` compare with the
+resolution values we read from `graph impact`, and whether they ever disagree
+for the same edge. **They cannot disagree, because `graph impact --format json`
+publishes none of the five.** Its caller entries carry `endpoint`, `relation`,
+`direction`, `depth` and `call_site` and nothing else, and searching the whole
+impact document for the five field names returns none of them. `impact.go`
+reads no resolution or confidence because there is none to read.
+
+This is the exact shape of the pass 1 error. That pass said "this Graph build
+carries no evidence, confidence or verified field anywhere in the document",
+which was a true statement about `graph impact` generalised to the whole
+provider without checking the snapshot. The correction stands: impact has none,
+the snapshot has all five on every record.
+
+### Where an external target can surface in our report
+
+`Field.Out` is read in three places, and all three are walks that start at a
+test and try to reach a changed symbol: `bfs.go PathTo`, `shadow/sweep.go`
+forensics, and `shadow/select.go` reachability. `Field.In` drives the dependent
+walk and only ever sees symbols, because an external node is not a symbol and
+never enters `ByFile`.
+
+That is why the click experiment saw what it saw. A test whose calls all leave
+the repository has outgoing edges, so `HasOutgoingCalls` is true, but no path,
+so the forensics fell through to reason 4 and printed `test file not in the
+co-change set`. The test does have calls. They go somewhere we cannot follow,
+and the report said something else. Stage 3 is aimed there.
+
+### Conclusion for stages 2 and 3
+
+The premise holds. The fields exist on every record, `LoadSnapshot` discards
+all five, and two of them separate a same-repo target from an external one with
+no exceptions in 21,000 edges. Stage 2 parses and carries them. Stage 3 uses
+`relation_scope` and `target_kind` only, to say when a call leaves the
+repository, and touches neither the tiers nor the weights nor the echo rule.
