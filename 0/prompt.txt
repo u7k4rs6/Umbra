@@ -372,3 +372,57 @@ No em dashes. go test ./... green. Commit separately.
    module-object issue, since a consumer cannot size that bug's impact without
    it. Decide whether it reads better as a fifth issue or appended to the
    module-object one, and say why.
+
+---
+
+You are working across two repositories. The public fork ~/entire-graph holds
+BUILDATHON.md and the Umbra code as a squashed import. The private repository
+u7k4rs6/Umbra holds the real phase-by-phase history and its own longer
+BUILDATHON.md. One of them becomes the project going forward; that decision is
+mine, not yours.
+
+Three tasks. Stop at the gate in task 1. No em dashes. go test ./... green
+before any commit.
+
+1. Inventory both, then stop.
+   Clone or open the private repository alongside the fork and produce a plain
+   comparison so I can choose: commit count and date range, how many commits
+   carry checkpoint trailers in each, what exists in one and not the other
+   (documents, experiments, site, fixtures, recordings), the size of each
+   including checkpoint refs, and anything in either that would be lost by
+   picking the other. Include the private repository's BUILDATHON.md, since the
+   fork's version is only 59 lines and the longer one is where the weakest-hop
+   claim from phase 25 probably lives; check that claim against it while you are
+   there and report what it actually says.
+   Write this to umbra/experiments/repo-inventory.md and STOP. Do not migrate,
+   merge, delete or reorganise anything until I choose.
+
+2. In the fork only, and independent of that decision: mine BUILDATHON.md rather
+   than deleting it.
+   Move the content that outlives the event into places that make sense:
+   - the four graph findings with their verification, into the README or an
+     experiments file
+   - the curveball section, rewritten as design notes for the evidence tiers,
+     since that is a permanent part of the product and should not read as a
+     response to a constraint
+   - the limitations section stays where it is, it is already the best writing
+     in the project
+   Drop only what needs a rubric to make sense: the track number, the required
+   outline headings, the checkpoint-links-for-judges section, the event framing.
+   Then move the file itself to umbra/archive/BUILDATHON.md with one dated line
+   at the top saying it was the submission document for a one-day event.
+   Change no claim while moving it. If a sentence is only true in the event
+   context, say so rather than rewriting it to sound general.
+
+3. Test the untested option from PUBLISH.md, in a throwaway repository, not in
+   either real one.
+   entire configure --checkpoint-remote github:owner/repo is recorded as a
+   fourth option for the checkpoint refs and marked untested. Find out whether
+   it works: does checkpointing continue, do the refs land in the second
+   repository and stay out of the first, and does anything about the session or
+   the trailers change. Report what you observe, and update PUBLISH.md to say
+   tested or not, with the commands that worked.
+   Do not run it against ~/entire-graph or the private repository.
+
+Report with: the inventory, what moved in task 2 and what was dropped, and the
+verdict on the second remote.
