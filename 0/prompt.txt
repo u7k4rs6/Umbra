@@ -426,3 +426,9 @@ before any commit.
 
 Report with: the inventory, what moved in task 2 and what was dropped, and the
 verdict on the second remote.
+
+---
+
+The inventory is already done and committed as a7420f5. Do NOT redo it. Read
+umbra/experiments/repo-inventory.md as input and begin at task 1, the
+checkpoint-branch audit.
