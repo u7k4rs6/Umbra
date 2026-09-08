@@ -17,7 +17,6 @@ is product code.
 
 ```
 umbra/          the module; see umbra/README.md
-BUILDATHON.md   the submission document for the event Umbra was built at
 Concepts/       working notes that predate the build
 .entire/        Entire CLI settings
 ```
@@ -44,6 +43,11 @@ against the module path needs `GOPRIVATE` set, because the public checksum
 database cannot see the repository. The manual says so at the install step.
 [umbra/PUBLISH.md](umbra/PUBLISH.md) is the checklist for the sitting in which
 this repository is made public. Nothing in it has been run.
+
+The submission document for the event Umbra was built at is kept at
+[umbra/archive/BUILDATHON.md](umbra/archive/BUILDATHON.md). Its durable content
+was moved into [umbra/NOTES.md](umbra/NOTES.md) as phases 29 to 31, and its
+header says what left it and what was dropped.
 
 ## The final review
 

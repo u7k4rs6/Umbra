@@ -2035,3 +2035,662 @@ first pointed at something known to be present to see whether it could find it
 at all. For a test that is a deliberate mutation; for a scan it is a value the
 haystack certainly contains. Both are cheap, and either one would have caught
 its own case.
+
+## Phase 29: four graph findings, and the verification each rests on
+
+2026-09-09. Moved here from `BUILDATHON.md`, which was the submission document
+for a one-day event and is now archived at `archive/BUILDATHON.md`. The claims
+are unchanged from how they were written; what is added is a note wherever a
+sentence is only true in the repository or the moment it was written in, which
+is most of finding 3.
+
+**Read finding 3 with its context.** It was written in the fork,
+`u7k4rs6/entire-graph`, and every hash in it belongs to that history. `0063443`
+and `6dea614c` are not in this repository, the fork has no checkpoint refs of
+its own and this repository has 74, and the demo commit here is `1c2cf29` with
+the parent `6eb4434`. The reasoning about pairing by session window is general.
+The numbers are the fork's. `README.md` carries what the same run prints here.
+
+Graph output is evidence, not an oracle. Each finding below says how it was
+checked against source and tests.
+
+### Finding 1: the relations Umbra needs are present, verified twice
+
+`entire graph capabilities --json` reports three indexing profiles.
+`syntax-only` emits DEFINES and CONTAINS. `fast` adds CALLS and boundaries.
+`full` emits all thirty relation types.
+
+Umbra's field needs CALLS, USES_TYPE, DATA_FLOWS, TESTS and FILE_CHANGES_WITH.
+Under `fast`, only CALLS is available, which would silently thin the field and
+produce wrong numbers.
+
+**Verified.** The default profile on both `graph snapshot` and `graph impact`
+is `full`, read from `--help`, and Umbra passes no `--profile`, checked by
+grep across the source. So it already gets `full`. That is the reading of the
+documentation; the measurement is better. A real snapshot of this repository
+emits, repo-wide and within the fixture app:
+
+| Relation | Repo | Fixture app |
+|---|---|---|
+| CALLS | 1856 | 29 |
+| DATA_FLOWS | 441 | 11 |
+| USES_TYPE | 281 | 9 |
+| FILE_CHANGES_WITH | 162 | 1 |
+| TESTS | 11 | 2 |
+
+All five present. No degradation applies and no flag is needed.
+
+**One thing that looked like a problem and was not.** Python's
+`relation_support_by_language` entry omits TESTS and FILE_CHANGES_WITH. Chasing
+it rather than assuming: those two are listed for **0 of 185 languages**,
+because they are derived rather than parsed, TESTS heuristically and
+FILE_CHANGES_WITH from git co-change history. Their absence from a per-language
+list is expected. The snapshot count above is what settles it.
+
+Worth noting for anyone reusing this: `graph search` defaults to `--profile
+fast`, not `full`, unlike snapshot and impact. Umbra does not use search, so
+its field is unaffected.
+
+### Finding 2: search located the word, not the decision
+
+Query: *where does Umbra decide a node is umbra rather than penumbra*.
+
+`entire graph search --profile full` returned **LOW CONFIDENCE**, reporting
+that ranks 1 and 2 were tied 0.0100 apart and that the ranking did not choose.
+Its top hit was `appendPenumbra` at `internal/report/assets/umbra.js:382`,
+which **draws** a penumbra disc and decides nothing.
+
+**Verified against source.** The decision is `ClassifyAt` at
+`internal/shadow/classify.go:35`, confirmed with `entire graph def
+--symbol ClassifyAt`, and pinned by the cross-implementation test at
+`internal/shadow/jsmirror_test.go:122`, which feeds recorded scenarios
+through the Go classifier and the browser reimplementation and compares every
+state and tier.
+
+**What this is evidence of.** The tool was honest about its own uncertainty and
+the warning was correct. Taking the top hit without reading it would have sent
+an editor to the renderer instead of the classifier. This is the reason the
+finding is written up with its verification rather than as a fact.
+
+### Finding 3: the demo numbers, and why they differ in this clone
+
+The claim from the source repository is exact and reproducible **there**: 8
+probes selected, 5 cracked, full sweep, 0 leaks, naming both refund tests and
+the three service tests. That was re-run today against the freshly built
+plugin and still holds.
+
+**It does not reproduce in this fork, and the reason is not a defect.**
+
+The claim is a property of commit `0063443`, the seeded signature change to
+`compute_total` in the fixture app. That commit belongs to the source
+repository's history, which was deliberately not carried across. Four
+end-to-end tests say so directly rather than failing quietly:
+
+```
+"0063443" is neither a checkpoint nor a commit:
+git rev-parse 0063443 exited 128: fatal: Needed a single revision
+```
+
+Running `entire umbra HEAD` here does not substitute for it either, and
+chasing that turned up something worth recording. HEAD is the import commit.
+It carries no `Entire-Checkpoint` trailer, and no checkpoint in this
+repository names it, because the two graft commits were made by plain `git
+commit` rather than during an agent session with hooks installed in this
+clone. Umbra therefore falls back to pairing by session time window, and the
+only checkpoints present are the 94 that came in with upstream's history. It
+paired with one of those and began reading its transcript, one of which is
+3.4 million tokens, which is why the run exceeded its timeout.
+
+This is the same class of problem as correction 4 in
+`README.md`: pairing by session window is a guess about
+which session produced a commit, and it says nothing about which commit the
+checkpoint owns. Here it is not merely a guess, it is a guess across two
+unrelated projects.
+
+**What this means, stated plainly.** A demo run in this fork is not meaningful
+until this repository has checkpoints of its own. Two things would fix it, and
+both are honest:
+
+1. Create checkpoints in this repository by running the agent session from this
+   clone, so the hooks fire and commits carry trailers.
+2. Replay the seeded fixture change as a commit here, so there is a local
+   commit with the shape the claim describes.
+
+Neither has been done silently. The numbers are not reported as matching when
+they were not measured here.
+
+#### Resolved: both were done, and the claim now reproduces here
+
+Both fixes above have since been applied, in that order. This section is kept
+as written because the reasoning is the record; what follows is the outcome.
+
+The import commit carried the fixture in its **post**-change state, so the
+signature change was already in the tree and no commit isolated it. Two commits
+fix that. `a4b506be` puts the fixture back to the state before the change, with
+all 16 tests green. `6dea614c` applies the change, updating `handle_order`,
+`quote` and `line_total` and deliberately leaving `app/refunds.py` and
+`tests/test_service.py` calling the old one-argument form. After `6dea614c` the
+fixture tree is byte identical to the one the import carried, so nothing about
+the fixture was invented to make the demo work; only the history needed to run
+against it now exists.
+
+Both were made in this worktree with hooks live, so both carry a trailer. Run
+against `6dea614c`, paired through its own trailer rather than by guessing at a
+session window:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/result-night.svg">
+  <img alt="Eight probes selected, five cracked, zero leaks in the full sweep, thirteen dependents confirmed." src="docs/img/result-day.svg">
+</picture>
+
+```
+probes  8 selected  5 cracked  tests/test_refunds.py::test_apply_refund_caps_at_paid
+                               tests/test_refunds.py::test_apply_refund_normal
+                               tests/test_service.py::test_empty_is_zero
+                               tests/test_service.py::test_negative
+                               tests/test_service.py::test_rounding
+sweep   full suite  0 leaks
+```
+
+Eight selected, five cracked, both refund tests and the three service tests, a
+full sweep and no leaks. Every part of the claim, measured here.
+
+The states are a different matter and are reported rather than smoothed over.
+The same run gives `0 lit, 9 penumbra, 4 umbra` at `0% examined`, under a
+coverage line reading `0 file reads, 0 edits, 0 searches, 33 shell commands`.
+The session that made the commit worked through the shell, so it left no file
+tool events to subtract and nearly everything came back unexamined. That is the
+first known limitation, hit by this project against itself for the second time.
+The probes and the sweep are unaffected because they come from running tests,
+not from the transcript, and the coverage line disclosed the gap without being
+asked.
+
+The four end to end tests no longer resolve against `0063443`. They resolve the
+commit by subject against whatever checkout they run in, so they run here and
+in any clone instead of skipping everywhere, and a missing commit is now a hard
+failure rather than a silent skip.
+
+### Finding 4: the semantic diff caught a security regression I caused
+
+```
+entire graph diff --base d25e5b51 --head HEAD --repo .
+```
+
+Totals across the graft: **2331 entities added, 2 changed, 2 removed.** For a
+change that only ever adds a subsystem, 2331 additions is unremarkable and the
+two changed entities are the README body and the agent file. The two
+**removals** are the finding, and they were the first two lines of output:
+
+```
+.claude/settings.json (JSON)
+  - section permissions removed (10 dependents)
+  - section deny removed (12 dependents)
+```
+
+**Verified against source.** `git show 3a2a715f:.claude/settings.json`, the
+upstream commit this fork branches from, carries:
+
+```json
+"permissions": {
+  "deny": [
+    "Read(./.entire/metadata/**)"
+  ]
+}
+```
+
+`git diff d25e5b51 HEAD -- .claude/settings.json` shows that block deleted. It
+is upstream's own rule, and it stops an agent reading Entire's metadata
+directory. Nothing in this project intended to touch it. It was removed as a
+side effect of `entire enable -y --agent claude-code` in Step 1, which rewrites
+that file to install its hooks.
+
+**Fixed.** The block was restored and the hooks `enable` legitimately added
+were kept, verified by reading both back out of the file.
+
+**Why this one matters most.** A plain `git diff` would have shown these five
+lines somewhere inside a 207 file commit, and nobody reads 207 files. The
+semantic diff ranked a two line removal above 2331 additions because removals
+with dependents are what break things. This is the clearest case in the project
+of Graph driving a decision rather than confirming one, and it is a finding
+against my own work rather than a flattering one.
+
+**One honest caveat on the same output.** The diff ends with `E_PARSE_ERROR`
+warnings on upstream's vendored tree-sitter grammar headers, saying dependent
+references in those files may be undercounted. The tool disclosed its own
+uncertainty rather than reporting a clean result. Those files are upstream's
+vendored C and are not part of Umbra, so the undercount does not affect
+anything claimed here, but the dependent counts above should be read as
+approximate for that reason.
+
+### What phase 29 does to phase 26
+
+Phase 26 checked three claims against this repository and found all three
+false: that `e41af1db` did not exist, that `BUILDATHON.md` had no Noon
+Curveball section, and that there was no partial-analysis fixture. Those
+findings were correct on the day and two of them have since been overtaken by
+the merge, which is worth saying rather than leaving a reader to notice the
+contradiction.
+
+`BUILDATHON.md` here was 59 lines with five headings, and stage A replaced it
+with the fork's 981-line version, which does have a Noon Curveball section. The
+partial-analysis fixture came across too: `fixtures/partial` and the
+`dynamic-dispatch` recorded scenario are both present, and the tests that drive
+them arrived in stage E. `e41af1db` is still not in this repository and never
+was; it is a fork commit.
+
+Phase 26 stands as written. It recorded what was true when it was checked, and
+the merge is what changed the facts, not an error in the check.
+
+## Phase 30: design notes for the evidence tiers
+
+2026-09-09. Also moved from `BUILDATHON.md`, where this was written as a
+response to a constraint handed down at the event. It is written here as design
+notes, because the reasoning is what outlives the constraint. The claims and
+the measurements are unchanged.
+
+This is the work the fork numbered phases 20 and 21, which is why the phase
+numbering in this file jumps from 19 to 22. The code itself arrived here in
+merge stages D and E.
+
+These are the design notes for the three evidence tiers. Five things the
+design has to do, and they are the whole of it: never present an incomplete
+Graph relationship as certain, say when the analysis may be partial, give a way
+to check anything it is unsure of, keep working unchanged for code Graph fully
+resolved, and ship a fixture that represents incomplete analysis.
+
+![Three orbs at falling certainty: confirmed, heuristic, needs verification.](docs/img/evidence-day.svg)
+
+### What changed, and why
+
+**The finding that set the shape of the work.** Upstream tags **every** relation
+record with a `resolution` and a `confidence`, and `graph capabilities --json`
+names seven relation types as heuristic. A snapshot of this repository taken
+this morning carries 66,644 relations across eight distinct resolutions:
+
+```
+exact 35762   import_external 8880   package 7642   name_only 5762
+pattern 4683  type_inferred 3091     import_resolved 765   git_history 59
+```
+
+`CALLS` alone splits `exact 7939`, `import_external 8880`, `package 5845`,
+`name_only 872`, `type_inferred 606`, `import_resolved 272`, `pattern 138`.
+`HANDLES_ROUTE` is `pattern 45` against `exact 4`. `HANDLES_TOOL` is `pattern 21`
+and nothing else. `TESTS` is `name_only 16`, `package 2`, `import_resolved 2`,
+and not one exact edge in the whole repository.
+
+Umbra read the relation type and threw both away. A call the provider resolved
+to a definition and a call it matched because a method name happened to be
+unique arrived at the map as the same edge, were drawn the same way, were ranked
+by the same weight, and were handed to a reviewer with the same confidence,
+which was total. Worse, `Capabilities.HeuristicRelations` had been parsed since
+the graph package's first commit and **nothing ever read it**: the evidence was
+already loaded and then ignored.
+
+**What now happens.** Every dependent carries a third answer beside its state
+and its score, in the terminal, the JSON, the HTML map and the packet:
+
+| Word | What it means |
+|---|---|
+| `confirmed` | the graph resolved every relation on this path to a definition |
+| `heuristic` | the graph derived this relation rather than parsing it, so it may be wrong |
+| `needs verification` | reached through a relation the graph could not resolve, or found under a partial analysis; check it against the source |
+
+This is a fourth axis, not a fifth state. **The four states are untouched and
+the six ranking factors are untouched**: the four states say what the *session*
+saw and this says what the *graph* knows, and `Score` reads none of the new
+fields. Heuristic covers the relation types upstream documents as heuristic,
+co-change, which is derived from commit history and is never a code path, and
+every dependent count, which upstream derives from the same mix of resolutions
+rather than from a compiler. That last one is stated wherever a count is
+printed.
+
+For anything tagged `needs verification` the report prints the command that
+settles it: the `graph def` lookup, the file and line, and the test that reaches
+it with the runner this run used, or a plain sentence saying no test does. The
+`--file` on the lookup is not decoration; see the impact analysis below.
+
+The header now says when the analysis may be incomplete and names the reason in
+upstream's own codes, and a malformed snapshot record is counted and reported
+rather than dropped, because a silently empty field looks exactly like a clean
+one.
+
+### Which files consume relationship, impact and semantic-diff evidence
+
+Named, because "the code reads the graph" is not an answer.
+
+| File | What it consumes |
+|---|---|
+| `internal/graph/snapshot.go` | The NDJSON **relation** records: `type`, `resolution`, `confidence`, `warning_codes` and the call-site evidence. Also the header line and the trailing `summary` record, for `warnings`, `partial_failures`, `stats` and `completeness` |
+| `internal/graph/relations.go` | `graph capabilities --json`: `supported_relation_types` and `heuristic_relation_types` |
+| `internal/graph/bfs.go` | The relation graph. Carries the **weakest** resolution along each path, because a chain is only as resolved as its least resolved link |
+| `internal/graph/impact.go` | `graph impact --format json`: caller entries and call-site lines, plus the `warnings`, `partial_failures`, `stats` and `completeness_scope` block it prints above every answer. The text parser reads the same from the human form |
+| `internal/graph/evidence.go` | The vocabulary: what each resolution means, which are structural, and which completeness levels are healthy |
+| `internal/graph/sources.go` | `graph commit --json` and `graph checkpoint`: the **semantic diff** that supplies the changed symbols, their change kinds and their dependent counts |
+| `internal/graph/verify.go` | `graph verify`: the baseline and the adjudicated run |
+| `internal/shadow/evidence.go` | Turns all of the above into the three tiers |
+| `internal/shadow/build.go` | Puts them on each node, and marks nodes whose own file the provider could not fully analyse |
+| `internal/report/verify_path.go` | Builds the verification command and the header sentence |
+| `internal/report/table.go`, `json.go`, `packet.go`, `docket.go`, `html.go`, `assets/umbra.js` | The four surfaces |
+| `cmd/entire-umbra/analyze.go` | Wires it together and decides, from upstream's own scope numbers, whether a degradation can affect this field |
+
+### The impact analysis, run before the change
+
+Required, and run before any edit. The four graph-reader symbols changed were
+`LoadSnapshot` and `Field.Dependents` (the snapshot loader and the walk),
+`ParseImpactJSON` (the impact parser) and `NewRelationMap` (the capabilities
+reader). The full verbatim output is in
+`NOTES.md`, phase 20 in the fork; the
+summary:
+
+```
+LoadSnapshot      13 callers (2 direct, 11 transitive), 8 callees, 2 type consumers,
+                  1 data flow, 0 co-change files, 0 siblings
+ParseImpactJSON    2 callers (2 direct, 0 transitive), 4 callees, 2 type consumers
+NewRelationMap     9 callers (1 direct, 8 transitive), 1 callee, 4 type consumers
+Dependents        "Dependents" matches 8 definitions; the tool refused to pick one
+```
+
+Every caller of all four is a test in `internal/graph/graph_test.go` plus
+the helpers `loadField` and `loadRelMap`, and the two production call sites
+`LoadImpact` and `pipeline`. No caller outside the module, no co-change file for
+any of them. The type consumers are `Field`, `Impact`, `RelationMap` and
+`Capabilities`, which are the four structs that gained fields, so every addition
+landed inside the blast radius the tool drew. Every change is additive: no field
+removed, no signature broken.
+
+**And the tool disclosed its own uncertainty on all four answers before a line
+of this phase was written**, printing `Completeness: degraded for Go` with the
+`W_DATA_FLOW_EVIDENCE_UNMERGED` warning above every one. The constraint arrived
+from the tool the constraint is about.
+
+`Dependents` is the case that proves the point of the whole change. The tool
+answered `"Dependents" matches 8 definitions` and refused to choose, listing
+`Field.Dependents`, `Source.Dependents` and `jsonSource.Dependents` among them:
+**three of the eight are struct fields, not the method being changed.** The
+blast radius printed for that bare name is not an answer about the walk. It had
+to be disambiguated by hand with `--file internal/graph/bfs.go`, which is
+exactly why the verification command Umbra now prints always carries `--file`.
+
+### The test that proves the new behaviour
+
+`internal/shadow/partial_scenario_test.go` and
+`internal/report/partial_scenario_test.go`, driving the ninth recorded
+scenario `dynamic-dispatch` against `fixtures/partial`, whose graph side
+is captured in `internal/graph/testdata/partial-snapshot.ndjson`.
+
+The fixture holds three things at once, all measured from real provider output
+before anything was asserted:
+
+- **Dynamic dispatch tree-sitter cannot resolve.** `dispatch.py` reaches the
+  changed symbol three ways at runtime: a dict of handlers selected by a string,
+  `getattr` on a module, and `importlib.import_module` followed by `getattr`.
+  The provider draws **not one edge** for any of them, and the four tests that
+  exercise those paths are absent from the field entirely.
+- **A relation the provider derived, and a node hanging off it.** `billing.py`
+  gives `RateCard.apply -> compute_total` at `import_resolved 0.86`,
+  `quote -> RateCard.apply` at `type_inferred 0.8` with the reason "method call
+  resolved via chained constructor type", and `invoice -> quote` at
+  `exact 0.92`. The three tiers fall out with nothing constructed in the test:
+
+  ```
+  apply                               depth 1  import_resolved  confirmed
+  quote                               depth 2  type_inferred    heuristic
+  invoice                             depth 3  type_inferred    needs verification
+  test_invoice_through_the_rate_card  depth 4  type_inferred    needs verification
+  ```
+
+  `invoice`'s own hop is `exact`. It needs verification because the chain it
+  hangs off does not.
+- **Files the provider will not fully analyse.** `legacy_rates.cob` is COBOL,
+  tiered `inventory-only`. `rate_table.min.json` is one line over the 5000 byte
+  minified threshold, so `partial_failures` carries `E_MINIFIED` and the
+  snapshot reports 5 of 6 files parsed.
+
+The replay tests assert all four required things: the unresolved calls are not
+presented as confirmed, the header names the partial analysis in the provider's
+own codes, the verification command is printed with the `graph def` lookup and
+the runner command, and the resolved parts of the same run classify exactly as
+before. **Seven mutations were run and every one was proved to fail the new
+assertions before being reverted**, listed in
+`NOTES.md`. The most useful:
+making `ClassifyEvidence` always return `confirmed`, which is the behaviour
+before this phase, fails five assertions across two packages.
+
+### The demo commit, rerun
+
+`entire umbra 6dea614c --test "pytest -v"`, after the change:
+
+```
+probes  8 selected  5 cracked  tests/test_refunds.py::test_apply_refund_caps_at_paid
+                               tests/test_refunds.py::test_apply_refund_normal
+                               tests/test_service.py::test_empty_is_zero
+                               tests/test_service.py::test_negative
+                               tests/test_service.py::test_rounding
+sweep   full suite  0 leaks
+light   0 lit  9 penumbra  4 umbra  0 unknown   0% examined
+graph   13 confirmed  0 heuristic  0 needs verification   profile full
+```
+
+Eight selected, five cracked, both refund tests and the three service tests, a
+full sweep and no leaks. Every one of the thirteen dependents is labelled
+**confirmed**, not reclassified. The thirteen rows are otherwise byte-identical
+to the run before the change: same symbols, files, lines, relations, depths,
+modifiers, scores and outcomes. The only difference in the docket is that the
+column carrying the evidence mark is blank for a confirmed node, which is
+deliberate, so a fully resolved field reads exactly as it read before this axis
+existed.
+
+### Why the revised behaviour can be trusted
+
+**It defers to the provider rather than to us.** Every tier is derived from a
+field upstream already publishes: the per-relation `resolution`, the
+`heuristic_relation_types` list, the `partial_failures`, and the per-query
+`completeness_scope`. Umbra adds no judgement of its own about whether an edge
+is right.
+
+**The scoping is upstream's, and refusing to invent one is what kept the tier
+meaningful.** This repository's snapshot is permanently degraded by parse errors
+in vendored tree-sitter C headers. Marking every Python dependent unverified
+because of a C header would make the word carry no information. `impact`'s
+`completeness_scope` says per query which diagnostics can affect that answer and
+which belong to other languages, and only the in-scope half promotes a
+dependent. Both halves are printed, because a diagnostic that was ruled out is
+more useful reported with its reason than omitted.
+
+**The first version of that rule was wrong and the demo caught it.** The first
+run after the change reported `0 confirmed, 0 heuristic, 13 needs verification`.
+Every dependent had been promoted by `W_DATA_FLOW_EVIDENCE_UNMERGED`, an
+in-scope warning upstream marks severity `info` and whose own text says "the
+relation, its confidence and its reason are unaffected". A tier that fires on
+everything is worth exactly as much as no tier at all, and it would have looked
+like the feature working. Only warnings above `info`, and partial failures
+upstream did **not** scope to another language, promote anything now. The header
+still names all of it.
+
+**Two claims that would have been wrong were caught by measuring rather than
+reading.** The task assumed an inventory-only file produces a partial failure;
+it does not. COBOL produces a file record, one symbol and zero relations, and
+`partial_failures` stays empty for it, so the fixture carries a minified JSON as
+well and the README says which does which. And upstream's healthy completeness
+level is `ok`, not `complete`: the levels `completenessLevel` emits are `ok`,
+`degraded` and `unsafe`. Umbra had been written to treat anything other than
+`complete` as a degradation, which would have printed an incompleteness warning
+on **every healthy snapshot**, and on this repository, whose snapshot really is
+degraded, it would have been indistinguishable from working.
+
+**It can only ever make the report say less.** A dependent moves from
+`confirmed` toward `needs verification`, never the other way, and no state, tier
+or score changes. The failure mode of getting this wrong is a reviewer checking
+something they did not need to, not a reviewer trusting something they should
+not have.
+
+### It rests on the two cases this document already recorded
+
+Both are in phase 29 above, and neither was written for this section.
+
+**Finding 2, the LOW CONFIDENCE search that pointed at the wrong symbol.**
+`graph search --profile full` was asked where Umbra decides a node is umbra
+rather than penumbra. It answered `LOW CONFIDENCE`, said ranks 1 and 2 were tied
+0.0100 apart and that the ranking had not chosen, and put `appendPenumbra` at
+`internal/report/assets/umbra.js:382` on top, which **draws** a penumbra
+disc and decides nothing. The decision is `ClassifyAt` at
+`internal/shadow/classify.go:35`, found by reading the source and
+confirmed with `graph def`. The tool was honest about its own uncertainty and
+the warning was correct. That is the argument for this whole phase in one case:
+Graph already knew when it was unsure, said so, and Umbra was the layer that
+dropped the disclosure on the way to the reader. It is also why the verification
+command Umbra now prints is a `graph def` lookup with an explicit `--file`,
+which is the same move that settled that finding by hand.
+
+**Finding 4's caveat, the degraded completeness warning.** The semantic diff
+that caught the deleted `deny` rule ended with `E_PARSE_ERROR` warnings on
+upstream's vendored tree-sitter grammar headers, saying dependent references in
+those files may be undercounted, and that document already read the dependent
+counts as approximate for that reason. That warning is still live: the snapshot
+taken today reports `degraded`, `762 of 765 files parsed`, eight partial
+failures and `W_DATA_FLOW_EVIDENCE_UNMERGED`. Before this phase that reached
+nobody. It is now in the header of every report, in the JSON, in the packet and
+on the page, with the parsed-file count and the codes, and the caveat about
+dependent counts is printed next to every count rather than living in a document
+a reader may never open.
+
+### The final semantic diff
+
+```
+entire graph diff --base 3be2edaa --head HEAD --repo .
+```
+
+`3be2edaa` is the plan commit, the first of the six. Across the phase:
+**269 entities added, 36 changed, 0 removed.**
+
+Zero removals is the number that matters, and it is the check that would have
+caught a regression here: this change is meant to be purely additive to the
+readers and the renderers, and a removed field or function with dependents
+would have been the signal that something a caller relied on had gone. The 36
+changed entities are the bodies that had to learn the new fields:
+`LoadSnapshot`, `Field.Dependents`, `better`, `ParseImpactJSON`,
+`ParseImpactText`, `NewRelationMap`, `Build`, `AddCoChange`, `Score`'s
+neighbours in `rank.go`, `pipeline`, `limitations`, the four renderers and
+`openDetail` in the map's JavaScript. The signature changes are all struct
+types gaining fields: `Edge` (14 dependents), `Field` (76), `Reach` (14),
+`Impact` (19), `RelationMap` (22), `Node`, `DocketRow` (5), `Analysis`.
+
+The diff also carries four `W_UNSUPPORTED_FILE` warnings, on the new scenario's
+`notes.txt` and `transcript.jsonl`, on the captured
+`partial-snapshot.ndjson`, and on the HTML template. The tool is saying it did
+not analyse those files and therefore cannot speak for them. Three of the four
+are fixture data and one is a template, so none of them carries a symbol the
+diff could have missed, but the warning is quoted here rather than dropped,
+which is the same rule this phase applied to everything else.
+
+## Phase 31: which commits carry a checkpoint trailer, and why
+
+2026-09-09. The durable half of a section of `BUILDATHON.md` that existed to
+show a reviewer the checkpoint trail. The table of which checkpoint proves what
+was for that reviewer and is not kept. The rule underneath it is general and is.
+
+All of this was measured in the fork, whose trail begins at the graft. This
+repository's trail begins at the first line of code, so the counts below are
+not its counts; the rule is the same in both.
+
+State this plainly, because it is the first thing a reviewer checking the trail
+will notice. As of `51889330`, sixteen of the thirty-two commits on this branch
+have no checkpoint and never will.
+
+That tally is a snapshot, not an invariant, and it is worth saying why rather
+than restating a number that keeps going stale. The mirror protects the default
+branch, so every further commit reaches it through a pull request, and each one
+adds two commits with no trailer: the commit itself, made after the owning
+session ended, and the merge commit GitHub creates. A commit that corrects this
+count therefore invalidates the count it just corrected. What is stable is the
+rule, so the rule is stated here and the arithmetic is left to `git log`:
+
+```
+git log 3a2a715f..HEAD --format='%H%n%B' | grep -c '^Entire-Checkpoint:'
+```
+
+Sixteen commits carry a trailer and sixteen distinct checkpoints cover them.
+That half does not move, because no new work is being checkpointed here. The
+untrailered commits fall into three groups.
+
+The graft:
+
+```
+d25e5b51  umbra: initial understanding and intended architecture
+42f215f8  umbra: import the plugin as one commit
+57cea764  umbra: BUILDATHON.md, and restore a deny rule the graft dropped
+```
+
+The four fixes made in response to the external review:
+
+```
+1eaad486  umbra: the sweep never reports a false zero
+b4134ca4  umbra: a failed read no longer marks a node lit
+97dd8d7b  umbra: document what the design describes and the binary does not do
+dfefa42e  umbra: record the external review in BUILDATHON.md
+```
+
+All seven of those were made by a session running in a different repository.
+Entire binds a session to the worktree it started in, and the git hooks that write the
+`Entire-Checkpoint` trailer only fire for commits made inside that worktree.
+These were not, so no hook ran, no trailer was written, and no checkpoint
+exists. `entire doctor` reports nothing wrong, because nothing is: the hooks are
+healthy and were simply never invoked here.
+
+That it is the worktree and not the work is easy to show. Later commits in the
+same session, made once a session was live in this worktree, do carry their
+trailers: `8a68f3eb`, `10c80da5` and `54caa527` each have one. Same author,
+same afternoon, same kind of change. The only thing that differed was where the
+session was bound.
+
+The third group landed after the session that owned this worktree had ended, so
+the hook had no session to write a trailer against. These are the ones that
+grow:
+
+```
+428617b4  umbra: the fast green was five tests declining to run
+96c5a16a  umbra: the checkpoint count, including the commits that report it
+f154951f  umbra: point the two run examples at the commit that has something to show
+2b91e18f  umbra: buildathon.md visuals
+2e4bf49e  umbra: point the site's source links at the branch that has the code
+bb19c5c6  Merge pull request #1 from u7k4rs6/umbra-docs
+84baf98a  Merge pull request #2 from u7k4rs6/umbra-site-links
+```
+
+`entire session list` shows that session as `ended`, and `52156a22`, the commit
+immediately before them, does carry a trailer because it landed while the
+session was still live. Same cause as the first seven seen from the other side.
+Those had the wrong worktree; these have the right worktree and no live
+session. The last two are merge commits GitHub created when the pull requests
+were merged, which no local hook ever sees. The pull requests exist because the
+mirror protects the default branch, so the branch cannot be pushed to directly.
+
+Nothing has been done to paper over that. No prior session was adopted or
+attached, no checkpoint was fabricated for them, and no refs were imported from
+anywhere. A checkpoint is a record that a session produced a commit, and
+inventing one for a commit no session here produced would make the trail a
+worse record than an honest gap. The gap is the record: the work arrived as a
+graft, and the trail starts after it.
+
+### Two sessions, one worktree
+
+One fact the table above cannot show, and it belongs in the record.
+
+The curveball was worked by **two Claude Code sessions running in the same
+worktree at the same time**. `3be2edaa`, `e41af1db`, `7744e34a`, `26ba3d70` and
+`4742e272` were committed by `session_01Kh18uLqG5ha6TcuCVQr76q`. `bcd9e463`,
+`8a68f3eb`, `10c80da5` and `54caa527` were committed by
+`session_01Gqxi2oeEAPrkQtZqBPR6dP`, and two of those committed a working tree
+the first session had written and not yet committed. Each commit carries a
+`Claude-Session` trailer, so the split is checkable from `git log` and does not
+rest on this paragraph.
+
+Nothing was reverted in either direction. Claiming a single authorship for a
+phase that had two would be exactly the kind of unchecked claim this project
+exists to catch, and reverting another session's deliberate commit unasked
+would be a worse record than an honest seam.
+
+Worth knowing for anyone running two agent sessions against one worktree:
+Entire binds a session to the worktree it started in, both sessions' hooks
+fire, and whichever commits first takes the checkpoint. There is no lock, and
+an uncommitted working tree is shared state.
