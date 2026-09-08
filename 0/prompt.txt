@@ -1,0 +1,500 @@
+You are in the Umbra repository. Read umbra/experiments/first-real-repo.md
+(defect 2), then umbra/internal/graph/verify.go and the ParseVerdict path.
+
+Fix: the sweep reports zero leaks when the suite has seventeen or more failures.
+graph verify prints "NEWLY FAILING (n):" with ids only when n is at most 16, and
+above that prints only the VERDICT line. ParseVerdict reads ids from the list
+only, so above the threshold it sees none and the sweep reports a clean audit.
+The audit fails exactly when the selection is worst.
+
+Do this:
+- Read the actual output shapes first, at 15, 17 and 55 failures, and record
+  them verbatim in the commit message or NOTES. Do not guess the format.
+- Prefer a JSON or machine-readable form of verify if one exists; check
+  --help and capabilities before parsing human output. Say what you found.
+- Make the count authoritative even when ids are unavailable. If verify reports
+  a failure count but no ids, the sweep must report that it could not name the
+  leaks and how many there are. It must never report zero leaks from a run whose
+  ids it could not read. This is the same rule as the inconclusive-sweep fix
+  already in the codebase; reuse that path rather than inventing a second one.
+- Known-positive tests at 15, 17 and 55 failures, each proved to fail without
+  the fix. The 15 case must still name leaks with forensics as it does today.
+
+No em dashes. go test ./... green. Commit separately from any other work.
+
+---
+
+after that, You are in the Umbra repository. Read umbra/experiments/first-real-repo.md
+(defect 1 and defect 3), then umbra/internal/graph/bind.go, snapshot.go, and
+analyze.go around line 117.
+
+Problem: graph commit names a changed method as HelpFormatter.write_usage while
+the snapshot's Name field carries the bare write_usage. Bind compares on Name,
+the match fails, and the impact query is skipped entirely, so a changed method's
+dependents are never traversed. Every changed symbol in our fixture is a
+module-level function, where the two forms are identical, which is why nothing
+caught this. The central case of the product has never run end to end.
+
+Investigate before designing:
+- Collect the real shapes. For a class method, a nested function, a module-level
+  function, a method on a nested class, and whatever else the provider emits,
+  record what graph commit calls it and what the snapshot Name and any qualified
+  or container fields hold. Do this across at least two languages if the
+  provider supports it. Write the table into NOTES before writing code.
+- Check whether the snapshot already carries a container, parent or qualified
+  name field that makes this a lookup rather than a string problem. Prefer using
+  a field the provider publishes over reconstructing one ourselves.
+
+Then implement resolution, with the file path as a disambiguator, since we
+already learned from the graph def case that a bare name can match many
+definitions. A match must be unambiguous or it is not a match.
+
+Two rules on failure:
+- If a changed symbol cannot be bound, that is not silence. The report must say
+  the symbol could not be resolved and name it, distinct from "no dependents
+  were found". Absence of information and a finding of no dependents are
+  different sentences and defect 3 is exactly this confusion. Fix that wording
+  everywhere the report can say something was not found.
+- Never skip the impact query silently. Log or surface every skip.
+
+Fixtures: add a changed symbol that is a method on a class, and one nested
+inside another function, to the recorded scenarios, because nothing in the suite
+currently exercises either. Known-positive tests proved to fail without the fix.
+
+Do not touch ranking weights in this pass. The echo demotion and the missing
+UsageError.show are downstream of this bug and must be re-judged after it is
+fixed, not tuned around now.
+
+No em dashes. go test ./... green. Commit separately.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md and the NOTES entries for commits 44cecd0
+(sweep) and e18fd58 (bind) before starting.
+
+Task: re-run the real-repo experiment now that binding works, and judge the
+result honestly. This is measurement, not fixing. Do not change ranking weights,
+do not tune anything, and do not fix defects you find. Collect and report.
+
+No em dashes. go test ./... green. One commit at the end.
+
+1. Re-run the same experiment: same repository (pallets/click), same commit, same
+   session and checkpoint as the first pass. Nothing about the input changes, so
+   any difference in output is attributable to the two fixes.
+
+2. Report the same numbers as the first pass so the two are directly comparable:
+   field size, snapshot and impact timings, state breakdown, coverage line,
+   probes selected, cracked, sweep result, evidence tiers, and total wall clock.
+   Put them beside the first pass numbers, not in place of them.
+
+3. Answer the two questions the bind defect was hiding:
+   - Does UsageError.show now appear in the field, and at what depth and
+     relation?
+   - Do the 46 Usage: assertions appear, and are any of them selected as probes?
+   If they still do not appear, find out why and say so plainly. That answer is
+   as valuable as the other one.
+
+4. Re-judge the top five ranked dependents against source, exactly as in the
+   first pass: right, defensible, or wrong, with the reasoning. Do not carry
+   over the earlier judgements; the edges changed, so judge what is there now.
+
+5. The echo question, measured not tuned. In the first pass, Command.format_usage
+   was demoted to echo because core.py was named in prose before the repository
+   was cloned, and it should have been first. It is now first. So report whether
+   the echo demotion still fires on any node, and if so, whether any node
+   carrying a direct-caller edge is being demoted by a prose mention alone. Do
+   not change the weight either way. The open question is whether a mention
+   should be able to demote a node with a direct structural edge at all, and
+   that is a rule change we will decide together after seeing the data.
+
+6. Update umbra/experiments/first-real-repo.md in place with a clearly marked
+   second pass section. Keep the original findings and judgements intact above
+   it, since the value is in the before and after sitting together. Correct the
+   first pass's conclusion explicitly: state whether "the machinery generalises,
+   the analysis did not" still holds, or whether the analysis generalised and the
+   binding did not.
+
+7. Record one open question in NOTES for later, do not investigate it now:
+   resolution now depends on the snapshot and the commit agreeing about line
+   numbers, via span containment. Note the case worth checking eventually, which
+   is whether that ever drifts when the snapshot is taken at head and the change
+   is read from the parent.
+
+Report with: the two number sets side by side, the answers to step 3, the five
+judgements, the echo finding, and the corrected conclusion.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md, especially the pass 2 conclusion, then
+umbra/internal/graph/sources.go and the Bind path from commit e18fd58.
+
+Problem: when an agent changes one method, graph commit reports both the method
+and its enclosing class as changed. Umbra takes both as sources, so the field
+becomes everything touching the class rather than everything reaching the edit.
+On the click experiment, ten of thirteen shadowed nodes were manufactured this
+way, and the two nodes that actually reach the changed code ranked first and
+thirteenth.
+
+Fix: a changed container is not a source when every change inside it falls
+within the span of a member that is itself already a source.
+
+Before writing code:
+- Establish what graph commit gives you to decide this with. You already resolve
+  by file, qualified name, then span containment, so the spans are available.
+  Confirm whether the change kinds and line ranges are precise enough to tell
+  "the class body changed" from "a method inside the class changed", and write
+  what you find into NOTES. If they are not, say so and stop rather than
+  approximating.
+- Check the cases that must keep the class as a source: a changed class
+  attribute, a changed base class list, a new or removed method, a decorator on
+  the class, and a change spanning both a method and class-level code.
+
+Then implement it, with two requirements:
+- The report must say why each source is in the field, so a reviewer can see
+  that a class was kept or dropped and on what rule. Do not make this silent.
+- Dropping a source must never drop a dependent that another source still
+  reaches. Verify the union, not the per-source sets.
+
+Fixtures and tests: the current recorded scenarios cannot express this, since
+the method-on-a-class fixture from e18fd58 is the only one close. Add cases for
+each keep-the-class situation above plus the drop case, and known-positives that
+fail without the fix. Do not weaken any existing assertion.
+
+Then re-run the click experiment a third time with nothing else changed, and
+report field size, the state breakdown, the top five with judgements, and how
+many of the previous ten manufactured nodes are gone. Append it to
+first-real-repo.md as pass 3, keeping passes 1 and 2 intact.
+
+Do not touch ranking weights and do not touch the echo rule. Both are still
+waiting on a correct field.
+
+No em dashes. go test ./... green. Commit separately from the experiment append.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/first-real-repo.md (all three passes) and the NOTES entry for
+de4dc60 before starting.
+
+Task: find out whether the two Python resolution findings from the click run are
+click's import style or Graph's Python resolution. This is measurement. Change
+no product code, touch no weights, fix nothing.
+
+The two findings to test:
+  A. 79% of calls leaving tests/ attached to external click.* nodes rather than
+     to the definitions in the same repository.
+  B. self.ctx.get_usage() produced no edge, which is why UsageError.show was
+     unreachable at any depth.
+
+No em dashes. go test ./... green. One commit at the end.
+
+1. Pick two more Python repositories, deliberately different from click and from
+   each other. At least one should use a different test import style, and at
+   least one should be an application or service rather than a library, since
+   click is a library that imports itself by name in its own tests. Propose them
+   with line counts, test-suite size and why each is a useful contrast, and say
+   which you would pick, before cloning.
+
+2. For each, snapshot with the graph plugin and measure finding A directly from
+   the snapshot, no session or checkpoint needed:
+   - calls leaving the test directory that attach to an external node
+   - calls leaving the test directory that attach to a same-repo definition
+   - the same split for non-test source files, since if the ratio is similar
+     outside tests then this is not about tests at all
+   Report raw counts, not just percentages, and state the exact query you used
+   so the number is reproducible.
+
+3. For finding B, search each repository for attribute-chain calls of the shape
+   self.x.y() and sample at least ten. For each, record whether Graph produced
+   an edge, and if it did, what it attached to. Then do the same for a matched
+   sample of direct self.y() calls, so the comparison isolates the chain rather
+   than self. If chains resolve in one repository and not another, find out what
+   differs.
+
+4. Do not run a full Umbra analysis on these. No session, no checkpoint, no
+   probes. The question is about the field, and the snapshot answers it.
+
+5. Write umbra/experiments/python-resolution.md with the three repositories side
+   by side, the raw numbers, the query used, the attribute-chain sample, and a
+   plain verdict on each finding: is it click, or is it Graph's Python
+   resolution. If the answer is mixed, say what predicts it.
+
+Report with: the repositories chosen and why, the counts for A across all three,
+the chain sample for B, and the verdict.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/python-resolution.md and the NOTES entry for de4dc60.
+
+Task: draft an upstream bug report for the entire-graph maintainers covering
+four findings. Writing only. Change no product code.
+
+No em dashes. Commit the draft to umbra/experiments/upstream-report.md. Do not
+open an issue or post anything; I will do that after reading it.
+
+Format it as separate issues in one file, since they should probably be filed
+separately. For each: a one-line summary, the version and platform, a minimal
+reproduction someone can run without our repository, what was observed, what was
+expected, and the impact in one sentence. Keep each under a page.
+
+The four:
+
+1. Calls through a module or package object do not resolve to same-repo
+   definitions. Lead with the three-file probe, since it isolates this from
+   layout, test style and repository size. Include the table of the three call
+   shapes and their edges, and note that CONSTRUCTS degrades to an external
+   CALLS, so the relation type is lost as well as the target. Include the raw
+   counts from all three repositories as supporting evidence, with the exact
+   query, and note that the source/test split rules out a test-specific cause.
+
+2. Attribute chains produce no edge. 27 chain sites, 27 non-edges, against a
+   matched control of 31 of 36 resolved in the same files and functions at
+   type_inferred 0.82 to 0.9. State the inference plainly: self gets a type,
+   self.<attribute> does not. Include a minimal reproduction. Mention that our
+   first measurement of this was wrong because we indexed by the evidence span,
+   which covers the calling function rather than the call, and that we corrected
+   it, so a reader knows the control is sound.
+
+3. graph commit cannot distinguish a method-body change from a class-level
+   change. The two change lists are byte-identical, sorted and serialised.
+   Include the probe class and the twelve one-kind changes. State the
+   consequence for a consumer: any rule that drops the rolled-up container also
+   drops it when a real class-level edit occurred. List the four things that
+   would resolve it, framed as options for them rather than demands: an end line
+   or changed-line range, a member-exclusive body hash, field records for
+   modified class attributes, or something else they prefer.
+
+4. A class decorator produces no class entity. Adding @dataclass reports
+   body_changed on the module and nothing for the class. Confirmed with two
+   decorator forms. Note that this is a common edit, so the change is invisible
+   rather than merely coarse.
+
+Tone: this is a report from a consumer who has read the docs and measured
+carefully, not a complaint. Say what we tried, including the surfaces we checked
+and ruled out (graph diff, body_hash, --depth), so they do not repeat our work.
+Where we may have the wrong end of it, say so.
+
+Before writing, verify the graph version and platform, and re-run one
+reproduction per finding to confirm each still holds on the current build. If
+any no longer reproduces, say so and leave it out.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Read
+umbra/experiments/python-resolution.md, in particular the final finding, then
+umbra/internal/graph/snapshot.go (LoadSnapshot), evidence.go, and
+umbra/internal/shadow/evidence.go.
+
+Problem: the snapshot's CALLS records carry confidence, reason, relation_scope,
+resolution and target_kind. LoadSnapshot parses none of the five. Our evidence
+tiers are therefore built from less than the provider publishes, and pass 1 of
+the click experiment wrongly concluded this build had no confidence data at all,
+which was true of graph impact and false of the snapshot.
+
+Goal: consume what the provider already gives us. This is a real change, not a
+measurement, so take it in three stages and stop after stage 1 if what you find
+contradicts the premise.
+
+No em dashes. go test ./... green before every commit. Commit each stage
+separately.
+
+STAGE 1, establish what the fields actually contain.
+  Across the three repositories already cloned, and per relation type, record
+  the distribution of all five fields: which values occur, how often, and how
+  they correlate with each other. Specifically answer:
+  - what values relation_scope takes, and whether it distinguishes a same-repo
+    target from an external one
+  - what target_kind takes, and whether it identifies an unresolved or
+    synthesised target
+  - whether reason is free text or a closed set
+  - how snapshot confidence and resolution compare to the resolution values we
+    already read from graph impact, and whether they ever disagree for the same
+    edge
+  Write it into NOTES before writing product code. If the fields turn out not to
+  carry what this task assumes, stop and report rather than building on it.
+
+STAGE 2, parse them and carry them through.
+  Add all five to the edge record in LoadSnapshot and carry them along the walk
+  exactly as resolution is carried today, including the weakest-hop rule. Do not
+  change what the tiers mean yet. This stage must be behaviour-preserving:
+  rerun the recorded scenarios and the click experiment and confirm every state,
+  tier, rank and probe selection is unchanged. If anything moves, find out why
+  before continuing.
+
+STAGE 3, use them, narrowly.
+  The one change worth making now: an edge whose target is external or
+  unresolved is currently indistinguishable in the report from an edge to a
+  real same-repo dependent, and from the click work we know that is 79% of test
+  calls in two of three repositories. Use relation_scope and target_kind to say
+  so explicitly, in the terminal, JSON, HTML and packet. A reviewer should be
+  able to tell "this call goes somewhere I cannot see" from "this call has no
+  dependents".
+  Do NOT rework the three evidence tiers, do not touch ranking weights, and do
+  not touch the echo rule. Those still wait on the upstream answers.
+
+Known-positives for anything stage 3 adds, each proved to fail when reverted.
+Add fixtures covering an external target and an unresolved one, since nothing in
+the recorded scenarios expresses either.
+
+Report with: the stage 1 distributions, confirmation that stage 2 changed no
+output, what stage 3 now says that it could not say before, and the test count.
+
+---
+
+You are in the Umbra repository on branch experiment/first-real-repo. Two tasks,
+both writing and verification. No feature work.
+
+No em dashes. go test ./... green. Commit separately.
+
+1. The weakest-hop claim. Stage 2 of the last task found that the walk carried
+   only the first hop and read no resolution at all. BUILDATHON.md's curveball
+   section says commit e41af1db kept resolution and confidence and had the walk
+   carry the weakest hop along each path, and the partial-analysis fixture
+   asserts that a path is only as resolved as its weakest hop.
+   Find out which is true. Read e41af1db, the bfs.go code as it stood then and
+   as it stands now, and the fixture assertion. Three possibilities: the rule
+   exists somewhere I did not look, the rule exists for resolution but not for
+   confidence, or the document claims a behaviour that never shipped and the
+   fixture passes for another reason.
+   Report which before changing anything. If the document is wrong, correct it
+   in place with a short, plainly worded note saying what shipped and what did
+   not, dated. Do not quietly delete the claim, and do not patch the code to
+   make the old claim true retroactively.
+
+2. Upstream report. Add the target_kind gap: a call the resolver could not
+   resolve is reported as external, identical to a genuine stdlib or third-party
+   call, so no consumer can tell a real external dependency from a resolution
+   failure. Include the measured scope and kind distributions, note that this is
+   a single added value rather than a resolver change, and connect it to the
+   module-object issue, since a consumer cannot size that bug's impact without
+   it. Decide whether it reads better as a fifth issue or appended to the
+   module-object one, and say why.
+
+---
+
+You are working across two repositories. The public fork ~/entire-graph holds
+BUILDATHON.md and the Umbra code as a squashed import. The private repository
+u7k4rs6/Umbra holds the real phase-by-phase history and its own longer
+BUILDATHON.md. One of them becomes the project going forward; that decision is
+mine, not yours.
+
+Three tasks. Stop at the gate in task 1. No em dashes. go test ./... green
+before any commit.
+
+1. Inventory both, then stop.
+   Clone or open the private repository alongside the fork and produce a plain
+   comparison so I can choose: commit count and date range, how many commits
+   carry checkpoint trailers in each, what exists in one and not the other
+   (documents, experiments, site, fixtures, recordings), the size of each
+   including checkpoint refs, and anything in either that would be lost by
+   picking the other. Include the private repository's BUILDATHON.md, since the
+   fork's version is only 59 lines and the longer one is where the weakest-hop
+   claim from phase 25 probably lives; check that claim against it while you are
+   there and report what it actually says.
+   Write this to umbra/experiments/repo-inventory.md and STOP. Do not migrate,
+   merge, delete or reorganise anything until I choose.
+
+2. In the fork only, and independent of that decision: mine BUILDATHON.md rather
+   than deleting it.
+   Move the content that outlives the event into places that make sense:
+   - the four graph findings with their verification, into the README or an
+     experiments file
+   - the curveball section, rewritten as design notes for the evidence tiers,
+     since that is a permanent part of the product and should not read as a
+     response to a constraint
+   - the limitations section stays where it is, it is already the best writing
+     in the project
+   Drop only what needs a rubric to make sense: the track number, the required
+   outline headings, the checkpoint-links-for-judges section, the event framing.
+   Then move the file itself to umbra/archive/BUILDATHON.md with one dated line
+   at the top saying it was the submission document for a one-day event.
+   Change no claim while moving it. If a sentence is only true in the event
+   context, say so rather than rewriting it to sound general.
+
+3. Test the untested option from PUBLISH.md, in a throwaway repository, not in
+   either real one.
+   entire configure --checkpoint-remote github:owner/repo is recorded as a
+   fourth option for the checkpoint refs and marked untested. Find out whether
+   it works: does checkpointing continue, do the refs land in the second
+   repository and stay out of the first, and does anything about the session or
+   the trailers change. Report what you observe, and update PUBLISH.md to say
+   tested or not, with the commands that worked.
+   Do not run it against ~/entire-graph or the private repository.
+
+Report with: the inventory, what moved in task 2 and what was dropped, and the
+verdict on the second remote.
+
+---
+
+The inventory is already done and committed as a7420f5. Do NOT redo it. Read
+umbra/experiments/repo-inventory.md as input and begin at task 1, the
+checkpoint-branch audit.
+
+---
+
+So: run --skip-push-sessions on the fork, note the encoding lesson, and get on with tasks 2 and 3, which are the actual merge.
+
+---
+
+Continue the merge in ~/entire-graph. Stages A through D are committed and green
+at 376 tests. Read umbra/experiments/repo-inventory.md and your own stage C and D
+commit messages before starting.
+
+No em dashes. go test ./... green before every commit. Commit each stage
+separately. Rerun the click regression after each and confirm the docket, its
+order and the reach line are unchanged unless a stage is meant to change them.
+
+STAGE E, finish the evidence model. It is in and tested but dead: nothing
+populates EvidenceInput from analyze.go and no surface renders the three tiers.
+Close that loop.
+  - Populate EvidenceInput in analyze.go from the merged Edge fields.
+  - Render confirmed, heuristic and needs verification in the terminal, JSON,
+    HTML and packet, using the fork's vocabulary.
+  - Port the four report-side partial-analysis tests.
+  - Re-prove each known-positive here rather than trusting that it passed in the
+    other repository.
+  This stage is expected to change output, so record the before and after of the
+  click run rather than asserting no change.
+
+STAGE F, record three things in NOTES, dated, in the same plain form as the
+existing corrections.
+  - Stage C: the fork's inconclusive guard was Degraded and no changed ids, and
+    removing it broke no test because the fork's tests covered the renderers and
+    not the wiring. That is another instance of a check that passed while
+    asserting nothing about the behaviour it names. Add it to that running list.
+  - Stage D: the weakest hop now ranks by resolution with confidence as
+    tiebreak, because confidence is a within-method quantity and comparing it
+    across resolution methods was never meaningful. Put that reasoning in a code
+    comment at the comparison as well, not only in NOTES.
+  - The email encoding lesson already recorded in b6cb02a belongs on the same
+    running list, since a scan that reports a total cannot reveal that its
+    pattern missed a third of the matches.
+
+STAGE G, the two READMEs. There are now two, the root 533-line one and the
+fork's 636-line one at umbra/README.md. Do not blend them into a single file
+that serves both purposes. Split by scope instead: the root README is about this
+repository, meaning it is a fork of entireio/entire-graph with Umbra living in
+umbra/, and points at the product. umbra/README.md is the product manual:
+install, run, states, ranking, evidence tiers, limitations, corrections.
+Move content to whichever file its scope belongs to, delete nothing that is not
+duplicated, and where the two disagree on a fact, check which is true rather
+than picking one. Report any disagreement you find.
+
+STAGE H, BUILDATHON.md, only after G is green. It is at the root in its 981-line
+form. Move the durable content out: the four graph findings with their
+verification, the curveball section rewritten as design notes for the evidence
+tiers rather than as a response to a constraint, and the limitations section
+stays where it already is. Drop only what needs a rubric to make sense: the
+track number, the required outline headings, the checkpoint-links-for-judges
+section, the event framing. Then move the file itself to
+umbra/archive/BUILDATHON.md with one dated line saying it was the submission
+document for a one-day event. Change no claim while moving it; if a sentence is
+only true in the event context, say so rather than rewriting it to sound
+general.
+
+Report with: the click before and after for stage E, what the two READMEs
+disagreed on, what moved and what was dropped in stage H, and the final test
+count.
