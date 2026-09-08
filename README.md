@@ -1,334 +1,49 @@
 # Umbra
 
-**Umbra finds the code an AI agent's change affects but the agent never looked at.**
+**Umbra finds the code an AI agent's change affects but the agent never looked
+at.** It is a plugin for the [Entire CLI](https://github.com/entireio/cli), run
+as `entire umbra <checkpoint>`, and it is deterministic and offline: there is
+no model anywhere in it.
 
-It is a plugin for the [Entire CLI](https://github.com/entireio/cli), run as
-`entire umbra <checkpoint>`. It takes the dependents of every changed symbol
-from [Entire Graph](https://github.com/entireio/entire-graph), subtracts what
-the session actually examined according to the checkpoint's tool activity and
-the agent's own words, ranks what is left in shadow, runs the tests that reach
-it, and then sweeps the whole suite once so the selection audits itself.
+**The product manual is [umbra/README.md](umbra/README.md)**: install, run, the
+four states, the three evidence tiers, the ranking, the limitations and the
+corrections. This file is about the repository that holds it.
 
-The report is an eclipse map you can replay in the order the agent looked at
-things, plus a one-page packet a reviewer reads in a minute.
+## What is in this repository
 
-The core is deterministic and offline. **There is no model anywhere in Umbra.**
-
-## Who it is for
-
-The reviewer of an agent-authored change, who wants to know where to look
-first. A clean diff and a confident description tell you what changed. They do
-not tell you what the agent never opened.
-
-The everyday case: a signature change on `compute_total`, seven callers, three
-of them tests in a file the session never opened, committed with a message that
-says the callers were checked because only one test file ran.
+This repository is `u7k4rs6/Umbra`. Umbra lives entirely in `umbra/`, which is
+its own Go module, `github.com/u7k4rs6/Umbra/umbra`. Nothing outside `umbra/`
+is product code.
 
 ```
-Umbra  01M1PVD1WBK1J1J8GWDNJJR7XZ  1c2cf29  claude-code  depth 2
-session said  "Checked the callers and updated them; all tests pass."
-compute_total  signature changed  app/service.py:20
-light  ●●◐◐◐○○○○○○   2 lit  3 penumbra  6 umbra  0 unknown   18% examined
-
-!◐  apply_refund        app/refunds.py:17      direct caller  depth 1  echo fault line beacon  10.5
-    # SAFETY: a pricing failure must not refund the full amount paid.
- ○  test_rounding       tests/test_service.py:7  direct caller  depth 1  test far field   12.0  fail
- ○  test_negative       tests/test_service.py:13 direct caller  depth 1  test far field   12.0  fail
-
-probes  8 selected  5 cracked
-sweep   full suite  0 leaks
+umbra/          the module; see umbra/README.md
+BUILDATHON.md   the submission document for the event Umbra was built at
+Concepts/       working notes that predate the build
+.entire/        Entire CLI settings
 ```
 
-## The four states
+**This repository is not itself a fork of `entireio/entire-graph`.** It has no
+upstream tree and no Go module at its root, and `go install` from the root
+fails with `cannot find main module` for that reason. Where the two are easy to
+confuse: the layout under `umbra/` is the one `docs/ARCHITECTURE.md` specifies,
+kept exactly so the module can be grafted into such a fork without moving a
+file, and `umbra/scripts/graft.sh` does that graft, with a dry run and without
+pushing.
 
-| State | Glyph | Meaning |
-|---|---|---|
-| Lit | ● | Read with a range covering the symbol, at or after the change began; or edited |
-| Penumbra | ◐ | Half seen: `glance`, `glimpse`, `quoted`, `afterimage` or `echo` |
-| Umbra | ○ | Nothing in the session touched or mentioned the file |
-| Unknown | ? | The transcript carries no tool events and no mentions |
+That graft was run once, into `u7k4rs6/entire-graph`, which **is** a fork of
+`entireio/entire-graph` with this `umbra/` tree inside it. The two then
+diverged, and the fork's work was merged back into this repository in six
+stages recorded in [umbra/NOTES.md](umbra/NOTES.md). A statement that is true
+of one of these repositories is often false of the other, which is how the two
+READMEs came to disagree with each other about install commands, commit hashes
+and whether the checkpoint history exists. It does exist here: 74 refs under
+`refs/entire/checkpoints/`.
 
-Missing data is a state, never an error. A transcript with no tool records
-gives every node the unknown state, which is the correct answer rather than a
-guess, and the selection falls back to the graph alone.
-
-## Install
-
-```
-go install github.com/u7k4rs6/Umbra/umbra/cmd/entire-umbra@main
-```
-
-Any executable named `entire-<name>` on `$PATH` is dispatched by the Entire CLI
-kubectl style, so this is all the installation there is. Requires the Entire
-CLI with Checkpoints enabled and the entire-graph plugin.
-
-## Run
-
-```
-entire umbra HEAD --test "pytest -v" --out ./umbra-out
-open ./umbra-out/umbra.html
-```
-
-Use `pytest -v`, not `pytest -q`. Quiet mode prints no per-test names, so
-`entire graph verify` cannot tell you which test broke and the verdict degrades
-to a suite-level pass or fail. Umbra says so in the header when that happens.
-
-```
-entire umbra <checkpoint-id | commit-ish> [flags]
-
-  --test CMD        test runner prefix; validated test ids are appended as argv
-  --run none|shadow|all    which selected tests to run (default shadow)
-  --no-audit        skip the full-suite sweep, which is on by default
-  --history         add the opt-in scar factor from git history
-  --depth 1|2|3     dependency hops (default 2)
-  --format table|json|html|packet
-  --out PATH        write umbra.json, umbra.html and umbra.packet.md
-  --fail-on umbra|penumbra|failure|leak    exit 2 when the condition holds
-  --snippets        include declaration lines in the report (off by default)
-  --all             list lit nodes in the table instead of counting them
-  --test-root PATH  where the runner runs, when the project is nested
-```
-
-Exit codes: 0 completed, 2 the `--fail-on` condition was met, 1 runtime error.
-
-## Reproduce the demo
-
-```
-git clone https://github.com/u7k4rs6/Umbra && cd Umbra
-cd umbra/fixtures/app && ./setup.sh && cd ../../..
-. umbra/fixtures/app/.venv/bin/activate
-entire umbra 1c2cf29 --test "pytest -v"
-```
-
-That reports 8 probes selected and 5 cracked, naming `test_empty_is_zero`,
-`test_negative` and `test_rounding` in `tests/test_service.py` and both refund
-tests in `tests/test_refunds.py`, with a full sweep and 0 leaks.
-
-**The runner has to be on `PATH`, which is why the venv is activated.** Umbra
-runs the tests in a detached worktree of the commit, not in your working tree,
-so a runner given as a path relative to the repository root does not resolve
-from there, and the virtualenv is not in the worktree at all because it is not
-committed. A runner that cannot start produces no output, and `verify` then has
-nothing to parse: the verdict degrades to a suite-level pass or fail and no
-test is named. That looks exactly like the `pytest -q` failure and has a
-different cause. Activating the venv, or giving an absolute path to the
-interpreter, avoids both.
-
-`entire umbra` has to be installed first, from the Install section above. The
-clone also has to sit somewhere Graph will run: Graph refuses git subprocesses
-against repository metadata it considers unsafe, which in practice means a
-clone under a shared temporary directory fails before any analysis happens.
-A clone under your home directory works. This was checked from a fresh clone
-rather than assumed, and both readings are in the limitations below.
-
-The fixture is seeded. It is built to produce lit, penumbra and umbra nodes and
-a signature change that breaks tests in two files the session never opened. The
-report says so and so does this README.
-
-The states you get will not match the example at the top of this README, and
-that is correct. Node states come from the examined set, which comes from
-whichever checkpoint the reference pairs with, and imported checkpoint history
-is local to a machine and is not pushed. The same commit reports two lit and
-six umbra nodes in the repository it was built in, and eleven penumbra in a
-fresh clone that has no checkpoints at all. The probes, the cracks and the
-sweep are the same in both.
-
-## How the ranking works
-
-Six factors, all printed next to the node so the number can be recomputed by
-hand:
-
-1. **Relation weight.** Direct caller 3, data flow 2, type consumer 2,
-   transitive caller 1.5, co-change file 1.
-2. **What depends on it.** Multiplied by `1 + log2(1 + dependents)`.
-3. **How weakly it was seen.** Multiplied by 1.0 umbra, 0.7 echo,
-   0.6 afterimage, 0.5 other penumbra tiers, 0 lit.
-4. **Far field.** Multiplied by 1.5 across a package boundary.
-5. **Fault line.** Multiplied by 1.5 when the call site sits inside error
-   handling.
-6. **Tests.** Plus 3 for a test function, plus 2 when a test reaches the node.
-
-**The beacon override**: a call site within four lines of a `SAFETY`,
-`CRITICAL` or `INVARIANT` comment is pinned to the top of the docket whatever
-it scored, with the comment shown. Someone wrote that note by hand; it outranks
-a heuristic.
-
-**The scar factor** is opt in with `--history` and multiplies by up to 2 for a
-file with several recent fix commits. It is off by default because it is noisy.
-
-Ties break by file path then symbol name, so two runs on one checkpoint produce
-the same order.
-
-## The sweep
-
-After the selected tests, the whole suite runs once by default. Every test that
-changed state but was not selected is reported as a leak with the reason the
-selection missed it: a path deeper than the search went, no resolved call edges
-from the test file, a path only over a relation Umbra does not traverse, or
-nothing the graph can see. The count is printed even when it is zero, because a
-selection that audits itself is worth more than one that does not. `--no-audit`
-skips it and the header says the selection is unaudited.
-
-## Security
-
-- Umbra runs as the invoking user and asks for nothing more. It sees exactly
-  what you can see through git and the Entire CLI.
-- **No transcript prose reaches any output**, with one named exception: the
-  "session said" sentence, taken from Entire's stored checkpoint summary or, if
-  there is none, the agent's own last sentence. It is scrubbed and capped at
-  200 characters, and it is displayed, never verified.
-- **Umbra never runs a command it found in a transcript.** Test ids are built
-  from graph data, validated against `^[A-Za-z0-9_./:\[\]\-]+$`, and passed as
-  separate argv elements. There is no `sh -c` anywhere in Umbra.
-- The runner comes only from `--test`. Umbra echoes the full command before
-  running it, and everything runs in detached worktrees, never in your working
-  tree.
-- The report is one self-contained file with a Content-Security-Policy that
-  forbids external scripts, styles, images and connections. It makes no
-  requests. The drop-in viewer on the landing page reads files in your browser
-  and uploads nothing.
-- Reports name symbols, files and spans inside the blast radius. Share one with
-  the same care you would share a diff.
-
-## Limitations
-
-- Read evidence is file and line-range based. A mention in the agent's text is
-  attention, not reading, and is ranked as the weakest tier.
-- Graph edges are not complete: reflection, dynamic dispatch and configuration
-  are invisible, so umbra is a **lower bound** on what was unexamined. The
-  sweep's leak reasons are how a reader sees the gap.
-- Fault lines and beacons are matched by a regular expression window around the
-  call-site line, not by a parser.
-- Ranking weights are hand set and printed. They are a heuristic, not a
-  measurement.
-- Scrubbing of command prefixes and failure excerpts is pattern based.
-- One transcript adapter, for Claude Code. An agent whose transcript carries no
-  tool records gets the unknown state.
-- A destructive `--test` runner does what it says. The echo before execution is
-  the only guard.
-- **Worktrees are keyed by commit in a shared directory, so two checkouts of
-  one repository collide on one worktree.** They are removed on exit unless
-  `--keep-worktrees` was passed, but a run that died before its cleanup, or a
-  checkout that has since been deleted, leaves one behind. A leftover is now
-  reused only when it is a healthy checkout sitting at the wanted commit, and
-  otherwise removed and pruned first, which covers the deleted-checkout case.
-  What it does not cover is a healthy worktree belonging to a different
-  checkout of the same repository: that one is reused, and it carries the other
-  checkout's `.git` link with it, so if that checkout sits somewhere Graph
-  refuses to run the failure lands in the run that did nothing wrong. There is
-  no `umbra clean` command; `SECURITY_AND_ACCESS.md` describes one and it was
-  never built. Delete them by hand:
-
-  ```
-  rm -rf "$ENTIRE_PLUGIN_DATA_DIR/wt"                  # managed install
-  rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/umbra/wt"    # otherwise
-  ```
-
-  Under a managed install that first path is usually
-  `~/.local/share/entire/plugins/data/umbra/wt`.
-- **A check that has never been observed to fail is not yet a check.** Four
-  verifications in this build returned a confident pass that was wrong: local
-  tests green on a repository a clone could not build, a cracked-probe count
-  that named a test outside the selection, a commit check that counted `ok`
-  lines instead of looking for `FAIL`, and a refs audit that reported thirty
-  refs of zero bytes because `git ls-tree` is scoped to the working directory.
-  The clearest case had no symptom at all: all four label-placement tests are
-  built on `Box.Overlaps`, and making it return false for every pair left every
-  one of them passing, across all eight scenarios. They had been proving
-  determinism, not collision. Every check named in this README now has a test
-  that plants what the check is for and asserts it fires, and each of those was
-  proved by mutating the code it checks until it failed. That is the standard;
-  it is not a guarantee that nothing else here is passing for the wrong reason.
-- The examined set is built from the session's tool activity. An agent that
-  reads and edits through shell commands rather than through file tools leaves
-  no read or edit event, so its work looks unexamined. Umbra found this in its
-  own build; the report is in `umbra/site/self/`. Every report now carries a
-  coverage line saying how many of the session's events were file reads and how
-  many were shell commands, so a thin report can be told from a real finding.
-- **The report's script is about 1215 lines against a design target of 700,**
-  and its stylesheet about 480 against 400. Three things account for almost all
-  of the excess and none of them were foreseen when the target was set: the
-  attention replay carries a second implementation of the classifier, because
-  the map has to be reconstructed at any point in the session and that means
-  the state rules exist in Go and again in the browser; the day scheme and the
-  print block are a second and third set of rules for the light field, since
-  removing a glow on a light ground reads as more light rather than less; and
-  the node shapes are drawn per state and per penumbra tier so the four states
-  survive greyscale. The duplication of the classifier is the part worth
-  regretting, and it is guarded rather than trusted: a test feeds eight
-  recorded scenarios through both implementations at three playhead positions
-  each and compares every state, tier and announcement.
-
-## Not built, and why
-
-Adapters for other agents (they get the unknown state, which is correct for a
-transcript with no tool records). Subagent transcripts. Live mode during a
-session and a blind-spot budget gate (shadow-branch data is not documented
-output). Mutability analysis of callees (nothing in the documented surface
-provides it). Coverage deltas (needs coverage tooling in the target
-repository). Trend dashboards. Cross-repository dependents. And Umbra never
-writes code: it shows the shadow, it does not fix it.
-
-## Corrections to the design documents
-
-Five places where the four planning documents in `umbra/docs/` describe
-something the installed tools do not do. All five were forced by real output,
-none by preference. The documents are the original design and are left as
-written; these are the corrections the code carries.
-
-1. **The checkpoint trailer is not hexadecimal.** ARCHITECTURE.md section 1
-   describes `Entire-Checkpoint: <12 hex>`. The installed CLI writes a 26
-   character ULID, for example `01M1PVD1WBK1J1J8GWDNJJR7XZ`. A hex-only pattern
-   matched nothing, so every commit fell through to the session-window fallback
-   while reporting, wrongly, that it carried no trailer. The pattern now takes
-   alphanumeric ids of 6 to 40 characters, which covers the ULID, the 12 hex id
-   of imported history and the 40 hex id of a carry-forward entry.
-
-2. **`pytest -q` cannot be verified.** PRD.md uses it in the command surface
-   and in the demo. Quiet mode prints no per-test ids, so `graph verify`
-   answers `output format not recognised` and records zero results. The default
-   is now `pytest -v`, and the table says `add -v` when a baseline comes back
-   exit-code only.
-
-3. **Flags after the reference were silently dropped.** The surface in PRD.md
-   is `entire umbra <ref> [flags]`, but Go's flag package stops parsing at the
-   first non-flag argument, so `entire umbra HEAD --run none` ignored
-   `--run none` and then failed asking for a test runner. Argv is reordered
-   before parsing, with boolean flags handled so they do not swallow the
-   reference.
-
-4. **`graph checkpoint` answers about the wrong commit when the pairing was a
-   guess.** ARCHITECTURE.md calls it the documented bridge between Graph and
-   Checkpoints, and `LoadSources` tried it first. It returns the changes of the
-   commit *that checkpoint belongs to*. When a reference is paired with a
-   checkpoint by session window, that is a guess about which session produced
-   the commit and says nothing about which commit the checkpoint owns. This
-   never showed here, because the pairing happens to choose an imported
-   checkpoint that owns no commit and the fallback runs. In a clone it chose a
-   hook-written checkpoint that does own one, and the report described that
-   commit's changes under the header of the one the reader asked for: the
-   header said `1c2cf29` while the sources were the transcript package from
-   phase 3. The bridge is now used only when the reference resolved through the
-   trailer or through the checkpoint id, where the two are the same work.
-
-5. **A stale worktree poisoned every later run.** Worktrees are keyed by commit
-   under a shared data directory, so two checkouts of one repository, or a run
-   that died before its cleanup, collide on one path. The code reused anything
-   with a `.git` in it. A worktree left behind by a checkout that had since
-   been deleted made git unable to read its metadata and Graph refuse to run
-   there, for every subsequent run against that commit from any checkout. A
-   leftover is now reused only when it is a healthy checkout sitting at the
-   wanted commit, and otherwise removed and pruned first. The residual case is
-   in the limitations above.
-
-Corrections 4 and 5 were both found by the end-to-end tests failing in a fresh
-clone after passing here, which is the same lesson as the `.gitignore` below.
-
-Two smaller ones, for completeness. Entire has more than one wording for an
-absent summary, so any fully italicised summary block is treated as absent. And
-`graph impact --format json` carries `call_site.line` and `additional_sites`
-directly, so it is the primary path and the text parser the design sketched is
-the fallback, still tested.
+The repository is private. That is not incidental to using it: `go install`
+against the module path needs `GOPRIVATE` set, because the public checksum
+database cannot see the repository. The manual says so at the install step.
+[umbra/PUBLISH.md](umbra/PUBLISH.md) is the checklist for the sitting in which
+this repository is made public. Nothing in it has been run.
 
 ## The final review
 
@@ -429,18 +144,25 @@ paths, which is exactly the text a reader needs in order to check a line.
 
 ## Development record
 
-Umbra was built in a standalone repository, `u7k4rs6/Umbra`, rather than inside
-a fork of `entireio/entire-graph`. The `umbra/` layout from ARCHITECTURE.md was
-preserved exactly so the module can be grafted into a fork without moving a
-file, and `scripts/graft.sh` does that graft, with a dry run, without pushing.
-The build's own checkpoint trail lives in this repository under
-`refs/entire/checkpoints/`, and the phase by phase record is the table at the
-top of [umbra/NOTES.md](umbra/NOTES.md), which covers all seventeen phases and
-carries what each one found and where the design documents turned out to be
-wrong.
+Umbra was built here, in this repository, and the build's own checkpoint trail
+is here with it: 74 refs under `refs/entire/checkpoints/`, beginning at the
+first line of code. The `umbra/` layout from `docs/ARCHITECTURE.md` was
+preserved exactly through the build so the module could be moved into a fork of
+`entireio/entire-graph` without relocating a single file, which is why that
+graft is two commits rather than a rewrite.
 
-Seventeen phases, of which the first thirteen built the product. The last four
-were not features:
+**The trail did not come across to the fork, and that is on purpose.** These
+checkpoint refs hold whole session transcripts, including material read from an
+unrelated project in the first minutes of the build. None of it is pushed
+there. The fork's trail begins at the graft, and its own README says so; the
+phase by phase record survives there as prose. Both READMEs used to carry that
+paragraph, and it was only ever true of the fork.
+
+The phase by phase record is [umbra/NOTES.md](umbra/NOTES.md), which carries
+what each phase found and where the design documents turned out to be wrong.
+
+Seventeen phases built and shipped the product, of which the first thirteen
+were features. The last four were not:
 
 - **14** replaced the landing page's scripted sample with a real run, added a
   second map from an imported session in another project, and prepared two
@@ -453,12 +175,14 @@ were not features:
 - **16** restyled the landing page around a drawn eclipse. No raster asset and
   no request for one: the corona is inline SVG built deterministically from the
   report's own numbers.
-- **17** is this pass: two visual checks decided from screenshots rather than
-  from the CSS, [umbra/PUBLISH.md](umbra/PUBLISH.md), and the verification of
-  this README against the repository.
+- **17** was the submission pass: two visual checks decided from screenshots
+  rather than from the CSS, [umbra/PUBLISH.md](umbra/PUBLISH.md), and the
+  verification of this README against the repository.
 
-[umbra/PUBLISH.md](umbra/PUBLISH.md) is a checklist for the sitting in which
-this repository is made public. Nothing in it has been run.
+The phases after 17 are not part of that build. They are recorded in
+[umbra/NOTES.md](umbra/NOTES.md) and run to 28: running Umbra against a real
+outside repository and fixing what that found, two upstream bug reports, and
+the six stage merge that brought the fork's divergent work back here.
 
 **Which maps are which.** The landing page shows two, and they are not the same
 kind of thing.
@@ -492,8 +216,8 @@ was committed.
 No code was reused. The idea of subtracting the examined set from a blast
 radius was developed in planning for this event.
 
-All product code across all seventeen phases was written during the build with
-an AI coding agent, captured in Entire checkpoints. That includes the tests, the
+All product code was written with an AI coding agent, captured in Entire
+checkpoints, across the seventeen phases of the build and the phases after it. That includes the tests, the
 landing page, the corona renderer and every document in this repository except
 the four planning documents in `umbra/docs/`, which were written before the
 build with AI assistance and are the first commit.
@@ -504,30 +228,11 @@ repository private, and the visual direction for the landing page in phase 16,
 which was specified before it was built and not proposed by the agent. Every
 phase was reviewed and accepted by hand before the next one started.
 
-`umbra/NOTES.md` records what the probe found, which degradations are in
-effect, the places the design documents turned out to be wrong about the
-installed tools, and the mistakes: the four confident wrong answers, the five
-scrubbing leaks, and the label tests that were proving nothing. Those are in
+[umbra/NOTES.md](umbra/NOTES.md) records what the probe found, which
+degradations are in effect, the places the design documents turned out to be
+wrong about the installed tools, and the mistakes: the confident wrong answers,
+the five scrubbing leaks, the label tests that were proving nothing, and the
+running list of checks that passed while asserting nothing. Those are in
 there because a build record that only lists what worked is not a record.
-
-## Layout
-
-```
-umbra/
-  cmd/entire-umbra/     flags, wiring, exit codes
-  internal/runner/      the one boundary to external processes, and its replay
-  internal/checkpoint/  resolve, worktrees, transcript fetch
-  internal/transcript/  normalized events; the Claude Code adapter
-  internal/graph/       snapshot, relations, BFS, impact, commit, verify
-  internal/shadow/      examined set, classifier, ranker, selection, forensics
-  internal/report/      table, json, layout, html, packet
-  fixtures/app/         the seeded Python service
-  fixtures/recorded/    the eight scenarios, plus one real minimal recording
-  scripts/              the graft and the read-only checkpoint refs audit
-  site/                 landing page, the corona renderer, the drop-in viewer
-  docs/                 the four planning documents, and docs/renders/
-  NOTES.md              the phase by phase build record
-  PUBLISH.md            the checklist for making this repository public
-```
 
 Built during Bengaluru Tech Week on the Entire ecosystem.

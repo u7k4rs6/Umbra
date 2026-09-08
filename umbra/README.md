@@ -25,7 +25,7 @@ of them tests in a file the session never opened, committed with a message that
 says the callers were checked because only one test file ran.
 
 ```
-Umbra  01M1PVD1WBK1J1J8GWDNJJR7XZ  0063443  claude-code  depth 2
+Umbra  01M1PVD1WBK1J1J8GWDNJJR7XZ  1c2cf29  claude-code  depth 2
 session said  "Checked the callers and updated them; all tests pass."
 compute_total  signature changed  app/service.py:20
 light  ●●◐◐◐○○○○○○   2 lit  3 penumbra  6 umbra  0 unknown   18% examined
@@ -52,28 +52,69 @@ Missing data is a state, never an error. A transcript with no tool records
 gives every node the unknown state, which is the correct answer rather than a
 guess, and the selection falls back to the graph alone.
 
+## The three evidence tiers
+
+The state says how well the *session* saw a dependent. It says nothing about
+how well the *graph* knows the dependent is there. That is a separate axis with
+three values, printed as a mark beside the state and in full in every other
+surface.
+
+| Tier | Mark | Meaning |
+|---|---|---|
+| confirmed | `=` | The graph resolved every relation on this path to a definition |
+| heuristic | `~` | The graph derived this relation rather than parsing it, so it may be wrong |
+| needs verification | `?` | Reached through a relation the graph could not resolve, or found under a partial analysis; check it against the source |
+
+A relation is heuristic when the graph resolved it by something other than a
+definition: `type_inferred`, `name_only`, `package`, `pattern` or
+`git_history`. If such a hop is the last one, the node itself is heuristic. If
+it is further up the path, the node needs verification instead, because the
+reader cannot see the hop that is in doubt from the row.
+
+A run the graph reports as incomplete puts every node in needs verification,
+whatever its own edges look like, because the graph cannot say which edges the
+incompleteness affected. The header then names the reason.
+
+**The tiers are not a fifth state and the ranker does not read them.** A
+heuristic edge does not lower a score. The two axes answer different questions
+and mixing them would make both unreadable: a node can be in full shadow on
+evidence the graph is certain of, or lit on evidence it guessed.
+
+For a node that needs verification, every surface prints the command that
+settles it, `entire graph def` with the symbol and file, plus the call site and
+the test that reaches it where there is one. A healthy run has none, so that
+section is absent rather than empty.
+
 ## Install
 
 ```
-git clone -b umbra-buildathon https://github.com/u7k4rs6/entire-graph
-cd entire-graph/umbra
+git clone https://github.com/u7k4rs6/Umbra
+cd Umbra/umbra
 go build -o "$HOME/.local/bin/entire-umbra" ./cmd/entire-umbra
 ```
 
-**`go install` does not work for this module, and the README used to say it
-did.** Two things are wrong with the obvious command. `@main` names a branch
-that has no `umbra/` directory, because `main` tracks upstream
-`entireio/entire-graph`. And naming a branch or a commit that does have it
-still fails, because the module carries no tagged version:
+**`go install` works, but only with `GOPRIVATE` set**, and the README has said
+three different things about this. The module path is
+`github.com/u7k4rs6/Umbra/umbra` and `main` does carry `umbra/`, so the obvious
+command resolves. It then fails in verification, because the repository is
+private and the public checksum database cannot see it:
 
 ```
-$ go install github.com/u7k4rs6/entire-graph/umbra/cmd/entire-umbra@umbra-buildathon
-go: ...loading deprecation for github.com/u7k4rs6/entire-graph/umbra:
-    no matching versions for query "latest"
+$ go install github.com/u7k4rs6/Umbra/umbra/cmd/entire-umbra@main
+go: ...verifying module: reading https://sum.golang.org/lookup/...: 404 Not Found
+    not found: invalid version: git ls-remote ...: exit status 128
 ```
 
-Both forms were run before this was written. The clone and build above is the
-path every run in this project has actually used.
+With `GOPRIVATE='github.com/u7k4rs6/*'` in front, the same command succeeds and
+puts `entire-umbra` in `$(go env GOBIN)`. Both forms were run before this was
+written.
+
+What it installs is the last pushed commit on `main`, not your checkout. The
+clone and build above is the path every run in this project has actually used,
+and it is the one to use while working on Umbra itself.
+
+While this repository stays private, `go install` is only useful to someone
+whose git already has credentials for it.
 
 Any executable named `entire-<name>` on `$PATH` is dispatched by the Entire CLI
 kubectl style, so this is all the installation there is. Requires the Entire
@@ -82,7 +123,7 @@ CLI with Checkpoints enabled and the entire-graph plugin.
 ## Run
 
 ```
-entire umbra 6dea614c --test "pytest -v" --out ./umbra-out
+entire umbra HEAD --test "pytest -v" --out ./umbra-out
 open ./umbra-out/umbra.html
 ```
 
@@ -111,33 +152,33 @@ Exit codes: 0 completed, 2 the `--fail-on` condition was met, 1 runtime error.
 ## Reproduce the demo
 
 ```
-git clone entire://aws-ap-south-1.entire.io/gh/u7k4rs6/entire-graph
-cd entire-graph
+git clone https://github.com/u7k4rs6/Umbra
+cd Umbra
 (cd umbra && go install ./cmd/entire-umbra)
 cd umbra/fixtures/app && ./setup.sh && cd ../../..
 . umbra/fixtures/app/.venv/bin/activate
-entire umbra "$(git log --format='%H %s' | grep -m1 'umbra: seed the fixture signature change' | cut -d' ' -f1)" --test "pytest -v"
+entire umbra 1c2cf29 --test "pytest -v"
 ```
 
 That reports 8 probes selected and 5 cracked, naming `test_empty_is_zero`,
 `test_negative` and `test_rounding` in `tests/test_service.py` and both refund
 tests in `tests/test_refunds.py`, with a full sweep and 0 leaks.
 
-The commit is looked up by subject rather than written down as a hash. The hash
-this block used to carry, `0063443`, belonged to the repository Umbra was built
-in, and that history was deliberately not carried across the graft, so the
-block could not run here at all. The subject is stable across a rebase and is
-the same in every clone. To see it before running:
-
-```
-git log --format='%H %s' | grep 'umbra: seed the fixture signature change'
-```
-
-Two commits matter and they are adjacent. The one above is the change. Its
-parent, `umbra: fixture baseline before the seeded signature change`, is the
+`1c2cf29` is the seeded signature change, committed with an agent's own message,
+`make the tax rate explicit on compute_total`. Two commits matter and they are
+adjacent. Its parent, `6eb4434`, `umbra: fixture app for the probe`, is the
 state with all 16 fixture tests green, which is what the probe run records as
 its baseline so that a test that was already red is never reported as newly
-broken.
+broken. If a rebase has moved them:
+
+```
+git log --format='%H %s' | grep -m1 'make the tax rate explicit on compute_total'
+```
+
+An earlier version of this block carried `0063443` and looked the commit up by
+the subject `umbra: seed the fixture signature change`. Both belong to the fork,
+`u7k4rs6/entire-graph`, whose history is not this one. Neither the hash nor that
+subject resolves here, so the block could not run.
 
 **The runner has to be on `PATH`, which is why the venv is activated.** Umbra
 runs the tests in a detached worktree of the commit, not in your working tree,
@@ -155,8 +196,10 @@ it finds there. It installs from the clone rather than from a module path so
 that what runs is the code in the checkout you just made. It runs inside a
 subshell that changes directory first, because `umbra/` is its own Go module:
 `go install ./umbra/cmd/entire-umbra` from the repository root fails with
-`main module (github.com/entireio/entire-graph) does not contain package ...`,
-which is what running this block from a fresh clone turned up. The clone also
+`go: cannot find main module, but found .git/config`, because there is no Go
+module at the root of this repository at all. In the fork the same line fails
+differently, with `main module (github.com/entireio/entire-graph) does not
+contain package ...`, because there the root module is the upstream one. The clone also
 has to sit somewhere Graph will run: Graph refuses git subprocesses
 against repository metadata it considers unsafe, which in practice means a
 clone under a shared temporary directory fails before any analysis happens.
@@ -169,18 +212,31 @@ report says so and so does this README.
 
 The states you get will not match the example at the top of this README, and
 that is correct. Node states come from the examined set, which comes from
-whichever checkpoint the reference pairs with, and checkpoint history is local
-to a machine and is not pushed. The probes, the cracks and the sweep are the
-same everywhere; the states are not.
+whichever checkpoint the reference pairs with. The probes, the cracks and the
+sweep are the same everywhere; the states are not.
 
-The run that seeded this commit is a good illustration and an unflattering one.
-It reported `0 lit  9 penumbra  4 umbra  0 unknown` and `0% examined`, above a
+In this repository the checkpoints are present, so the block above reports
+
+```
+coverage  2 file reads, 1 edit, 0 searches, 2 shell commands
+light  ●●◐○○○○○○○○   2 lit  1 penumbra  8 umbra  0 unknown   18% examined
+graph  11 confirmed  0 heuristic  0 needs verification   profile full
+probes  8 selected  5 cracked
+sweep   full suite  0 leaks
+```
+
+which was measured rather than remembered. A clone that fetched no checkpoint
+refs gets the same probes, cracks and sweep and different states, because there
+is then no examined set to subtract.
+
+The same run in the fork is a good illustration and an unflattering one. It
+reported `0 lit  9 penumbra  4 umbra  0 unknown` and `0% examined`, above a
 coverage line reading `0 file reads, 0 edits, 0 searches, 33 shell commands`.
 The session that made the change worked through the shell rather than through
 file tools, so it left no read events for Umbra to subtract, and almost
-everything came back unexamined. That is the first limitation below, visible in
-the one report this README tells you to produce. The coverage line exists so
-that a thin report of this kind cannot be mistaken for a real finding.
+everything came back unexamined. That is the first limitation below. The
+coverage line exists so that a thin report of this kind cannot be mistaken for
+a real finding.
 
 ## How the ranking works
 
@@ -403,7 +459,7 @@ written; these are the corrections the code carries.
    checkpoint that owns no commit and the fallback runs. In a clone it chose a
    hook-written checkpoint that does own one, and the report described that
    commit's changes under the header of the one the reader asked for: the
-   header said `0063443` while the sources were the transcript package from
+   header said `1c2cf29` while the sources were the transcript package from
    phase 3. The bridge is now used only when the reference resolved through the
    trailer or through the checkpoint id, where the two are the same work.
 
@@ -426,211 +482,27 @@ absent summary, so any fully italicised summary block is treated as absent. And
 directly, so it is the primary path and the text parser the design sketched is
 the fallback, still tested.
 
-## The final review
-
-Phase 11 was a semantic-diff review of the whole build to that point,
-comparing the first commit against the last:
-
-```
-entire graph diff --base 6e0dff8e92417fc25e28f07c4950753bd1701966 --head HEAD --repo .
-```
-
-The diff itself is unremarkable: 1014 added entities, no signature changes, and
-no function without an incoming edge, which is what a build that only ever added
-code should look like. The interesting part was what the diff did not contain,
-and it is the single most useful thing Graph did in this build.
-
-### The .gitignore that hid the command package
-
-Reading the diff, `umbra/cmd` was missing. Not thin, not partial: the graph had
-no symbols for it at all, while it had 1014 for everything else. A directory of
-Go files that the build had been compiling and testing for nine phases was, as
-far as Graph could see, not there.
-
-Graph builds its snapshot from the repository, and it honours `.gitignore`. So
-the question was not what Graph had failed to parse. It was what git had been
-told to ignore. The answer was the second line of a `.gitignore` I wrote myself
-in the first commit, under a heading that says exactly what I meant it to do:
-
-```
-# Go build output
-entire-umbra
-```
-
-I meant that to ignore the compiled binary, which is written as `entire-umbra`.
-A gitignore pattern with no slash in it is not anchored to the repository root
-and does not distinguish a file from a directory: it matches any path component
-with that name, at any depth. The binary is called `entire-umbra`. So is the
-directory the binary's source lives in. The pattern matched
-`umbra/cmd/entire-umbra/` and everything under it.
-
-`git ls-files umbra/cmd/` returned nothing. `main.go`, `analyze.go`,
-`execute.go`, `options.go`, `output.go`, `record.go` and `options_test.go` had
-never been committed. The command package went in during phase 2 and was
-untracked through phase 10, nine phases in which every commit message reported
-a rising test count that included tests in a file the repository did not have.
-
-Nothing caught it, and nothing was going to. `go build ./...` and
-`go test ./...` read the working tree, and the files were on disk, so they were
-green throughout and told me nothing. `git status` says nothing about a path it
-has been told to ignore. `git commit -a` does not add an ignored file. The only
-symptom available to me was one I never looked at: a clone.
-
-The fix was to anchor the patterns to the paths the binaries are actually
-written to, so a directory name can never collide with them again:
-
-```
-/entire-umbra
-/umbra/entire-umbra
-/umbra-out/
-```
-
-The seven files were then committed, and the thing that should have been done
-long before was done at last:
-
-```
-git clone . /tmp/clone && cd /tmp/clone/umbra
-go build ./...   # OK
-go test ./...    # every package ok
-```
-
-That clone is the verification. Before the fix it would have failed to build,
-because `package main` did not exist in the repository. After it, it builds and
-every test passes, which is the only evidence that means anything here.
-
-This is the clearest case in the build of Graph driving a decision rather than
-confirming one. Nothing else in the toolchain was looking at the repository.
-The compiler, the test runner and my own reading were all looking at the
-working tree, where the code was present and correct. Graph was looking at what
-had actually been committed, and the gap between those two things was an entire
-package. A green test run is not the same as a correct repository, and it takes
-a tool that reads the repository to tell you which one you have.
-
-### The self report
-
-Then Umbra was run on the session that built it. On the commit where it changed
-its own `shadow.Build`, all twelve dependents came back umbra, including every
-scenario test. That reading is correct, and the reason is the most useful thing
-this project learned about itself: the change was made with a shell command
-rather than the editing tool, so the session produced no read and no edit event
-for that file. **Umbra's examined set is built from tool activity, so an agent
-that edits through the shell leaves no trace Umbra can see.** It is the same
-shape of blind spot the product exists to find, pointed at the product. The
-report is in `umbra/site/self/`.
-
-Running the report on itself also found two bugs in the scrubber, both fixed:
-paths from outside the repository were reaching the timeline through search
-output, and the base64 heuristic was redacting git object ids and worktree
-paths, which is exactly the text a reader needs in order to check a line.
-
-## Development record
-
-Umbra was built in a standalone repository and then grafted into this fork of
-`entireio/entire-graph`. The `umbra/` layout from ARCHITECTURE.md was preserved
-exactly through the build so the module could be moved without relocating a
-single file, which is why the graft is two commits rather than a rewrite.
-
-**The build's own checkpoint trail did not come across, and that is on purpose.**
-The original repository's checkpoint refs hold whole session transcripts,
-including material read from an unrelated project in the first minutes of the
-build. None of it is pushed here. This mirror starts clean and stays clean, and
-this fork's trail begins at the graft rather than at the first line of code. The
-phase by phase record survives as prose in [NOTES.md](NOTES.md), which covers
-all the phases and carries what each one found and where the design documents
-turned out to be wrong.
-
-The only other change outside `umbra/` is one pointer line in the repository
-README and the agent files `entire graph init-agents` writes.
-
-Seventeen phases, of which the first thirteen built the product. The last four
-were not features:
-
-- **14** replaced the landing page's scripted sample with a real run, added a
-  second map from an imported session in another project, and prepared two
-  scripts that were deliberately not executed: the graft, and a read-only audit
-  of what the checkpoint refs on the remote contain.
-- **15** made the scrubber the only exit. Five leaks had been the same bug five
-  times, an output path that wrote without scrubbing, so the renderers now take
-  a value that only the scrubbing path can produce. It also gave every check in
-  the project a test that proves the check can fail.
-- **16** restyled the landing page around a drawn eclipse. No raster asset and
-  no request for one: the corona is inline SVG built deterministically from the
-  report's own numbers.
-- **17** is this pass: two visual checks decided from screenshots rather than
-  from the CSS, [PUBLISH.md](PUBLISH.md), and the verification of
-  this README against the repository.
-
-[PUBLISH.md](PUBLISH.md) is a checklist for the sitting in which
-this repository is made public. Nothing in it has been run.
-
-**Which maps are which.** The landing page shows two, and they are not the same
-kind of thing.
-
-- The first is a **real session on a seeded fixture**. The session, its tool
-  activity and the test results are real: checkpoint `b20f84567474` against
-  commit `0063443`, where an agent changed a signature and five probes cracked.
-  What is arranged is the fixture underneath it, `umbra/fixtures/app`, which was
-  written to have callers a session would plausibly miss. The sentence above the
-  map is the agent's own, taken from the stored transcript.
-- The second is **not seeded at all**: a real session from another project of
-  the builder's, imported with `entire import` and analysed unchanged. Every one
-  of the four symbols that depend on what it changed came back umbra. Nothing
-  about it was arranged, including the result.
-
-**Nothing on the page is scripted.** There is no map drawn from an invented
-report. Until phase 14 there was one: the sample was assembled by the site
-generator, with a checkpoint id of `sample000class`, a commit of all zeros and a
-session sentence written by hand, under a caption calling it a real report. It
-was replaced by a real run, and the generator now refuses a report carrying
-those markers so the caption cannot drift away from the file again.
-
-The eight scenarios under `umbra/fixtures/recorded/` are **authored
-transcripts**, written to exercise one classifier rule each. They drive tests
-and are never rendered as a map on the page. `umbra/fixtures/recorded/minimal/`
-is different: a full recording of a real short session, hand reviewed before it
-was committed.
-
-## Prior work and AI disclosure
-
-No code was reused. The idea of subtracting the examined set from a blast
-radius was developed in planning for this event.
-
-All product code across all seventeen phases was written during the build with
-an AI coding agent, captured in Entire checkpoints. That includes the tests, the
-landing page, the corona renderer and every document in this repository except
-the four planning documents in `umbra/docs/`, which were written before the
-build with AI assistance and are the first commit.
-
-What came from the human rather than the agent: the problem, the four settled
-decisions in the kickoff, the scope of each phase, the decision to keep the
-repository private, and the visual direction for the landing page in phase 16,
-which was specified before it was built and not proposed by the agent. Every
-phase was reviewed and accepted by hand before the next one started.
-
-`umbra/NOTES.md` records what the probe found, which degradations are in
-effect, the places the design documents turned out to be wrong about the
-installed tools, and the mistakes: the four confident wrong answers, the five
-scrubbing leaks, and the label tests that were proving nothing. Those are in
-there because a build record that only lists what worked is not a record.
-
 ## Layout
 
+Everything below is relative to `umbra/`, which is the whole module.
+
 ```
-umbra/
-  cmd/entire-umbra/     flags, wiring, exit codes
-  internal/runner/      the one boundary to external processes, and its replay
-  internal/checkpoint/  resolve, worktrees, transcript fetch
-  internal/transcript/  normalized events; the Claude Code adapter
-  internal/graph/       snapshot, relations, BFS, impact, commit, verify
-  internal/shadow/      examined set, classifier, ranker, selection, forensics
-  internal/report/      table, json, layout, html, packet
-  fixtures/app/         the seeded Python service
-  fixtures/recorded/    the eight scenarios, plus one real minimal recording
-  scripts/              the graft and the read-only checkpoint refs audit
-  site/                 landing page, the corona renderer, the drop-in viewer
-  docs/                 the four planning documents, and docs/renders/
-  NOTES.md              the phase by phase build record
-  PUBLISH.md            the checklist for making this repository public
+cmd/entire-umbra/     flags, wiring, exit codes
+internal/runner/      the one boundary to external processes, and its replay
+internal/checkpoint/  resolve, worktrees, transcript fetch
+internal/transcript/  normalized events; the Claude Code adapter
+internal/graph/       snapshot, relations, BFS, impact, commit, verify
+internal/shadow/      examined set, classifier, ranker, selection, forensics
+internal/report/      table, json, layout, html, packet
+fixtures/app/         the seeded Python service
+fixtures/recorded/    the eight scenarios, plus one real minimal recording
+scripts/              the graft and the read-only checkpoint refs audit
+site/                 landing page, the corona renderer, the drop-in viewer
+docs/                 the four planning documents, and docs/renders/
+NOTES.md              the phase by phase build record
+PUBLISH.md            the checklist for making this repository public
 ```
 
-Built during Bengaluru Tech Week on the Entire ecosystem.
+`NOTES.md` carries the build record, the corrections above in fuller form, and
+the running list of checks that passed while asserting nothing. The repository
+this module sits in is described in the [repository README](../README.md).
