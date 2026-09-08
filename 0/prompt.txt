@@ -498,3 +498,40 @@ general.
 Report with: the click before and after for stage E, what the two READMEs
 disagreed on, what moved and what was dropped in stage H, and the final test
 count.
+
+---
+
+Two tasks. Task 1 is read-only and ends in a stop. Do not change repository
+visibility, do not delete refs, do not push, at any point. I do those.
+
+No em dashes. go test ./... green.
+
+1. Run the pre-publish gate that PUBLISH.md defines, against this repository
+   rather than the fork, since it was written for here and has never been
+   executed.
+   - Run scripts/checkpoint-refs-audit.sh and report the current numbers.
+   - Scan for the sibling project's material specifically, by name and by
+     directory path, and report every file and ref that carries it. This is the
+     one blocker PUBLISH.md names and it applies here.
+   - Scan for credentials, tokens, keys and absolute paths, and separate real
+     hits from the scrubber's own synthetic test inputs quoted in NOTES, the way
+     the fork audit did.
+   - Search for both the plain and the JSON-escaped form of any email address,
+     since a total-only scan under-reports, per b6cb02a. Report distinct values
+     and counts, not totals.
+   - Confirm the output-wide artifact test still passes over every committed
+     artifact.
+   Write the result to umbra/experiments/publish-gate.md and STOP with a plain
+   go or no-go, naming exactly what would need to be dealt with first.
+
+2. Only after I say go, execute PUBLISH.md option 1 as far as it can be done
+   without me: entire configure --skip-push-sessions here, and prepare, but do
+   not run, the exact command sequence that removes the checkpoint refs from the
+   remote. Put that sequence in publish-gate.md with what is lost and what is
+   kept, so I can run it myself and watch it.
+
+Also record in NOTES, dated: the merge consolidated into this repository rather
+than into the fork, so this is the canonical repository and the fork is a
+submission snapshot. And the README demo-state line disagreed three ways across
+the two READMEs and the measured value; say which was true of what, or that the
+origin of the wrong numbers could not be established.
