@@ -319,9 +319,14 @@ func weaker(carried, next EdgeQuality) EdgeQuality {
 	// Resolution first, confidence second. The provider's resolution is a
 	// named category with an order the vocabulary in evidence.go defines;
 	// confidence is a float it attaches on top and is not derivable from it.
-	// Ranking by the category and using the number only to break a tie is what
-	// the fork's implementation did, and it is the better key: a name_only
-	// guess at 0.85 is weaker evidence than an exact match at 0.8.
+	//
+	// The reason the order matters this way round is that confidence is a
+	// within-method quantity. It says how sure the provider is given the method
+	// it used, so it is comparable between two name_only edges and between two
+	// exact ones, and comparing it across resolution methods was never
+	// meaningful. Ranking on it alone, which is what this did before, put a
+	// name_only guess at 0.85 above an exact match at 0.8 and called the exact
+	// match the weaker hop.
 	if nr, cr := ResolutionRank(next.Resolution), ResolutionRank(carried.Resolution); nr != cr {
 		if nr < cr {
 			return next

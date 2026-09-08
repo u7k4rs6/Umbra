@@ -1932,12 +1932,12 @@ Scanning the fork's checkpoint transcripts for the owner's email address with
 
 found **78** occurrences of `utkarshbahuguna10@gmail.com`. The real figure is
 **117**. The other 39 are the same address written
-`u003cutkarshbahuguna10@gmail.com`, because the transcripts are JSON and the
-`<` of a `<addr>` author line is escaped to `<`, which the pattern then
+`\u003cutkarshbahuguna10@gmail.com`, because the transcripts are JSON and the
+`<` of a `<addr>` author line is escaped to `\u003c`, which the pattern then
 reads as part of the local part.
 
 It surfaced only because the distinct-value tally printed
-`u003cutkarshbahuguna10@gmail.com` as its own row next to the plain form, and
+`\u003cutkarshbahuguna10@gmail.com` as its own row next to the plain form, and
 the two looked like one address typed twice. A scan that had reported a single
 total would have said 78 and been believed.
 
@@ -1956,3 +1956,82 @@ reported thirty refs of zero bytes because `git ls-tree` is scoped to the
 working directory, and the phase 26 history sweep that reported zero matches
 for a word in the very commit that introduced it, because the shell's `grep`
 function miscounts `-c` in a pipeline.
+
+## Phase 28: three corrections from the merge
+
+2026-09-08. Recorded while merging the fork into this repository, stages C
+through E.
+
+### The inconclusive guard the fork had, and why removing it broke nothing
+
+The fork decided a sweep was inconclusive with a guard that read, in effect,
+`Degraded && len(changedIDs) == 0`. This repository had arrived at a different
+condition for a neighbouring idea, an *incomplete* sweep, which is the case
+where the runner named fewer failures than it counted. The two are not the same
+question. Inconclusive means nothing was compared. Incomplete means something
+was compared and the list of what came out of it is short. Stage C combined
+them rather than picking one, and the guard here is now
+
+```go
+func sweepIsInconclusive(v graph.Verdict, changed []string) bool {
+	return v.Degraded && len(changed) == 0 && v.UnnamedFailing() == 0
+}
+```
+
+The third clause is the reconciliation: a run that counted failures it could
+not name is incomplete, not inconclusive, and the fork's guard would have
+called it inconclusive and said nothing was compared.
+
+What is worth recording is that **deleting the fork's guard entirely broke no
+test in the fork's own suite.** Its tests covered the renderers, which format
+whatever the flag says, and not the wiring that sets the flag. A renderer test
+is satisfied by any input that reaches it; it cannot tell you that the right
+input is being computed, and it passes just as happily when nothing computes
+one at all.
+
+The same shape reappeared one stage later, so it is not a fluke of that guard.
+In stage E the ported evidence tests were also renderer tests, and hardcoding
+`RunDegraded` to `false` in `analyze.go` broke nothing until three wiring tests
+were written for it, because no test in `cmd/entire-umbra` mentioned evidence.
+The packet's per-node evidence line could likewise be deleted whole and the
+suite stayed green.
+
+### The weakest hop ranks by resolution, with confidence as the tiebreak
+
+Stage D changed `weaker` in `internal/graph/bfs.go` from a comparison on
+`Confidence` alone to one on `ResolutionRank` with `Confidence` breaking ties.
+
+The reason is that **confidence is a within-method quantity.** It reports how
+sure the provider is given the method it used to resolve the relation, so it is
+comparable between two `name_only` edges and between two `exact` ones, and
+comparing it across resolution methods was never meaningful. On the old key a
+`name_only` guess at 0.85 outranked an `exact` match at 0.8, and the walk then
+reported the exact match as the weakest hop on the path, which is the opposite
+of what a reader wants that line to mean.
+
+The same reasoning is now in a comment at the comparison itself, because
+someone reading `weaker` and wondering why a float is not the sort key should
+not have to find this file to learn the answer.
+
+### The running list: checks that passed while asserting nothing
+
+Three entries so far, each a check that produced a confident result without
+testing the thing it appeared to test.
+
+1. **The fork's sweep and evidence tests, above.** Green with the wiring
+   deleted, because every one of them tested a renderer.
+2. **The email scan in `b6cb02a`.** A pattern scan of the checkpoint
+   transcripts reported 78 occurrences of the owner's address; the true figure
+   is 117, because the transcripts are JSON, `<` is escaped to `\u003c`, and the
+   pattern ate the escape as part of the local part. It reported a total, and a
+   total cannot show you the near miss.
+3. **The phase 26 history sweep.** Reported zero matches for a word in the very
+   commit that introduced it, because the shell's `grep` function miscounts
+   `-c` in a pipeline.
+
+They have one thing in common. Each was run forwards only: the check was
+pointed at the question and its answer was believed, and none of the three was
+first pointed at something known to be present to see whether it could find it
+at all. For a test that is a deliberate mutation; for a scan it is a value the
+haystack certainly contains. Both are cheap, and either one would have caught
+its own case.
