@@ -98,6 +98,19 @@ func Table(w io.Writer, sd Sealed, o TableOptions) error {
 
 	// The light line.
 	writeLightLine(b, a, o)
+
+	// What the graph itself could vouch for. Printed next to the light line
+	// because the two answer different questions about the same nodes: the
+	// light line says what the session saw, this says what the graph knows.
+	fmt.Fprintf(b, "graph  %s\n", GraphEvidenceLine(a))
+	if note := GraphCompletenessNote(a); note != "" {
+		for _, line := range wrapAt("this analysis may be incomplete: "+note, 76) {
+			fmt.Fprintf(b, "       %s\n", colour(o, ansiYellow, line))
+		}
+	}
+	for _, line := range EvidenceLegend() {
+		fmt.Fprintf(b, "       %s\n", dim(o, line))
+	}
 	if line := a.Reach.Line(); line != "" {
 		fmt.Fprintf(b, "reach  %s\n", dim(o, line))
 	}
@@ -127,6 +140,8 @@ func Table(w io.Writer, sd Sealed, o TableOptions) error {
 			fmt.Fprintf(b, "    %s  %s:%d  %s\n", u.Name, u.File, u.Line, dim(o, u.Reason))
 		}
 	}
+
+	writeVerification(b, a, o, rows)
 
 	// Execution and the sweep.
 	writeExecution(b, a, o)
@@ -168,9 +183,10 @@ func writeRow(b *strings.Builder, n *shadow.Node, o TableOptions) {
 		outcome = colour(o, ansiGreen, "pass")
 	}
 
-	fmt.Fprintf(b, "%s%s  %-24s %-40s %-18s depth %d  %-26s %6.1f  %s\n",
+	fmt.Fprintf(b, "%s%s%s %-24s %-40s %-18s depth %d  %-26s %6.1f  %s\n",
 		pin,
 		glyphColoured(n.State, o),
+		evidenceMark(n, o),
 		trunc(n.Symbol.Name, 24),
 		trunc(loc, 40),
 		trunc(n.Relation, 18),
@@ -336,4 +352,41 @@ func wrapAt(text string, n int) []string {
 		line += " " + w
 	}
 	return append(out, line)
+}
+
+// evidenceMark is the one character that says what the graph can vouch for.
+// Confirmed prints a space rather than its own mark, so a fully resolved field
+// reads exactly as it did before this axis existed and only the cases a reader
+// has to think about carry ink.
+func evidenceMark(n *shadow.Node, o TableOptions) string {
+	switch n.Evidence {
+	case shadow.Heuristic:
+		return colour(o, ansiYellow, shadow.Heuristic.Mark())
+	case shadow.NeedsVerification:
+		return colour(o, ansiYellow, shadow.NeedsVerification.Mark())
+	}
+	return " "
+}
+
+// writeVerification prints the exact commands that settle one node, for every
+// node the graph could not confirm.
+func writeVerification(b *strings.Builder, a *Analysis, o TableOptions, rows []*shadow.Node) {
+	var need []*shadow.Node
+	for _, n := range rows {
+		if n.Evidence == shadow.NeedsVerification {
+			need = append(need, n)
+		}
+	}
+	if len(need) == 0 {
+		return
+	}
+	b.WriteString("\n")
+	fmt.Fprintf(b, "verify  %d dependent(s) need verification. %s\n",
+		len(need), dim(o, shadow.NeedsVerification.Meaning()))
+	for _, n := range need {
+		fmt.Fprintf(b, "\n  %s  %s\n", n.Symbol.Name, dim(o, n.EvidenceWhy))
+		for _, line := range VerifyFor(a, n).Lines() {
+			fmt.Fprintf(b, "    %s\n", line)
+		}
+	}
 }

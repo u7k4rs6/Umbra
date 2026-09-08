@@ -31,6 +31,8 @@
 
   <p class="coverage">How the session worked: {{.CoverageLine}}.</p>
   {{if .ReachText}}<p class="coverage">How far the graph could follow: {{.ReachText}}.</p>{{end}}
+  {{if .GraphText}}<p class="coverage">What the graph can vouch for: {{.GraphText}}.</p>{{end}}
+  {{if .GraphNote}}<p class="notice">This analysis may be incomplete: {{.GraphNote}}</p>{{end}}
   {{if .CoverageNote}}<p class="notice coverage-note">{{.CoverageNote}}</p>{{end}}
 
   {{range .A.Notes}}<p class="notice">{{.}}</p>{{end}}
@@ -87,6 +89,7 @@
             {{if .Pinned}}<span class="pin" title="pinned to the top by a beacon">&#9650;</span>{{end}}
             <span class="glyph state-{{.State}}">{{.Glyph}}</span>
             <span class="word">{{.State}}</span>
+            {{if .Evidence}}<span class="ev ev-{{.EvidenceClass}}" title="{{.EvidenceMeaning}}">{{.Evidence}}</span>{{end}}
             {{if .Cracked}}<span class="crack" title="a probe covering this failed">&#10799;</span>{{end}}
           </td>
           <td class="sym">
@@ -100,6 +103,10 @@
             <details>
               <summary>evidence</summary>
               <p>{{.Sentence}}</p>
+              {{if .Evidence}}<p class="ev-line"><b>{{.Evidence}}</b>, meaning {{.EvidenceMeaning}}. {{.EvidenceWhy}}</p>{{end}}
+              {{if .Resolution}}<p class="sub">the graph resolved this relation as <code>{{.Resolution}}</code>: {{.ResolutionMeans}}</p>{{end}}
+              {{if .Verify}}<p class="sub">check it:</p><pre class="verify">{{range .Verify}}{{.}}
+{{end}}</pre>{{end}}
               {{if .Beacon}}<p><code>{{.Beacon}}</code></p>{{end}}
               {{if .Factors}}<p class="sub">{{.Factors}}</p>{{end}}
               {{if .Probes}}<p class="sub">probes: {{.Probes}}</p>{{end}}

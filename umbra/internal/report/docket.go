@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/u7k4rs6/Umbra/umbra/internal/graph"
 	"github.com/u7k4rs6/Umbra/umbra/internal/shadow"
 )
 
@@ -35,6 +36,20 @@ type DocketRow struct {
 	IsLeak    bool
 	Reason    string
 	Signature string
+
+	// What the graph can vouch for, beside what the session saw. Evidence is
+	// one of the three coined words; EvidenceMeaning is its plain sentence,
+	// which the page prints beside it every time.
+	Evidence string
+	// EvidenceClass is the same word with its space replaced, because
+	// "needs verification" as a class attribute is two classes.
+	EvidenceClass   string
+	EvidenceMeaning string
+	EvidenceWhy     string
+	Resolution      string
+	ResolutionMeans string
+	// Verify is the exact way to settle a row the graph could not confirm.
+	Verify []string
 }
 
 // Chip is a coined word with its plain meaning underneath, which is how
@@ -75,9 +90,20 @@ func BuildDocket(a *Analysis) []DocketRow {
 			IsLeak: true,
 			Reason: l.Reason,
 			Chips:  []Chip{{Word: "leak", Meaning: "the sweep found it; selection missed it"}},
+			// A leak is a test that failed. That is an observation from
+			// running it, not a graph relation, so it is confirmed by the
+			// strongest evidence in the report.
+			Evidence:        string(shadow.Confirmed),
+			EvidenceClass:   evidenceClass(shadow.Confirmed),
+			EvidenceMeaning: "observed by running the test, not derived from the graph",
 		})
 	}
 	return rows
+}
+
+// evidenceClass turns the coined word into one CSS class.
+func evidenceClass(e shadow.Evidence) string {
+	return strings.ReplaceAll(string(e), " ", "-")
 }
 
 func rowFor(a *Analysis, n *shadow.Node) DocketRow {
@@ -98,6 +124,18 @@ func rowFor(a *Analysis, n *shadow.Node) DocketRow {
 		Pinned:   n.Pinned(),
 		Cracked:  n.Result == shadow.OutcomeFail,
 		Excerpt:  n.Failure,
+
+		Evidence:        string(n.Evidence),
+		EvidenceClass:   evidenceClass(n.Evidence),
+		EvidenceMeaning: n.Evidence.Meaning(),
+		EvidenceWhy:     n.EvidenceWhy,
+		Resolution:      n.Resolution,
+	}
+	if n.Resolution != "" {
+		r.ResolutionMeans = graph.ResolutionMeaning(n.Resolution)
+	}
+	if n.Evidence == shadow.NeedsVerification {
+		r.Verify = VerifyFor(a, n).Lines()
 	}
 	switch n.Symbol.Kind {
 	case "class", "type", "interface", "struct":

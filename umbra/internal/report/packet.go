@@ -33,6 +33,19 @@ func Packet(w io.Writer, sd Sealed) error {
 	} else {
 		fmt.Fprintf(b, "**The examined set is unavailable**, so every dependent is unknown rather than judged.\n\n")
 	}
+	es := shadow.SummarizeEvidence(a.Nodes)
+	fmt.Fprintf(b, "**What the graph can vouch for: %d confirmed, %d heuristic, %d needs verification.**\n\n",
+		es.Confirmed, es.Heuristic, es.NeedsVerification)
+	fmt.Fprintf(b, "| Word | What it means |\n|---|---|\n")
+	for _, e := range []shadow.Evidence{shadow.Confirmed, shadow.Heuristic, shadow.NeedsVerification} {
+		fmt.Fprintf(b, "| %s | %s |\n", string(e), e.Meaning())
+	}
+	b.WriteString("\n")
+	if note := GraphCompletenessNote(a); note != "" {
+		fmt.Fprintf(b, "> **This analysis may be incomplete.** %s\n\n", note)
+	}
+	fmt.Fprintf(b, "Every dependent count below is the graph's own: %s.\n\n", shadow.DependentCountIsHeuristic)
+
 	for _, n := range a.Notes {
 		fmt.Fprintf(b, "> %s\n\n", n)
 	}
@@ -102,6 +115,8 @@ func Packet(w io.Writer, sd Sealed) error {
 			fmt.Fprintf(b, "- `%s:%d`, %s at depth %d, score %.1f\n",
 				n.Symbol.File, n.Symbol.Span[0], n.Relation, n.Depth, n.Score)
 			fmt.Fprintf(b, "- %s\n", shadow.StateSentence(n.State, n.Tier, n.Symbol.File))
+			fmt.Fprintf(b, "- graph evidence: **%s**, meaning %s. %s\n",
+				string(n.Evidence), n.Evidence.Meaning(), n.EvidenceWhy)
 			if len(n.Modifiers) > 0 {
 				fmt.Fprintf(b, "- %s\n", strings.Join(describeModifiers(n.Modifiers), "; "))
 			}
@@ -186,6 +201,26 @@ func Packet(w io.Writer, sd Sealed) error {
 		}
 	} else if a.Run != "none" {
 		fmt.Fprintf(b, "The sweep was skipped, so the selection is unaudited.\n\n")
+	}
+
+	// 6. What to verify.
+	var need []*shadow.Node
+	for _, n := range a.Shadowed() {
+		if n.Evidence == shadow.NeedsVerification {
+			need = append(need, n)
+		}
+	}
+	fmt.Fprintf(b, "## 6. What to verify\n\n")
+	if len(need) == 0 {
+		fmt.Fprintf(b, "Nothing here rests on a relation the graph could not resolve.\n\n")
+	} else {
+		fmt.Fprintf(b, "%d dependent(s) reached through a relation the graph could not resolve, or found under a partial analysis. Each line below is a command that settles it.\n\n",
+			len(need))
+		for _, n := range need {
+			v := VerifyFor(a, n)
+			fmt.Fprintf(b, "### `%s`\n\n%s\n\n```\n%s\n```\n\n",
+				n.Symbol.Name, n.EvidenceWhy, strings.Join(v.Lines(), "\n"))
+		}
 	}
 
 	// Reproduce and limitations.

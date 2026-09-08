@@ -61,6 +61,7 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	relMap := graph.NewRelationMap(caps)
 	a.RelationsUsed = relMap.Used
 	a.RelationsIgnored = relMap.Ignored
+	a.RelationsHeuristic = relMap.Heuristic
 	a.Channels["graph"] = true
 
 	// Step 3b: the field.
@@ -76,6 +77,10 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading the graph snapshot: %w", err)
 	}
+	// What the snapshot said about itself. Read before anything is built from
+	// it, because an empty field assembled from nothing readable looks exactly
+	// like a clean one.
+	a.Graph = graphEvidence(field)
 
 	// Step 2: the sources.
 	// The checkpoint only owns this commit when the reference resolved through
@@ -142,8 +147,15 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 			})
 			continue
 		}
+		if imp.Degraded() {
+			a.Graph.ImpactDegraded = append(a.Graph.ImpactDegraded, s.Name)
+		}
+		if imp.ScopeLanguage != "" && !a.Graph.InScope {
+			a.Graph.InScope, a.Graph.InScopeWhy = true, imp.ScopeLanguage
+		}
 		impacts[s.Symbol] = imp
 	}
+	sort.Strings(a.Graph.ImpactDegraded)
 	if len(a.Unresolved) > 0 {
 		a.Notes = append(a.Notes, fmt.Sprintf(
 			"%d changed symbol(s) could not be looked up in the graph, so nothing was traversed for them; they are named below",
@@ -200,6 +212,8 @@ func pipeline(ctx context.Context, o *Options, run runner.Runner, res *checkpoin
 	in := shadow.BuildInput{
 		Field: field, RelMap: relMap, Sources: a.Sources, Reach: reach,
 		Examined: examined, Impacts: impacts, HeadRoot: head, Scars: scars,
+		Meta:     field.Meta,
+		Evidence: evidenceInput(a),
 	}
 	a.Nodes = shadow.Build(in)
 	a.Nodes = shadow.AddCoChange(a.Nodes, in)
@@ -454,4 +468,94 @@ func reachSummary(field *graph.Field, relMap *graph.RelationMap, a *report.Analy
 		}
 	}
 	return out
+}
+
+// graphEvidence copies what the snapshot said about itself into the report.
+// scopeLanguage names the language the provider scoped an impact answer to.
+func scopeLanguage(imp *graph.Impact) string {
+	if imp != nil && imp.ScopeLanguage != "" {
+		return imp.ScopeLanguage
+	}
+	return "this field's language"
+}
+
+// inScopeCode reports whether the provider listed this code among the
+// diagnostics that can affect the answer.
+func inScopeCode(imp *graph.Impact, code string) bool {
+	if imp == nil {
+		return false
+	}
+	return containsString(imp.InScopeWarnings, code)
+}
+
+func containsString(list []string, want string) bool {
+	for _, x := range list {
+		if x == want {
+			return true
+		}
+	}
+	return false
+}
+
+// evidenceInput carries what the run as a whole knows about its own
+// completeness into the per-node evidence classifier. It is separate from
+// graphEvidence because that describes the snapshot and this describes the
+// consequence for a reader: a degraded snapshot means no node's dependent list
+// can be called confirmed, however clean that node's own edges look.
+//
+// InScope guards it. A snapshot that never covered the changed files is not a
+// degraded reading of them, it is no reading of them, and those symbols are
+// already reported as never asked about rather than as weakly answered.
+func evidenceInput(a *report.Analysis) shadow.EvidenceInput {
+	return shadow.EvidenceInput{
+		RunDegraded: a.Graph.Degraded() && a.Graph.InScope,
+		DegradedWhy: report.GraphCompletenessNote(a),
+	}
+}
+
+func graphEvidence(f *graph.Field) report.GraphEvidence {
+	g := report.GraphEvidence{Resolutions: map[string]int{}}
+	if f == nil {
+		return g
+	}
+	for name, n := range f.Resolutions {
+		if name == "" {
+			name = "unreported"
+		}
+		g.Resolutions[name] = n
+	}
+	m := f.Meta
+	if m == nil {
+		return g
+	}
+	g.Profile = m.Profile
+	g.ProviderVersion = m.ProviderVersion
+	g.CompletenessLevel = m.Stats.CompletenessLevel
+	g.SawSummary = m.SawSummary
+	g.Files = m.Stats.Files
+	g.ParsedFiles = m.Stats.ParsedFiles
+	g.Symbols = m.Stats.Symbols
+	g.Relations = m.Stats.Relations
+	g.Malformed = m.Malformed
+	g.Dropped = m.Dropped
+	for _, w := range m.Warnings {
+		g.Warnings = appendDiagnostic(g.Warnings,
+			report.GraphDiagnostic{Code: w.Code, Level: w.Severity, File: w.FilePath, Effect: w.Effect})
+	}
+	for _, pf := range m.PartialFailures {
+		g.PartialFailures = appendDiagnostic(g.PartialFailures,
+			report.GraphDiagnostic{Code: pf.Code, Level: pf.Severity, File: pf.FilePath, Effect: pf.Effect})
+	}
+	return g
+}
+
+// appendDiagnostic keeps one entry per code and file pair, so a warning that
+// arrives from both the snapshot and every impact query is reported once.
+func appendDiagnostic(list []report.GraphDiagnostic, d report.GraphDiagnostic) []report.GraphDiagnostic {
+	for _, x := range list {
+		if x.Code == d.Code && x.File == d.File {
+			return list
+		}
+	}
+	return append(list, d)
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/u7k4rs6/Umbra/umbra/internal/graph"
 	"github.com/u7k4rs6/Umbra/umbra/internal/shadow"
 )
 
@@ -13,24 +14,29 @@ import (
 // never the coined words.
 
 type jsonReport struct {
-	UmbraVersion    string             `json:"umbra_version"`
-	Checkpoint      jsonCheckpoint     `json:"checkpoint"`
-	Inputs          jsonInputs         `json:"inputs"`
-	SessionSaid     string             `json:"session_said,omitempty"`
-	SessionSaidFrom string             `json:"session_said_from,omitempty"`
-	Coverage        jsonCoverage       `json:"coverage"`
-	Reach           ReachSummary       `json:"reach"`
-	Notes           []string           `json:"notes,omitempty"`
-	Sources         []jsonSource       `json:"sources"`
-	Unresolved      []UnresolvedSource `json:"unresolved,omitempty"`
-	Nodes           []jsonNode         `json:"nodes"`
-	Timeline        []TimelineEvent    `json:"timeline"`
-	T0              int                `json:"t0"`
-	Execution       Execution          `json:"execution"`
-	Summary         jsonSummary        `json:"summary"`
-	Layout          *Layout            `json:"layout,omitempty"`
-	Limitations     []string           `json:"limitations"`
-	CommandsRun     []string           `json:"commands_run"`
+	UmbraVersion    string         `json:"umbra_version"`
+	Checkpoint      jsonCheckpoint `json:"checkpoint"`
+	Inputs          jsonInputs     `json:"inputs"`
+	SessionSaid     string         `json:"session_said,omitempty"`
+	SessionSaidFrom string         `json:"session_said_from,omitempty"`
+	Coverage        jsonCoverage   `json:"coverage"`
+	Reach           ReachSummary   `json:"reach"`
+	// GraphEvidence is what the graph said about its own reliability, and
+	// EvidenceLegend is the three coined words with their plain meanings, so
+	// a reader of the JSON alone can tell what a tier claims.
+	GraphEvidence  jsonGraphEvidence  `json:"graph_evidence"`
+	EvidenceLegend []jsonLegendEntry  `json:"evidence_legend"`
+	Notes          []string           `json:"notes,omitempty"`
+	Sources        []jsonSource       `json:"sources"`
+	Unresolved     []UnresolvedSource `json:"unresolved,omitempty"`
+	Nodes          []jsonNode         `json:"nodes"`
+	Timeline       []TimelineEvent    `json:"timeline"`
+	T0             int                `json:"t0"`
+	Execution      Execution          `json:"execution"`
+	Summary        jsonSummary        `json:"summary"`
+	Layout         *Layout            `json:"layout,omitempty"`
+	Limitations    []string           `json:"limitations"`
+	CommandsRun    []string           `json:"commands_run"`
 }
 
 // jsonCoverage says how the session worked, so a consumer can tell a thin
@@ -83,29 +89,42 @@ type jsonSource struct {
 }
 
 type jsonNode struct {
-	ID         string             `json:"id"`
-	Name       string             `json:"name"`
-	File       string             `json:"file"`
-	Span       [2]int             `json:"span"`
-	IsTest     bool               `json:"is_test"`
-	Sources    []string           `json:"sources"`
-	Relation   string             `json:"relation"`
-	Depth      int                `json:"depth"`
-	Path       []string           `json:"path"`
-	State      string             `json:"state"`
-	Tier       string             `json:"tier,omitempty"`
-	Modifiers  []string           `json:"modifiers"`
-	Exposures  []jsonExposure     `json:"exposures"`
-	Sentence   string             `json:"sentence"`
-	CallSite   int                `json:"call_site"`
-	Dependents int                `json:"dependents"`
-	Score      float64            `json:"score"`
-	Factors    map[string]float64 `json:"factors"`
-	Beacon     string             `json:"beacon,omitempty"`
-	Signature  string             `json:"signature,omitempty"`
-	Tests      []jsonTestRef      `json:"tests"`
-	Result     string             `json:"result"`
-	Failure    string             `json:"failure_excerpt,omitempty"`
+	ID        string         `json:"id"`
+	Name      string         `json:"name"`
+	File      string         `json:"file"`
+	Span      [2]int         `json:"span"`
+	IsTest    bool           `json:"is_test"`
+	Sources   []string       `json:"sources"`
+	Relation  string         `json:"relation"`
+	Depth     int            `json:"depth"`
+	Path      []string       `json:"path"`
+	State     string         `json:"state"`
+	Tier      string         `json:"tier,omitempty"`
+	Modifiers []string       `json:"modifiers"`
+	Exposures []jsonExposure `json:"exposures"`
+	Sentence  string         `json:"sentence"`
+	// Evidence is the plain word for how much of this node the graph can
+	// vouch for, with its meaning and the reason, so the JSON needs no key.
+	Evidence        string `json:"evidence"`
+	EvidenceMeaning string `json:"evidence_meaning"`
+	EvidenceWhy     string `json:"evidence_why"`
+	// DependentsAre says, on every node that carries a count, that the count
+	// is the graph's estimate rather than a compiler's.
+	DependentsAre   string             `json:"dependents_are"`
+	Resolution      string             `json:"resolution,omitempty"`
+	ResolutionMeans string             `json:"resolution_means,omitempty"`
+	Confidence      float64            `json:"confidence,omitempty"`
+	GraphWarnings   []string           `json:"graph_warnings,omitempty"`
+	Verify          *VerifyPath        `json:"verify,omitempty"`
+	CallSite        int                `json:"call_site"`
+	Dependents      int                `json:"dependents"`
+	Score           float64            `json:"score"`
+	Factors         map[string]float64 `json:"factors"`
+	Beacon          string             `json:"beacon,omitempty"`
+	Signature       string             `json:"signature,omitempty"`
+	Tests           []jsonTestRef      `json:"tests"`
+	Result          string             `json:"result"`
+	Failure         string             `json:"failure_excerpt,omitempty"`
 }
 
 type jsonExposure struct {
@@ -152,14 +171,15 @@ func buildJSON(a *Analysis) jsonReport {
 			Mentions: a.Coverage.Mentions, Commands: a.Coverage.Commands,
 			Thin: a.Coverage.Thin(), Line: CoverageLine(a), Note: CoverageNote(a),
 		},
-		Reach:       a.Reach,
-		Notes:       a.Notes,
-		Timeline:    a.Timeline,
-		T0:          a.Cut,
-		Execution:   a.Execution,
-		Layout:      a.Layout,
-		Limitations: nonNilStrings(a.Limitations),
-		CommandsRun: nonNilStrings(a.Commands),
+		Reach:          a.Reach,
+		EvidenceLegend: evidenceLegendEntries(),
+		Notes:          a.Notes,
+		Timeline:       a.Timeline,
+		T0:             a.Cut,
+		Execution:      a.Execution,
+		Layout:         a.Layout,
+		Limitations:    nonNilStrings(a.Limitations),
+		CommandsRun:    nonNilStrings(a.Commands),
 	}
 
 	for _, s := range a.Sources {
@@ -169,6 +189,16 @@ func buildJSON(a *Analysis) jsonReport {
 			OldSignature: snippet(a, s.OldSignature), NewSignature: snippet(a, s.NewSignature),
 		})
 	}
+	es := shadow.SummarizeEvidence(a.Nodes)
+	r.GraphEvidence = jsonGraphEvidence{
+		Confirmed:         es.Confirmed,
+		Heuristic:         es.Heuristic,
+		NeedsVerification: es.NeedsVerification,
+		MayBeIncomplete:   a.Graph.Degraded(),
+		Why:               GraphCompletenessNote(a),
+		GraphEvidence:     a.Graph,
+	}
+
 	if r.Sources == nil {
 		r.Sources = []jsonSource{}
 	}
@@ -180,9 +210,18 @@ func buildJSON(a *Analysis) jsonReport {
 			IsTest: n.Symbol.IsTest, Sources: nonNilStrings(n.Sources), Relation: n.Relation,
 			Depth: n.Depth, Path: nonNilStrings(n.Path), State: n.State.String(),
 			Tier: string(n.Tier), Modifiers: nonNilStrings(n.Modifiers),
-			Sentence:   shadow.StateSentence(n.State, n.Tier, n.Symbol.File),
-			CallSite:   n.CallSite,
-			Dependents: n.Dependents, Score: n.Score, Factors: n.Factors,
+			Sentence:        shadow.StateSentence(n.State, n.Tier, n.Symbol.File),
+			Evidence:        string(n.Evidence),
+			EvidenceMeaning: n.Evidence.Meaning(),
+			EvidenceWhy:     n.EvidenceWhy,
+			DependentsAre:   shadow.DependentCountIsHeuristic,
+			Resolution:      n.Resolution,
+			ResolutionMeans: graph.ResolutionMeaning(n.Resolution),
+			Confidence:      n.Confidence,
+			GraphWarnings:   nonNilStrings(n.EdgeWarnings),
+			Verify:          verifyForNode(a, n),
+			CallSite:        n.CallSite,
+			Dependents:      n.Dependents, Score: n.Score, Factors: n.Factors,
 			Beacon:    n.Beacon,
 			Signature: snippet(a, n.Symbol.Signature),
 			Result:    string(n.Result),
@@ -268,4 +307,40 @@ func nonNilStrings(s []string) []string {
 		return []string{}
 	}
 	return s
+}
+
+// jsonLegendEntry is one of the three evidence words with its plain meaning, so
+// a reader of the JSON alone never has to guess what a tier claims.
+type jsonLegendEntry struct {
+	Word    string `json:"word"`
+	Mark    string `json:"mark"`
+	Meaning string `json:"meaning"`
+}
+
+func evidenceLegendEntries() []jsonLegendEntry {
+	var out []jsonLegendEntry
+	for _, e := range []shadow.Evidence{shadow.Confirmed, shadow.Heuristic, shadow.NeedsVerification} {
+		out = append(out, jsonLegendEntry{Word: string(e), Mark: e.Mark(), Meaning: e.Meaning()})
+	}
+	return out
+}
+
+// jsonGraphEvidence is the plain-word version of what the provider reported.
+type jsonGraphEvidence struct {
+	Confirmed         int    `json:"confirmed"`
+	Heuristic         int    `json:"heuristic"`
+	NeedsVerification int    `json:"needs_verification"`
+	MayBeIncomplete   bool   `json:"may_be_incomplete"`
+	Why               string `json:"why,omitempty"`
+	GraphEvidence
+}
+
+// verifyForNode returns the commands that settle a node, and nothing for one
+// the graph already confirmed.
+func verifyForNode(a *Analysis, n *shadow.Node) *VerifyPath {
+	if n.Evidence != shadow.NeedsVerification {
+		return nil
+	}
+	v := VerifyFor(a, n)
+	return &v
 }

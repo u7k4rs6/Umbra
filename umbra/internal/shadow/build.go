@@ -21,6 +21,9 @@ type BuildInput struct {
 	// HeadRoot is the worktree the call-site windows are read from.
 	HeadRoot string
 	Scars    map[string]int
+	// Meta is what the snapshot said about its own completeness, used to mark
+	// a node whose own file the provider failed on or indexes inventory-only.
+	Meta *graph.SnapshotMeta
 	// Evidence carries the run-wide degradation into node classification, so
 	// a node found under an analysis the provider flagged is not presented
 	// with the same certainty as one found under a clean run.
@@ -70,6 +73,7 @@ func Build(in BuildInput) []*Node {
 
 		n.State, n.Tier = Classify(in.Examined, sym.File, sym.Name, sym.Span)
 		n.Exposures = exposuresFor(in.Examined, sym.File, sym.Name)
+		markIncompleteFile(n, in.Meta)
 		n.Evidence, n.EvidenceWhy = ClassifyEvidence(n, in.Evidence)
 
 		if n.Tier != TierNone {
@@ -206,4 +210,36 @@ func exposuresFor(e *Examined, file, name string) []Exposure {
 	}
 	sort.SliceStable(out, func(i, j int) bool { return out[i].Seq < out[j].Seq })
 	return out
+}
+
+// markIncompleteFile records that the provider could not fully analyse the
+// file this node lives in, quoting the provider's own code and effect.
+//
+// Two causes: a partial failure or warning naming the file, and a language the
+// snapshot tiers as inventory-only, where file discovery ran and no relations
+// were extracted at all. In both cases nothing in that file can be presented
+// as confirmed structural evidence.
+func markIncompleteFile(n *Node, meta *graph.SnapshotMeta) {
+	if meta == nil || n.Symbol == nil {
+		return
+	}
+	for _, pf := range meta.PartialFailures {
+		if pf.FilePath == n.Symbol.File {
+			n.FileIncomplete = true
+			n.IncompleteWhy = pf.Code + ": " + pf.Effect
+			return
+		}
+	}
+	for _, w := range meta.Warnings {
+		if w.FilePath == n.Symbol.File {
+			n.FileIncomplete = true
+			n.IncompleteWhy = w.Code + ": " + w.Effect
+			return
+		}
+	}
+	if meta.InventoryOnly(n.Symbol.Language) {
+		n.FileIncomplete = true
+		n.IncompleteWhy = "the snapshot indexes " + n.Symbol.Language +
+			" inventory-only, so no relations were extracted from this file"
+	}
 }

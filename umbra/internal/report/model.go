@@ -38,7 +38,11 @@ type Analysis struct {
 	Snippets         bool
 	RelationsUsed    []string
 	RelationsIgnored []string
-	Channels         map[string]bool
+	// RelationsHeuristic names the relation types the provider itself calls
+	// heuristic, so the header can say which of the traversed families are a
+	// guess rather than a parse.
+	RelationsHeuristic []string
+	Channels           map[string]bool
 
 	Sources []graph.Source
 	// Unresolved names the changed symbols the graph could not be asked about,
@@ -49,6 +53,11 @@ type Analysis struct {
 	Unresolved []UnresolvedSource
 	Nodes      []*shadow.Node
 	Summary    shadow.Summary
+
+	// Graph is what the snapshot and the impact queries said about their own
+	// reliability. It is the run-wide half of the evidence tiers; the
+	// per-node half lives on shadow.Node.
+	Graph GraphEvidence
 
 	// Reach says how much of the call graph around the change the provider
 	// could follow. It exists so a thin field can be told from a followable
@@ -67,6 +76,76 @@ type Analysis struct {
 	Layout      *Layout
 	Limitations []string
 	Commands    []string
+}
+
+// GraphEvidence is the provider's account of its own reliability, carried into
+// the report so a reader can see it without rerunning the tool.
+type GraphEvidence struct {
+	// Profile is the indexing profile the snapshot ran at, and Provider its
+	// version, because a relation set depends on both.
+	Profile         string `json:"profile,omitempty"`
+	ProviderVersion string `json:"provider_version,omitempty"`
+	// CompletenessLevel is the provider's own word: "complete", "degraded", or
+	// empty when the snapshot carried no summary record at all.
+	CompletenessLevel string `json:"completeness_level,omitempty"`
+	// SawSummary is false when the snapshot ended without its summary record.
+	// An absent summary is not the same claim as a summary reporting nothing
+	// wrong, and the two used to be indistinguishable here.
+	SawSummary bool `json:"saw_summary"`
+
+	Files       int `json:"files,omitempty"`
+	ParsedFiles int `json:"parsed_files,omitempty"`
+	Symbols     int `json:"symbols,omitempty"`
+	Relations   int `json:"relations,omitempty"`
+
+	// Malformed counts snapshot lines that were not valid JSON; Dropped counts
+	// records that parsed but lacked the ids they need. Both used to be a
+	// bare `continue`.
+	Malformed int `json:"malformed_records"`
+	Dropped   int `json:"dropped_records"`
+
+	Warnings        []GraphDiagnostic `json:"warnings,omitempty"`
+	PartialFailures []GraphDiagnostic `json:"partial_failures,omitempty"`
+
+	// Resolutions counts the relations in the field by how the provider
+	// resolved them, so a reader can see how much of the map is a parse.
+	Resolutions map[string]int `json:"resolutions,omitempty"`
+
+	// ImpactDegraded lists the changed symbols whose `graph impact` answer the
+	// provider itself flagged as degraded for that query.
+	ImpactDegraded []string `json:"impact_degraded,omitempty"`
+
+	// InScope says whether the degradation can affect THIS field, using the
+	// provider's own completeness_scope rather than Umbra's judgement. The
+	// distinction is the difference between a report that is honest and one
+	// that is useless: this repository's snapshot is permanently degraded by
+	// parse errors in vendored tree-sitter C headers, and marking every Python
+	// dependent unverified because of a C header would make the tier mean
+	// nothing.
+	InScope bool `json:"degradation_in_scope"`
+	// InScopeWhy is the reason the degradation is in scope, and OutOfScope
+	// lists the codes the provider says cannot affect this answer. Both are
+	// printed: a diagnostic that is ruled out is more useful reported with the
+	// reason than omitted.
+	InScopeWhy string   `json:"degradation_in_scope_why,omitempty"`
+	OutOfScope []string `json:"degradation_out_of_scope,omitempty"`
+}
+
+// GraphDiagnostic is one warning or partial failure, in the provider's words.
+type GraphDiagnostic struct {
+	Code   string `json:"code"`
+	Level  string `json:"severity,omitempty"`
+	File   string `json:"file,omitempty"`
+	Effect string `json:"effect,omitempty"`
+}
+
+// Degraded reports whether the provider said this analysis may be partial.
+func (g GraphEvidence) Degraded() bool {
+	if !graph.CompletenessIsHealthy(g.CompletenessLevel) {
+		return true
+	}
+	return len(g.PartialFailures) > 0 || g.Malformed > 0 || g.Dropped > 0 ||
+		len(g.ImpactDegraded) > 0 || !g.SawSummary
 }
 
 // TimelineEvent is one moment, reduced to what a report may carry: a kind, a

@@ -346,8 +346,11 @@ func TestSweepStillNamesEveryLeakWhenNothingWasTruncated(t *testing.T) {
 	if !strings.Contains(out, "sweep   full suite  2 leaks\n") {
 		t.Fatalf("an untruncated sweep prints a plain count:\n%s", out)
 	}
-	if strings.Contains(out, "incomplete") {
-		t.Fatalf("nothing was truncated, so nothing should say incomplete:\n%s", out)
+	// Look for the sweep's own wording, not the bare word: the graph
+	// completeness note also says "may be incomplete" and is a different claim
+	// about a different thing.
+	if strings.Contains(out, "named, and the list is incomplete") {
+		t.Fatalf("nothing was truncated, so the leak list is not incomplete:\n%s", out)
 	}
 	if !strings.Contains(out, "test file not in the co-change set") {
 		t.Fatalf("forensics must still be printed:\n%s", out)
@@ -513,7 +516,10 @@ func TestReachLineIsSilentWhenThereAreNoCallEdges(t *testing.T) {
 	a := mkAnalysis()
 	a.Reach = ReachSummary{}
 	out := render(t, a, TableOptions{UTF8: true})
-	if strings.Contains(out, "reach") {
+	// The line's own prefix, not the bare word: the evidence legend says
+	// "reached through a relation the graph could not resolve" and is a
+	// different statement.
+	if strings.Contains(out, "\nreach  ") {
 		t.Fatalf("a run with no call edges must not print a reach line:\n%s", out)
 	}
 
