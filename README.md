@@ -188,19 +188,22 @@ The phases after 17 are not part of that build. They are recorded in
 outside repository and fixing what that found, two upstream bug reports, and
 the six stage merge that brought the fork's divergent work back here.
 
-**Which maps are which.** The landing page shows two, and they are not the same
-kind of thing.
+**Which map is which.** The landing page shows one, a **real session on a
+seeded fixture**. The session, its tool activity and the test results are real:
+checkpoint `b20f84567474` against commit `1c2cf29`, where an agent changed a
+signature and five probes cracked. What is arranged is the fixture underneath
+it, `umbra/fixtures/app`, which was written to have callers a session would
+plausibly miss. The sentence above the map is the agent's own, taken from the
+stored transcript.
 
-- The first is a **real session on a seeded fixture**. The session, its tool
-  activity and the test results are real: checkpoint `b20f84567474` against
-  commit `1c2cf29`, where an agent changed a signature and five probes cracked.
-  What is arranged is the fixture underneath it, `umbra/fixtures/app`, which was
-  written to have callers a session would plausibly miss. The sentence above the
-  map is the agent's own, taken from the stored transcript.
-- The second is **not seeded at all**: a real session from another project of
-  the builder's, imported with `entire import` and analysed unchanged. Every one
-  of the four symbols that depend on what it changed came back umbra. Nothing
-  about it was arranged, including the result.
+It used to show two. The second was a real session from another project of the
+builder's, imported with `entire import` and analysed unchanged, and every one
+of the four symbols that depended on what it changed came back umbra. The page
+stopped drawing it in `7661eb2` and its report files are now deleted, because
+that report named the other project: its directory, its GitHub owner and
+repository, and the source files and symbols the session changed. Publishing
+someone else's code structure to illustrate a point about ours was not a trade
+worth making, and the finding it carried is recorded here rather than shown.
 
 **Nothing on the page is scripted.** There is no map drawn from an invented
 report. Until phase 14 there was one: the sample was assembled by the site
