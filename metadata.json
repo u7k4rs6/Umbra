@@ -1,0 +1,24 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M2147QJH0P3QN8KFDVT3Y8MX",
+  "strategy": "manual-commit",
+  "branch": "experiment/first-real-repo",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1192,
+    "cache_creation_tokens": 3809059,
+    "cache_read_tokens": 279418816,
+    "output_tokens": 497268,
+    "api_call_count": 597
+  }
+}
