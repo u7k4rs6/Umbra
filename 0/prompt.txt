@@ -436,3 +436,65 @@ checkpoint-branch audit.
 ---
 
 So: run --skip-push-sessions on the fork, note the encoding lesson, and get on with tasks 2 and 3, which are the actual merge.
+
+---
+
+Continue the merge in ~/entire-graph. Stages A through D are committed and green
+at 376 tests. Read umbra/experiments/repo-inventory.md and your own stage C and D
+commit messages before starting.
+
+No em dashes. go test ./... green before every commit. Commit each stage
+separately. Rerun the click regression after each and confirm the docket, its
+order and the reach line are unchanged unless a stage is meant to change them.
+
+STAGE E, finish the evidence model. It is in and tested but dead: nothing
+populates EvidenceInput from analyze.go and no surface renders the three tiers.
+Close that loop.
+  - Populate EvidenceInput in analyze.go from the merged Edge fields.
+  - Render confirmed, heuristic and needs verification in the terminal, JSON,
+    HTML and packet, using the fork's vocabulary.
+  - Port the four report-side partial-analysis tests.
+  - Re-prove each known-positive here rather than trusting that it passed in the
+    other repository.
+  This stage is expected to change output, so record the before and after of the
+  click run rather than asserting no change.
+
+STAGE F, record three things in NOTES, dated, in the same plain form as the
+existing corrections.
+  - Stage C: the fork's inconclusive guard was Degraded and no changed ids, and
+    removing it broke no test because the fork's tests covered the renderers and
+    not the wiring. That is another instance of a check that passed while
+    asserting nothing about the behaviour it names. Add it to that running list.
+  - Stage D: the weakest hop now ranks by resolution with confidence as
+    tiebreak, because confidence is a within-method quantity and comparing it
+    across resolution methods was never meaningful. Put that reasoning in a code
+    comment at the comparison as well, not only in NOTES.
+  - The email encoding lesson already recorded in b6cb02a belongs on the same
+    running list, since a scan that reports a total cannot reveal that its
+    pattern missed a third of the matches.
+
+STAGE G, the two READMEs. There are now two, the root 533-line one and the
+fork's 636-line one at umbra/README.md. Do not blend them into a single file
+that serves both purposes. Split by scope instead: the root README is about this
+repository, meaning it is a fork of entireio/entire-graph with Umbra living in
+umbra/, and points at the product. umbra/README.md is the product manual:
+install, run, states, ranking, evidence tiers, limitations, corrections.
+Move content to whichever file its scope belongs to, delete nothing that is not
+duplicated, and where the two disagree on a fact, check which is true rather
+than picking one. Report any disagreement you find.
+
+STAGE H, BUILDATHON.md, only after G is green. It is at the root in its 981-line
+form. Move the durable content out: the four graph findings with their
+verification, the curveball section rewritten as design notes for the evidence
+tiers rather than as a response to a constraint, and the limitations section
+stays where it already is. Drop only what needs a rubric to make sense: the
+track number, the required outline headings, the checkpoint-links-for-judges
+section, the event framing. Then move the file itself to
+umbra/archive/BUILDATHON.md with one dated line saying it was the submission
+document for a one-day event. Change no claim while moving it; if a sentence is
+only true in the event context, say so rather than rewriting it to sound
+general.
+
+Report with: the click before and after for stage E, what the two READMEs
+disagreed on, what moved and what was dropped in stage H, and the final test
+count.
