@@ -2694,3 +2694,72 @@ Worth knowing for anyone running two agent sessions against one worktree:
 Entire binds a session to the worktree it started in, both sessions' hooks
 fire, and whichever commits first takes the checkpoint. There is no lock, and
 an uncommitted working tree is shared state.
+
+## Phase 32: this is the canonical repository, and the fork is a snapshot
+
+2026-09-09. Recording the consequence of a decision, because the decision is
+easy to find in the commit log and the consequence is not.
+
+The merge went **into this repository**, `u7k4rs6/Umbra`, not into the fork.
+Stages A through H brought the fork's divergent work here and left the fork
+where it was. So from this date:
+
+- **This repository is canonical.** It has the full per-phase history from the
+  first line of code, its own checkpoint trail under `refs/entire/checkpoints/`,
+  the merged product, and the maintained documents.
+- **`u7k4rs6/entire-graph` is a submission snapshot.** It is a fork of
+  `entireio/entire-graph` with a copy of `umbra/` grafted in, its history begins
+  at the graft, it has no checkpoint refs of its own, and it is public.
+
+The practical rule that follows: work happens here, and the fork is not updated
+to match. It is a record of what was submitted, and it stays that.
+
+Two things still live only in the fork and are not lost by accident. Its
+`PUBLISH.md` is 354 lines against this repository's 33, and it is the one with
+the three options and the scrub gate; stage A could not merge it because both
+files exist. Its `BUILDATHON.md` is the same 981-line document stage A brought
+here and stage H archived, so that one is not a difference any more.
+
+The fork is public and this repository is not, which is the opposite of what
+their contents would suggest. `experiments/fork-checkpoint-audit.md` has the
+measurements and `experiments/publish-gate.md` has what that means for making
+this one public.
+
+## Phase 33: the demo state line, and which of the three numbers was true
+
+2026-09-09. Stage G found the two READMEs disagreeing about what the demo run
+reports. There were three numbers, not two, and this records which was true of
+what, including the one whose origin could not be established.
+
+The three:
+
+| Source | Claim |
+|---|---|
+| the root README | "two lit and six umbra nodes in the repository it was built in, and eleven penumbra in a fresh clone that has no checkpoints at all" |
+| `umbra/README.md` | `0 lit  9 penumbra  4 umbra  0 unknown` at `0% examined`, under `0 file reads, 0 edits, 0 searches, 33 shell commands` |
+| measured, 2026-09-08 | `2 lit  1 penumbra  8 umbra  0 unknown` at `18% examined`, under `2 file reads, 1 edit, 0 searches, 2 shell commands` |
+
+**The `umbra/README.md` figures are established.** They are the fork's, from the
+run against `6dea614c`, and the same numbers appear in `BUILDATHON.md` twice
+with the coverage line beside them. The explanation given there is also correct
+and is the more useful half: the session that made that commit worked through
+the shell, so it left no file-tool events to subtract and almost everything came
+back unexamined. Those numbers are true of the fork and of that commit.
+
+**The measured figures are this repository, today**, against `1c2cf29` with the
+checkpoints present. They are now what the README carries.
+
+**The root README's figures could not be attributed to any run.** No commit,
+checkpoint or captured output in this repository produces `2 lit` with `6 umbra`,
+and the sentence pairs them with "eleven penumbra in a fresh clone" for which
+there is likewise no record. The lit count of two matches the measurement and
+nothing else does. Three readings are consistent with what is on disk: an
+earlier state of the fixture, a run whose output was never captured, or a number
+that drifted while the paragraph was edited. **The evidence does not choose
+between them, so the origin is recorded as unestablished rather than guessed.**
+
+What this costs is worth naming. Two of the three numbers in a README were
+wrong, both survived a documented README verification pass in phase 17, and the
+disagreement only surfaced when two documents that had each been checked alone
+were put side by side. A claim checked against a document is not checked; a
+claim is checked against a run.
